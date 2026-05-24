@@ -39,7 +39,6 @@ get_header();
                 
                 <div class="entry-meta">
                     <span class="posted-on">Publicado el <time datetime="<?php echo get_the_date('c'); ?>"><?php echo get_the_date('j \d\e F \d\e Y'); ?></time></span>
-                    <span class="byline"> por <span class="author vcard"><a class="url fn n" href="<?php echo esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ); ?>"><?php echo esc_html( get_the_author() ); ?></a></span></span>
                 </div>
             </header>
 
@@ -68,16 +67,6 @@ get_header();
             <footer class="entry-footer">
                 <div class="tags-links">
                     <?php the_tags( 'Etiquetas: ', ', ', '' ); ?>
-                </div>
-                
-                <div class="author-bio">
-                    <div class="author-avatar">
-                        <?php echo get_avatar( get_the_author_meta( 'ID' ), 80 ); ?>
-                    </div>
-                    <div class="author-info">
-                        <h3><?php echo esc_html( get_the_author() ); ?></h3>
-                        <p><?php the_author_meta( 'description' ); ?></p>
-                    </div>
                 </div>
             </footer>
         </article><!-- #post-<?php the_ID(); ?> -->

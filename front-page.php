@@ -35,7 +35,6 @@ get_header();
                             <?php the_excerpt(); ?>
                         </div>
                         <div class="post-meta-footer">
-                            Por <span class="author"><?php echo esc_html( get_the_author() ); ?></span> &bull; 
                             <time datetime="<?php echo get_the_date('c'); ?>"><?php echo get_the_date(); ?></time>
                         </div>
                     </div>
