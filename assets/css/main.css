@@ -170,6 +170,8 @@ img {
 }
 .header-ad {
     background: var(--color-bg-secondary);
+    position: relative;
+    overflow: hidden;
     flex: 1;
     max-width: 728px;
     height: 90px;

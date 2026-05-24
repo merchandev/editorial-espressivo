@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 7. Ad Sliders (Publicidad In-Feed)
     function initAdSliders() {
-        const sliders = document.querySelectorAll('.in-feed-ad-slider');
+        const sliders = document.querySelectorAll('.in-feed-ad-slider, .header-ad');
         sliders.forEach(slider => {
             const slides = slider.querySelectorAll('.ad-slide');
             if (slides.length <= 1) return; // No animar si solo hay 1 banner

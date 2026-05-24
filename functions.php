@@ -419,3 +419,122 @@ function pro_customize_register( $wp_customize ) {
     ) );
 }
 add_action( 'customize_register', 'pro_customize_register' );
+
+/* ==========================================================================
+   Gestor de Publicidad (Ad Manager)
+   ========================================================================== */
+
+// 1. Registrar Custom Post Type para Banners
+function pro_register_ad_cpt() {
+    register_post_type('pro_ad_banner', array(
+        'labels'      => array(
+            'name'          => 'Publicidad',
+            'singular_name' => 'Banner',
+            'add_new'       => 'Añadir Nuevo Banner',
+            'add_new_item'  => 'Añadir Nuevo Banner',
+            'edit_item'     => 'Editar Banner'
+        ),
+        'public'      => false,
+        'show_ui'     => true,
+        'show_in_menu'=> true,
+        'supports'    => array('title', 'thumbnail'),
+        'menu_icon'   => 'dashicons-megaphone',
+        'menu_position' => 25,
+    ));
+}
+add_action('init', 'pro_register_ad_cpt');
+
+// 2. Añadir Meta Boxes
+function pro_add_ad_meta_boxes() {
+    add_meta_box('pro_ad_settings', 'Configuración del Banner', 'pro_ad_meta_box_html', 'pro_ad_banner', 'normal', 'high');
+}
+add_action('add_meta_boxes', 'pro_add_ad_meta_boxes');
+
+function pro_ad_meta_box_html() {
+    wp_nonce_field('pro_save_ad_meta', 'pro_ad_meta_nonce');
+    
+     = get_post_meta(->ID, '_pro_ad_location', true);
+          = get_post_meta(->ID, '_pro_ad_url', true);
+        = get_post_meta(->ID, '_pro_ad_start', true);
+          = get_post_meta(->ID, '_pro_ad_end', true);
+    
+    ?>
+    <p>
+        <label for="pro_ad_location"><strong>Ubicación:</strong></label><br>
+        <select name="pro_ad_location" id="pro_ad_location" style="width:100%;">
+            <option value="header" <?php selected(, 'header'); ?>>Header (Arriba de todo)</option>
+            <option value="in-feed-1" <?php selected(, 'in-feed-1'); ?>>In-Feed 1 (Después de Premium)</option>
+            <option value="in-feed-2" <?php selected(, 'in-feed-2'); ?>>In-Feed 2 (Después de Locales)</option>
+        </select>
+    </p>
+    <p>
+        <label for="pro_ad_url"><strong>URL de destino (Enlace):</strong></label><br>
+        <input type="url" name="pro_ad_url" id="pro_ad_url" value="<?php echo esc_url(); ?>" style="width:100%;">
+    </p>
+    <p>
+        <label for="pro_ad_start"><strong>Fecha/Hora de Inicio:</strong></label><br>
+        <input type="datetime-local" name="pro_ad_start" id="pro_ad_start" value="<?php echo esc_attr(); ?>" style="width:100%;">
+        <small>Déjalo vacío para publicar inmediatamente.</small>
+    </p>
+    <p>
+        <label for="pro_ad_end"><strong>Fecha/Hora de Salida (Caducidad):</strong></label><br>
+        <input type="datetime-local" name="pro_ad_end" id="pro_ad_end" value="<?php echo esc_attr(); ?>" style="width:100%;">
+        <small>Déjalo vacío para que nunca caduque automáticamente.</small>
+    </p>
+    <p><em>* Nota: La imagen del banner debes subirla en el panel derecho de "Imagen destacada".</em></p>
+    <?php
+}
+
+// 3. Guardar Meta Data
+function pro_save_ad_meta() {
+    if (!isset(['pro_ad_meta_nonce']) || !wp_verify_nonce(['pro_ad_meta_nonce'], 'pro_save_ad_meta')) return;
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+    if (!current_user_can('edit_post', )) return;
+
+    if (isset(['pro_ad_location'])) update_post_meta(, '_pro_ad_location', sanitize_text_field(['pro_ad_location']));
+    if (isset(['pro_ad_url'])) update_post_meta(, '_pro_ad_url', esc_url_raw(['pro_ad_url']));
+    if (isset(['pro_ad_start'])) update_post_meta(, '_pro_ad_start', sanitize_text_field(['pro_ad_start']));
+    if (isset(['pro_ad_end'])) update_post_meta(, '_pro_ad_end', sanitize_text_field(['pro_ad_end']));
+}
+add_action('save_post_pro_ad_banner', 'pro_save_ad_meta');
+
+// 4. Función para obtener banners activos por ubicación
+function pro_get_active_ads() {
+     = array(
+        'post_type'      => 'pro_ad_banner',
+        'post_status'    => 'publish',
+        'posts_per_page' => -1,
+        'meta_query'     => array(
+            array(
+                'key'   => '_pro_ad_location',
+                'value' => ,
+            )
+        )
+    );
+     = new WP_Query();
+     = array();
+     = current_time('Y-m-d\TH:i'); // Formato datetime-local
+
+    if (->have_posts()) {
+        while (->have_posts()) {
+            ->the_post();
+             = get_post_meta(get_the_ID(), '_pro_ad_start', true);
+               = get_post_meta(get_the_ID(), '_pro_ad_end', true);
+            
+            // Validar si es vigente
+            if (!empty() &&  < ) continue; // Aún no empieza
+            if (!empty() &&  > ) continue;     // Ya caducó
+
+            if (has_post_thumbnail()) {
+                [] = array(
+                    'url'   => get_post_meta(get_the_ID(), '_pro_ad_url', true),
+                    'image' => get_the_post_thumbnail_url(get_the_ID(), 'full'),
+                    'title' => get_the_title()
+                );
+            }
+        }
+        wp_reset_postdata();
+    }
+    return ;
+}
+

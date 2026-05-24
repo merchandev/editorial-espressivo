@@ -58,15 +58,33 @@
             </div><!-- .site-branding -->
 
             <div class="header-ad">
-                <?php if ( is_active_sidebar( 'ad-header' ) ) : ?>
-                    <?php dynamic_sidebar( 'ad-header' ); ?>
-                <?php else : ?>
-                    <?php if ( get_theme_mod( 'pro_show_ad_placeholders', true ) ) : ?>
+                <?php
+                // Obtener anuncios dinámicos del Gestor
+                $header_ads = function_exists('pro_get_active_ads') ? pro_get_active_ads('header') : array();
+                
+                if ( !empty($header_ads) ) :
+                    foreach ($header_ads as $index => $ad) :
+                        $active_class = ($index === 0) ? ' active' : '';
+                        $url = !empty($ad['url']) ? esc_url($ad['url']) : '#';
+                        ?>
+                        <div class="ad-slide<?php echo $active_class; ?>">
+                            <a href="<?php echo $url; ?>" target="_blank" rel="noopener noreferrer">
+                                <img src="<?php echo esc_url($ad['image']); ?>" alt="<?php echo esc_attr($ad['title']); ?>" style="width:100%; height:100%; object-fit:contain;">
+                            </a>
+                        </div>
+                        <?php
+                    endforeach;
+                else :
+                    if ( is_active_sidebar( 'ad-header' ) ) :
+                        dynamic_sidebar( 'ad-header' );
+                    elseif ( get_theme_mod( 'pro_show_ad_placeholders', true ) ) : ?>
                         <div class="ad-placeholder">
                             <span>Espacio Publicitario (728x90 / Responsive)</span>
                         </div>
-                    <?php endif; ?>
-                <?php endif; ?>
+                    <?php 
+                    endif;
+                endif; 
+                ?>
             </div>
         </div><!-- .header-main -->
 

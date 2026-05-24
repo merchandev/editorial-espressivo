@@ -130,16 +130,32 @@ get_header();
             <?php endforeach; ?>
         </div>
         <!-- PUBLICIDAD IN-FEED 1 -->
-        <div class="in-feed-ad-slider">
-            <div class="ad-slide active">
-                <!-- Imagen de ejemplo 1 (970x250) -->
-                <img src="https://via.placeholder.com/970x250/111827/FFFFFF?text=Publicidad+1" alt="Ad 1">
+        <?php
+        $in_feed_1 = function_exists('pro_get_active_ads') ? pro_get_active_ads('in-feed-1') : array();
+        if ( !empty($in_feed_1) ) :
+        ?>
+            <div class="in-feed-ad-slider">
+                <?php foreach ($in_feed_1 as $index => $ad) : 
+                    $active_class = ($index === 0) ? ' active' : '';
+                    $url = !empty($ad['url']) ? esc_url($ad['url']) : '#';
+                ?>
+                <div class="ad-slide<?php echo $active_class; ?>">
+                    <a href="<?php echo $url; ?>" target="_blank" rel="noopener noreferrer">
+                        <img src="<?php echo esc_url($ad['image']); ?>" alt="<?php echo esc_attr($ad['title']); ?>">
+                    </a>
+                </div>
+                <?php endforeach; ?>
             </div>
-            <div class="ad-slide">
-                <!-- Imagen de ejemplo 2 (970x250) -->
-                <img src="https://via.placeholder.com/970x250/374151/FFFFFF?text=Publicidad+2" alt="Ad 2">
+        <?php else : ?>
+            <!-- Placeholder In-Feed 1 (solo se ve si no hay ads configurados y placeholders activos) -->
+            <?php if ( get_theme_mod( 'pro_show_ad_placeholders', true ) ) : ?>
+            <div class="in-feed-ad-slider">
+                <div class="ad-slide active">
+                    <img src="https://via.placeholder.com/970x250/111827/FFFFFF?text=Publicidad+In-Feed+1" alt="Ad Placeholder">
+                </div>
             </div>
-        </div>
+            <?php endif; ?>
+        <?php endif; ?>
 
         <!-- ZONA LOCAL (Maturín y Monagas) -->
         <section class="wapo-category-section local-zone">
@@ -164,14 +180,31 @@ get_header();
             </div>
         </section>
         <!-- PUBLICIDAD IN-FEED 2 -->
-        <div class="in-feed-ad-slider">
-            <div class="ad-slide active">
-                <img src="https://via.placeholder.com/970x250/111827/FFFFFF?text=Publicidad+3" alt="Ad 3">
+        <?php
+        $in_feed_2 = function_exists('pro_get_active_ads') ? pro_get_active_ads('in-feed-2') : array();
+        if ( !empty($in_feed_2) ) :
+        ?>
+            <div class="in-feed-ad-slider">
+                <?php foreach ($in_feed_2 as $index => $ad) : 
+                    $active_class = ($index === 0) ? ' active' : '';
+                    $url = !empty($ad['url']) ? esc_url($ad['url']) : '#';
+                ?>
+                <div class="ad-slide<?php echo $active_class; ?>">
+                    <a href="<?php echo $url; ?>" target="_blank" rel="noopener noreferrer">
+                        <img src="<?php echo esc_url($ad['image']); ?>" alt="<?php echo esc_attr($ad['title']); ?>">
+                    </a>
+                </div>
+                <?php endforeach; ?>
             </div>
-            <div class="ad-slide">
-                <img src="https://via.placeholder.com/970x250/374151/FFFFFF?text=Publicidad+4" alt="Ad 4">
+        <?php else : ?>
+            <?php if ( get_theme_mod( 'pro_show_ad_placeholders', true ) ) : ?>
+            <div class="in-feed-ad-slider">
+                <div class="ad-slide active">
+                    <img src="https://via.placeholder.com/970x250/374151/FFFFFF?text=Publicidad+In-Feed+2" alt="Ad Placeholder">
+                </div>
             </div>
-        </div>
+            <?php endif; ?>
+        <?php endif; ?>
 
         <!-- ZONA COLUMNAS (Secciones Secundarias) -->
         <section class="wapo-category-section secondary-zone">
