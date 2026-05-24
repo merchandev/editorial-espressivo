@@ -1158,3 +1158,9 @@ img {
     font-size: 1.3rem;
     margin: 10px 0;
 }
+
+/* Evitar que las etiquetas de categoria se estiren al 100% en contenedores flex */
+.cat-label, .post-categories {
+    align-self: flex-start;
+    width: max-content;
+}
