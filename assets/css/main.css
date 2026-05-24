@@ -1145,3 +1145,25 @@ img {
     height: 100%;
     aspect-ratio: auto;
 }
+
+/* Overriding hero layout to be full width main post, and secondary posts below */
+.hero-grid-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+@media (min-width: 992px) {
+    .hero-grid-layout {
+        display: flex;
+        flex-direction: column;
+    }
+    .hero-main-post {
+        grid-template-columns: 1.5fr 1fr; /* Full width split */
+    }
+    .hero-secondary-posts {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        flex-direction: row;
+    }
+}
