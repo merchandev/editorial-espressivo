@@ -1,0 +1,46 @@
+/*
+Theme Name: Pro
+Theme URI: https://example.com/pro
+Author: Tu Nombre / Agencia
+Author URI: https://example.com
+Description: Un tema premium, rápido y elegante diseñado específicamente para un diario digital moderno. Incluye optimización SEO, modo oscuro y una estructura HTML5 semántica.
+Version: 1.0.0
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: pro
+Tags: custom-colors, custom-menu, featured-images, grid-layout, news, newspaper, fullscreen
+*/
+
+/* 
+ * Los estilos principales se encuentran en assets/css/main.css 
+ * Este archivo (style.css) se usa principalmente para registrar el tema en WordPress 
+ * y almacenar las variables CSS (Custom Properties) para ser procesadas correctamente 
+ * o inyectadas.
+ */
+
+:root {
+    /* Paleta de colores - Modo Claro (Diurno) */
+    --color-bg: #ffffff;
+    --color-bg-secondary: #f9f9f9;
+    --color-text: #111111;
+    --color-text-muted: #666666;
+    --color-primary: #000000;
+    --color-primary-hover: #444444;
+    --color-accent: #e60000;
+    
+    --color-border: #eeeeee;
+    
+    /* Tipografía */
+    --font-heading: 'Playfair Display', serif;
+    --font-body: 'Source Serif 4', serif;
+    --font-ui: 'Inter', sans-serif;
+    
+    /* Layout */
+    --container-width: 1200px;
+    --border-radius: 4px;
+    
+    /* Transiciones */
+    --transition-speed: 0.3s;
+}
+
+
