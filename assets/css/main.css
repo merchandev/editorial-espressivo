@@ -1024,3 +1024,36 @@ img {
 .new-posts-toast:hover {
     background-color: #0284c7; /* Sky 600 */
 }
+
+/* ==========================================================================
+   Estructura Avanzada de Publicidad
+   ========================================================================== */
+.in-feed-ad-wrapper {
+    margin: 40px auto;
+    max-width: 970px;
+    text-align: center;
+    position: relative;
+    padding-top: 20px;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 20px;
+}
+.in-feed-ad-wrapper .ad-label-tag {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-bg);
+    padding: 0 15px;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.in-feed-ad-wrapper .in-feed-ad-slider {
+    margin: 0 auto; /* Override default 40px margin */
+    border: none;
+}
+.in-feed-ad-wrapper .in-feed-ad-slider::after {
+    display: none; /* Hide old label */
+}

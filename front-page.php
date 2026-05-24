@@ -47,9 +47,9 @@ get_header();
     <div class="wapo-sections-container">
         
         <?php
-        // Función Helper interna para evitar repetir el código de placeholders
+        // Funci�n Helper interna para evitar repetir el c�digo de placeholders
         if ( ! function_exists( 'pro_render_placeholder_main' ) ) {
-            function pro_render_placeholder_main( $title = "Título de Noticia Principal" ) {
+            function pro_render_placeholder_main( $title = "T�tulo de Noticia Principal" ) {
                 ?>
                 <article class="wapo-main-article placeholder-mode">
                     <div class="post-thumbnail placeholder-image">
@@ -58,7 +58,7 @@ get_header();
                     <div class="wapo-main-content">
                         <h3 class="entry-title placeholder-text"><?php echo esc_html($title); ?></h3>
                         <div class="entry-summary placeholder-text-small">
-                            Este es un texto de relleno que muestra cómo se verá el extracto de la noticia.
+                            Este es un texto de relleno que muestra c�mo se ver� el extracto de la noticia.
                         </div>
                     </div>
                 </article>
@@ -78,165 +78,22 @@ get_header();
         }
         ?>
 
-        <!-- ZONA PREMIUM (Diseño Principal) -->
+        <!-- ZONA PREMIUM (Dise�o Principal) -->
         <div class="zone-premium">
-            <?php
-            $premium_cats = array('nacional' => 'Nacional', 'internacional' => 'Internacional', 'economia' => 'Economía', 'sucesos' => 'Sucesos');
-            foreach ( $premium_cats as $cat_slug => $cat_name ) :
-                $cat_args = array('category_name' => $cat_slug, 'posts_per_page' => 4, 'post_status' => 'publish');
-                $cat_query = new WP_Query( $cat_args );
-                ?>
-                <section class="wapo-category-section">
-                    <h2 class="wapo-section-title"><span><?php echo esc_html( $cat_name ); ?></span></h2>
-                    <div class="wapo-grid">
-                        <?php
-                        if ( $cat_query->have_posts() ) {
-                            $count = 0;
-                            while ( $cat_query->have_posts() ) : $cat_query->the_post();
-                                if ( $count === 0 ) :
-                                    ?>
-                                    <article class="wapo-main-article">
-                                        <a href="<?php the_permalink(); ?>" class="post-thumbnail">
-                                            <?php 
-                                            if ( has_post_thumbnail() ) { the_post_thumbnail( 'card-thumbnail', array( 'loading' => 'lazy' ) ); } 
-                                            else { echo '<div class="placeholder-image"><span>Foto</span></div>'; }
-                                            ?>
-                                        </a>
-                                        <div class="wapo-main-content">
-                                            <h3 class="entry-title"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
-                                            <div class="entry-summary"><?php the_excerpt(); ?></div>
-                                        </div>
-                                    </article>
-                                    <div class="wapo-side-articles">
-                                    <?php
-                                else :
-                                    ?>
-                                    <article class="wapo-list-item">
-                                        <h4 class="entry-title"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h4>
-                                    </article>
-                                    <?php
-                                endif;
-                                $count++;
-                            endwhile;
-                            if ( $count > 1 ) { echo '</div>'; } elseif ( $count === 1 ) { echo '<div class="wapo-side-articles empty-side"></div>'; }
-                        } else {
-                            pro_render_placeholder_main("Noticia de " . $cat_name);
-                            pro_render_placeholder_side(3);
-                        }
-                        ?>
-                    </div>
-                </section>
-                <?php wp_reset_postdata(); ?>
-            <?php endforeach; ?>
+            <?php get_template_part('template-parts/home/premium'); ?>
         </div>
-        <!-- PUBLICIDAD IN-FEED 1 -->
-        <?php
-        $in_feed_1 = function_exists('pro_get_active_ads') ? pro_get_active_ads('in-feed-1') : array();
-        if ( !empty($in_feed_1) ) :
-        ?>
-            <div class="in-feed-ad-slider">
-                <?php foreach ($in_feed_1 as $index => $ad) : 
-                    $active_class = ($index === 0) ? ' active' : '';
-                    $url = !empty($ad['url']) ? esc_url($ad['url']) : '#';
-                ?>
-                <div class="ad-slide<?php echo $active_class; ?>">
-                    <a href="<?php echo $url; ?>" target="_blank" rel="noopener noreferrer">
-                        <img src="<?php echo esc_url($ad['image']); ?>" alt="<?php echo esc_attr($ad['title']); ?>">
-                    </a>
-                </div>
-                <?php endforeach; ?>
-            </div>
-        <?php else : ?>
-            <!-- Placeholder In-Feed 1 (solo se ve si no hay ads configurados y placeholders activos) -->
-            <?php if ( get_theme_mod( 'pro_show_ad_placeholders', true ) ) : ?>
-            <div class="in-feed-ad-slider">
-                <div class="ad-slide active">
-                    <img src="https://via.placeholder.com/970x250/111827/FFFFFF?text=Publicidad+In-Feed+1" alt="Ad Placeholder">
-                </div>
-            </div>
-            <?php endif; ?>
-        <?php endif; ?>
 
-        <!-- ZONA LOCAL (Maturín y Monagas) -->
-        <section class="wapo-category-section local-zone">
-            <h2 class="wapo-section-title"><span>Noticias Locales</span></h2>
-            <div class="local-news-block">
-                <?php
-                $local_cats = array('maturin' => 'Maturín', 'monagas' => 'Monagas');
-                foreach($local_cats as $slug => $name) :
-                    $local_q = new WP_Query(array('category_name' => $slug, 'posts_per_page' => 1));
-                    ?>
-                    <div class="local-news-card">
-                        <div class="cat-label" style="background:var(--color-primary); color:#fff; display:inline-block; padding:2px 10px; border-radius:20px; font-size:0.8rem; margin-bottom:10px; font-weight:bold;"><?php echo $name; ?></div>
-                        <?php if($local_q->have_posts()): while($local_q->have_posts()): $local_q->the_post(); ?>
-                            <h3 class="entry-title" style="font-size:1.5rem; margin-bottom:10px;"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
-                            <div class="entry-summary" style="font-size:0.95rem; color:var(--color-text-muted);"><?php echo wp_trim_words(get_the_excerpt(), 15); ?></div>
-                        <?php endwhile; else: ?>
-                            <h3 class="entry-title placeholder-text">Titular de <?php echo $name; ?></h3>
-                            <div class="entry-summary placeholder-text-small">Aún no hay noticias publicadas en esta sección local.</div>
-                        <?php endif; wp_reset_postdata(); ?>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        </section>
+        <!-- PUBLICIDAD IN-FEED 1 -->
+        <?php get_template_part('template-parts/ads/in-feed', null, array('location' => 'in-feed-1')); ?>
+
+        <!-- ZONA LOCAL (Matur�n y Monagas) -->
+        <?php get_template_part('template-parts/home/local'); ?>
+
         <!-- PUBLICIDAD IN-FEED 2 -->
-        <?php
-        $in_feed_2 = function_exists('pro_get_active_ads') ? pro_get_active_ads('in-feed-2') : array();
-        if ( !empty($in_feed_2) ) :
-        ?>
-            <div class="in-feed-ad-slider">
-                <?php foreach ($in_feed_2 as $index => $ad) : 
-                    $active_class = ($index === 0) ? ' active' : '';
-                    $url = !empty($ad['url']) ? esc_url($ad['url']) : '#';
-                ?>
-                <div class="ad-slide<?php echo $active_class; ?>">
-                    <a href="<?php echo $url; ?>" target="_blank" rel="noopener noreferrer">
-                        <img src="<?php echo esc_url($ad['image']); ?>" alt="<?php echo esc_attr($ad['title']); ?>">
-                    </a>
-                </div>
-                <?php endforeach; ?>
-            </div>
-        <?php else : ?>
-            <?php if ( get_theme_mod( 'pro_show_ad_placeholders', true ) ) : ?>
-            <div class="in-feed-ad-slider">
-                <div class="ad-slide active">
-                    <img src="https://via.placeholder.com/970x250/374151/FFFFFF?text=Publicidad+In-Feed+2" alt="Ad Placeholder">
-                </div>
-            </div>
-            <?php endif; ?>
-        <?php endif; ?>
+        <?php get_template_part('template-parts/ads/in-feed', null, array('location' => 'in-feed-2')); ?>
 
         <!-- ZONA COLUMNAS (Secciones Secundarias) -->
-        <section class="wapo-category-section secondary-zone">
-            <h2 class="wapo-section-title"><span>Más Secciones</span></h2>
-            <div class="news-grid-3col">
-                <?php
-                $sec_cats = array(
-                    'deportes' => 'Deportes', 'cultura-y-entretenimiento' => 'Cultura', 
-                    'ciencia-y-tecnologia' => 'Ciencia', 'opinion' => 'Opinión', 
-                    'salud' => 'Salud', 'educacion' => 'Educación', 
-                    'servicios-publicos' => 'Servicios', 'comunidad' => 'Comunidad'
-                );
-                foreach($sec_cats as $slug => $name) :
-                    $sec_q = new WP_Query(array('category_name' => $slug, 'posts_per_page' => 3));
-                    ?>
-                    <div class="sec-column-block">
-                        <h3 style="font-family:var(--font-heading); font-size:1.3rem; border-bottom:1px solid var(--color-border); padding-bottom:5px; margin-bottom:15px;"><?php echo $name; ?></h3>
-                        <?php if($sec_q->have_posts()): while($sec_q->have_posts()): $sec_q->the_post(); ?>
-                            <article class="wapo-list-item" style="padding:0; margin-bottom:15px; border:none;">
-                                <h4 class="entry-title" style="font-size:1rem; margin-bottom:0;"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h4>
-                            </article>
-                        <?php endwhile; else: ?>
-                            <article class="wapo-list-item" style="padding:0; margin-bottom:15px; border:none;">
-                                <h4 class="entry-title placeholder-text" style="font-size:1rem;">Noticia de <?php echo $name; ?></h4>
-                            </article>
-                        <?php endif; wp_reset_postdata(); ?>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        </section>
-
-
+        <?php get_template_part('template-parts/home/secondary'); ?>
 
     </div>
 
