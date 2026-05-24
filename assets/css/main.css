@@ -151,7 +151,8 @@ img {
 
 /* Header Main (Logo y Ads) */
 .header-main {
-    padding: 20px 15px;
+    padding-top: 20px;
+    padding-bottom: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -169,8 +170,9 @@ img {
 }
 .header-ad {
     background: var(--color-bg-secondary);
-    min-width: 300px;
-    min-height: 90px;
+    width: 100%;
+    max-width: 970px;
+    height: 250px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -178,6 +180,15 @@ img {
     color: var(--color-text-muted);
     font-family: var(--font-ui);
     font-size: 0.9rem;
+    flex-shrink: 1;
+}
+@media (max-width: 767px) {
+    .header-ad {
+        height: auto;
+        aspect-ratio: 300 / 250;
+        max-width: 300px;
+        margin: 0 auto;
+    }
 }
 
 /* Navigation Wrapper */
@@ -832,6 +843,62 @@ img {
 }
 .placeholder-mode {
     opacity: 0.8;
+}
+
+/* ==========================================================================
+   Publicidad In-Feed (Sliders)
+   ========================================================================== */
+.in-feed-ad-slider {
+    position: relative;
+    width: 100%;
+    max-width: 970px;
+    height: 250px;
+    margin: 40px auto;
+    background: var(--color-bg-secondary);
+    border: 1px dashed var(--color-border);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.in-feed-ad-slider::after {
+    content: "Publicidad";
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    z-index: 10;
+}
+.ad-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+}
+.ad-slide.active {
+    opacity: 1;
+    z-index: 5;
+}
+.ad-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+@media (max-width: 767px) {
+    .in-feed-ad-slider {
+        height: auto;
+        aspect-ratio: 300 / 250;
+        max-width: 300px;
+    }
 }
 
 /* ==========================================================================

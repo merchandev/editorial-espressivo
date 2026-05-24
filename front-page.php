@@ -129,6 +129,17 @@ get_header();
                 <?php wp_reset_postdata(); ?>
             <?php endforeach; ?>
         </div>
+        <!-- PUBLICIDAD IN-FEED 1 -->
+        <div class="in-feed-ad-slider">
+            <div class="ad-slide active">
+                <!-- Imagen de ejemplo 1 (970x250) -->
+                <img src="https://via.placeholder.com/970x250/111827/FFFFFF?text=Publicidad+1" alt="Ad 1">
+            </div>
+            <div class="ad-slide">
+                <!-- Imagen de ejemplo 2 (970x250) -->
+                <img src="https://via.placeholder.com/970x250/374151/FFFFFF?text=Publicidad+2" alt="Ad 2">
+            </div>
+        </div>
 
         <!-- ZONA LOCAL (Maturín y Monagas) -->
         <section class="wapo-category-section local-zone">
@@ -152,6 +163,15 @@ get_header();
                 <?php endforeach; ?>
             </div>
         </section>
+        <!-- PUBLICIDAD IN-FEED 2 -->
+        <div class="in-feed-ad-slider">
+            <div class="ad-slide active">
+                <img src="https://via.placeholder.com/970x250/111827/FFFFFF?text=Publicidad+3" alt="Ad 3">
+            </div>
+            <div class="ad-slide">
+                <img src="https://via.placeholder.com/970x250/374151/FFFFFF?text=Publicidad+4" alt="Ad 4">
+            </div>
+        </div>
 
         <!-- ZONA COLUMNAS (Secciones Secundarias) -->
         <section class="wapo-category-section secondary-zone">
@@ -183,27 +203,7 @@ get_header();
             </div>
         </section>
 
-        <!-- ZONA MUNICIPIOS -->
-        <section class="wapo-category-section municipios-zone">
-            <h2 class="wapo-section-title"><span>Municipios</span></h2>
-            <div class="municipios-grid">
-                <?php
-                $municipios = array('Acosta', 'Aguasay', 'Bolívar', 'Caripe', 'Cedeño', 'Ezequiel Zamora', 'Libertador', 'Piar', 'Punceres', 'Santa Bárbara', 'Sotillo', 'Uracoa');
-                foreach($municipios as $muni) :
-                    $m_slug = sanitize_title($muni);
-                    $m_q = new WP_Query(array('category_name' => $m_slug, 'posts_per_page' => 1));
-                    ?>
-                    <div class="municipio-card">
-                        <h4><a href="<?php echo esc_url(get_category_link(get_cat_ID($muni))); ?>"><?php echo $muni; ?></a></h4>
-                        <?php if($m_q->have_posts()): while($m_q->have_posts()): $m_q->the_post(); ?>
-                            <div style="font-size:0.85rem; color:var(--color-text-muted);"><a href="<?php the_permalink(); ?>" style="color:inherit;"><?php echo wp_trim_words(get_the_title(), 8); ?></a></div>
-                        <?php endwhile; else: ?>
-                            <div style="font-size:0.85rem; color:var(--color-text-muted); opacity:0.6;">Sin actualizaciones.</div>
-                        <?php endif; wp_reset_postdata(); ?>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        </section>
+
 
     </div>
 
