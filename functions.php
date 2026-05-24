@@ -221,46 +221,8 @@ add_action('wp_ajax_pro_ajax_search', 'pro_ajax_search');
  * Registro de Custom Post Types y Taxonomías
  */
 function pro_register_cpts() {
-    // Podcast
-    register_post_type('podcast', array(
-        'labels'      => array('name' => 'Podcasts', 'singular_name' => 'Podcast'),
-        'public'      => true,
-        'has_archive' => true,
-        'supports'    => array('title', 'editor', 'thumbnail', 'excerpt'),
-        'menu_icon'   => 'dashicons-microphone'
-    ));
-    register_taxonomy('cat_programa', 'podcast', array(
-        'labels'       => array('name' => 'Categorías de Programa', 'singular_name' => 'Categoría de Programa'),
-        'hierarchical' => true,
-        'show_in_rest' => true
-    ));
-
-    // Galería
-    register_post_type('galeria', array(
-        'labels'      => array('name' => 'Galerías', 'singular_name' => 'Galería'),
-        'public'      => true,
-        'has_archive' => true,
-        'supports'    => array('title', 'editor', 'thumbnail'),
-        'menu_icon'   => 'dashicons-format-gallery'
-    ));
-    // Taxonomía compartida: Municipio
-    register_taxonomy('municipio', array('galeria', 'clasificado'), array(
-        'labels'       => array('name' => 'Municipios', 'singular_name' => 'Municipio'),
-        'hierarchical' => false,
-        'show_in_rest' => true
-    ));
-
-    // Video
-    register_post_type('video', array(
-        'labels'      => array('name' => 'Videos', 'singular_name' => 'Video'),
-        'public'      => true,
-        'has_archive' => true,
-        'supports'    => array('title', 'editor', 'thumbnail', 'excerpt'),
-        'taxonomies'  => array('category'), // Usa las categorías nativas
-        'menu_icon'   => 'dashicons-video-alt3'
-    ));
-
     // Clasificado
+
     register_post_type('clasificado', array(
         'labels'      => array('name' => 'Clasificados', 'singular_name' => 'Clasificado'),
         'public'      => true,
@@ -268,12 +230,49 @@ function pro_register_cpts() {
         'supports'    => array('title', 'editor', 'thumbnail'),
         'menu_icon'   => 'dashicons-megaphone'
     ));
+    // Taxonomía: Municipio (solo para clasificados ahora)
+    register_taxonomy('municipio', array('clasificado'), array(
+        'labels'       => array('name' => 'Municipios', 'singular_name' => 'Municipio'),
+        'hierarchical' => false,
+        'show_in_rest' => true
+    ));
     register_taxonomy('tipo_clasificado', 'clasificado', array(
         'labels'       => array('name' => 'Tipos de Clasificado', 'singular_name' => 'Tipo de Clasificado'),
         'hierarchical' => true,
         'show_in_rest' => true
     ));
 }
+
+/**
+ * Añadir Rol Dirección y restringir menús
+ */
+function pro_add_direccion_role() {
+    if ( ! get_role( 'direccion' ) ) {
+        $admin_role = get_role( 'administrator' );
+        if ( $admin_role ) {
+            add_role( 'direccion', 'Dirección', $admin_role->capabilities );
+        }
+    }
+}
+add_action( 'init', 'pro_add_direccion_role' );
+
+function pro_restrict_direccion_menus() {
+    $current_user = wp_get_current_user();
+    if ( in_array( 'direccion', (array) $current_user->roles ) ) {
+        // Quitar Hostinger y Hostinger Reach (slugs comunes)
+        remove_menu_page( 'hostinger' );
+        remove_menu_page( 'hostinger-reach' );
+        remove_menu_page( 'toplevel_page_hostinger' ); // Por si acaso usa toplevel
+        
+        // Quitar menús nativos de WP solicitados
+        remove_menu_page( 'edit-comments.php' ); // Comentarios
+        remove_menu_page( 'themes.php' );        // Apariencia
+        remove_menu_page( 'plugins.php' );       // Plugins
+        remove_menu_page( 'tools.php' );         // Herramientas
+        remove_menu_page( 'options-general.php' ); // Ajustes
+    }
+}
+add_action( 'admin_menu', 'pro_restrict_direccion_menus', 999 );
 add_action('init', 'pro_register_cpts');
 
 /**
