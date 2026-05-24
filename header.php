@@ -63,7 +63,7 @@
                 <?php else : ?>
                     <?php if ( get_theme_mod( 'pro_show_ad_placeholders', true ) ) : ?>
                         <div class="ad-placeholder">
-                            <span>Espacio Publicitario (970x250 / Responsive)</span>
+                            <span>Espacio Publicitario (728x90 / Responsive)</span>
                         </div>
                     <?php endif; ?>
                 <?php endif; ?>

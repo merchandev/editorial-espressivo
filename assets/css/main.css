@@ -170,9 +170,9 @@ img {
 }
 .header-ad {
     background: var(--color-bg-secondary);
-    width: 100%;
-    max-width: 970px;
-    height: 250px;
+    flex: 1;
+    max-width: 728px;
+    height: 90px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -180,14 +180,14 @@ img {
     color: var(--color-text-muted);
     font-family: var(--font-ui);
     font-size: 0.9rem;
-    flex-shrink: 1;
+    margin-left: auto;
 }
 @media (max-width: 767px) {
     .header-ad {
         height: auto;
         aspect-ratio: 300 / 250;
         max-width: 300px;
-        margin: 0 auto;
+        margin: 15px auto 0;
     }
 }
 
