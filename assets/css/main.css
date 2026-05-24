@@ -1062,16 +1062,14 @@ img {
    Hero Grid Layout (3 Posts)
    ========================================================================== */
 .hero-grid-layout {
-    display: grid;
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 30px;
     margin-bottom: 40px;
+    width: 100%;
 }
-@media (min-width: 992px) {
-    .hero-grid-layout {
-        grid-template-columns: 2fr 1fr;
-    }
-}
+
+/* MAIN POST */
 .hero-main-post {
     background: var(--color-bg-secondary);
     border-radius: var(--border-radius);
@@ -1079,18 +1077,38 @@ img {
     box-shadow: var(--shadow-md);
     border: 1px solid var(--color-border);
     transition: transform var(--transition-speed);
+    
+    /* Layout by default (mobile): stack */
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+@media (min-width: 992px) {
+    .hero-main-post {
+        /* Desktop: Image left, Text right */
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 0;
+    }
 }
 .hero-main-post:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
 }
+.hero-main-post .post-thumbnail {
+    display: block;
+    height: 100%;
+}
 .hero-main-post .post-thumbnail img {
     width: 100%;
-    aspect-ratio: 16/9;
+    height: 100%;
     object-fit: cover;
 }
 .hero-main-post .hero-content {
-    padding: 25px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 .hero-main-post .entry-title {
     font-size: 2.2rem;
@@ -1100,10 +1118,20 @@ img {
     font-size: 1.1rem;
     color: var(--color-text-muted);
 }
+
+/* SECONDARY POSTS */
 .hero-secondary-posts {
     display: flex;
     flex-direction: column;
     gap: 30px;
+    width: 100%;
+}
+@media (min-width: 992px) {
+    .hero-secondary-posts {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
 }
 .hero-sub-post {
     background: var(--color-bg-secondary);
@@ -1112,6 +1140,11 @@ img {
     border: 1px solid var(--color-border);
     display: flex;
     flex-direction: column;
+    transition: transform var(--transition-speed);
+}
+.hero-sub-post:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 .hero-sub-post .post-thumbnail img {
     width: 100%;
@@ -1119,51 +1152,9 @@ img {
     object-fit: cover;
 }
 .hero-sub-post .hero-content {
-    padding: 15px;
+    padding: 20px;
 }
 .hero-sub-post .entry-title {
     font-size: 1.3rem;
     margin: 10px 0;
-}
-
-/* Modificar hero-main-post para que tenga imagen a la izquierda y texto a la derecha */
-.hero-main-post {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0;
-}
-@media (min-width: 768px) {
-    .hero-main-post {
-        grid-template-columns: 1.5fr 1fr;
-        gap: 20px;
-    }
-}
-.hero-main-post .post-thumbnail {
-    height: 100%;
-}
-.hero-main-post .post-thumbnail img {
-    height: 100%;
-    aspect-ratio: auto;
-}
-
-/* Overriding hero layout to be full width main post, and secondary posts below */
-.hero-grid-layout {
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
-}
-@media (min-width: 992px) {
-    .hero-grid-layout {
-        display: flex;
-        flex-direction: column;
-    }
-    .hero-main-post {
-        grid-template-columns: 1.5fr 1fr; /* Full width split */
-    }
-    .hero-secondary-posts {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 30px;
-        flex-direction: row;
-    }
 }
