@@ -46,6 +46,7 @@ function pro_ad_meta_box_html($post) {
         <label for="pro_ad_location"><strong>Ubicación:</strong></label><br>
         <select name="pro_ad_location" id="pro_ad_location" style="width:100%;">
             <option value="header" <?php selected($location, 'header'); ?>>Header (Arriba de todo)</option>
+            <option value="below-hero" <?php selected($location, 'below-hero'); ?>>Debajo del Hero (Noticias Principales)</option>
             <option value="in-feed-1" <?php selected($location, 'in-feed-1'); ?>>In-Feed 1 (Después de Premium)</option>
             <option value="in-feed-2" <?php selected($location, 'in-feed-2'); ?>>In-Feed 2 (Después de Locales)</option>
         </select>

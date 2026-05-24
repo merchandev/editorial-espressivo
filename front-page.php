@@ -10,46 +10,19 @@ get_header();
 
 <main id="primary" class="site-main container">
 
-    <!-- HERO POST -->
-    <?php
-    $hero_args = array(
-        'posts_per_page' => 1,
-        'post_status'    => 'publish',
-        'ignore_sticky_posts' => 1
-    );
-    $hero_query = new WP_Query( $hero_args );
+    <!-- HERO SECTION -->
+    <?php get_template_part('template-parts/home/hero'); ?>
 
-    if ( $hero_query->have_posts() ) : ?>
-        <div class="home-layout-grid">
-            <?php
-            while ( $hero_query->have_posts() ) : $hero_query->the_post();
-                ?>
-                <article id="post-<?php the_ID(); ?>" <?php post_class('hero-post'); ?>>
-                    <a href="<?php the_permalink(); ?>" class="post-thumbnail" aria-hidden="true" tabindex="-1">
-                        <?php the_post_thumbnail( 'hero-thumbnail', array( 'loading' => 'eager' ) ); ?>
-                    </a>
-                    <div class="hero-content">
-                        <?php pro_post_categories(); ?>
-                        <h2 class="entry-title"><a href="<?php the_permalink(); ?>" rel="bookmark"><?php the_title(); ?></a></h2>
-                        <div class="entry-summary">
-                            <?php the_excerpt(); ?>
-                        </div>
-                        <div class="post-meta-footer">
-                            <time datetime="<?php echo get_the_date('c'); ?>"><?php echo get_the_date(); ?></time>
-                        </div>
-                    </div>
-                </article>
-            <?php endwhile; wp_reset_postdata(); ?>
-        </div>
-    <?php endif; ?>
+    <!-- PUBLICIDAD BELOW HERO -->
+    <?php get_template_part('template-parts/ads/in-feed', null, array('location' => 'below-hero')); ?>
 
     <!-- WAPO CATEGORY SECTIONS -->
     <div class="wapo-sections-container">
         
         <?php
-        // FunciÛn Helper interna para evitar repetir el cÛdigo de placeholders
+        // Funci√≥n Helper interna para evitar repetir el c√≥digo de placeholders
         if ( ! function_exists( 'pro_render_placeholder_main' ) ) {
-            function pro_render_placeholder_main( $title = "TÌtulo de Noticia Principal" ) {
+            function pro_render_placeholder_main( $title = "T√≠tulo de Noticia Principal" ) {
                 ?>
                 <article class="wapo-main-article placeholder-mode">
                     <div class="post-thumbnail placeholder-image">
@@ -58,7 +31,7 @@ get_header();
                     <div class="wapo-main-content">
                         <h3 class="entry-title placeholder-text"><?php echo esc_html($title); ?></h3>
                         <div class="entry-summary placeholder-text-small">
-                            Este es un texto de relleno que muestra cÛmo se ver· el extracto de la noticia.
+                            Este es un texto de relleno que muestra c√≥mo se ver√° el extracto de la noticia.
                         </div>
                     </div>
                 </article>
@@ -78,7 +51,7 @@ get_header();
         }
         ?>
 
-        <!-- ZONA PREMIUM (DiseÒo Principal) -->
+        <!-- ZONA PREMIUM (Dise√±o Principal) -->
         <div class="zone-premium">
             <?php get_template_part('template-parts/home/premium'); ?>
         </div>
@@ -86,7 +59,7 @@ get_header();
         <!-- PUBLICIDAD IN-FEED 1 -->
         <?php get_template_part('template-parts/ads/in-feed', null, array('location' => 'in-feed-1')); ?>
 
-        <!-- ZONA LOCAL (MaturÌn y Monagas) -->
+        <!-- ZONA LOCAL (Matur√≠n y Monagas) -->
         <?php get_template_part('template-parts/home/local'); ?>
 
         <!-- PUBLICIDAD IN-FEED 2 -->
