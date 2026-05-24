@@ -1125,3 +1125,23 @@ img {
     font-size: 1.3rem;
     margin: 10px 0;
 }
+
+/* Modificar hero-main-post para que tenga imagen a la izquierda y texto a la derecha */
+.hero-main-post {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+}
+@media (min-width: 768px) {
+    .hero-main-post {
+        grid-template-columns: 1.5fr 1fr;
+        gap: 20px;
+    }
+}
+.hero-main-post .post-thumbnail {
+    height: 100%;
+}
+.hero-main-post .post-thumbnail img {
+    height: 100%;
+    aspect-ratio: auto;
+}
