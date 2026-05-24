@@ -444,41 +444,42 @@ function pro_register_ad_cpt() {
 }
 add_action('init', 'pro_register_ad_cpt');
 
+
 // 2. Añadir Meta Boxes
 function pro_add_ad_meta_boxes() {
     add_meta_box('pro_ad_settings', 'Configuración del Banner', 'pro_ad_meta_box_html', 'pro_ad_banner', 'normal', 'high');
 }
 add_action('add_meta_boxes', 'pro_add_ad_meta_boxes');
 
-function pro_ad_meta_box_html() {
+function pro_ad_meta_box_html($post) {
     wp_nonce_field('pro_save_ad_meta', 'pro_ad_meta_nonce');
     
-     = get_post_meta(->ID, '_pro_ad_location', true);
-          = get_post_meta(->ID, '_pro_ad_url', true);
-        = get_post_meta(->ID, '_pro_ad_start', true);
-          = get_post_meta(->ID, '_pro_ad_end', true);
+    $location = get_post_meta($post->ID, '_pro_ad_location', true);
+    $url      = get_post_meta($post->ID, '_pro_ad_url', true);
+    $start    = get_post_meta($post->ID, '_pro_ad_start', true);
+    $end      = get_post_meta($post->ID, '_pro_ad_end', true);
     
     ?>
     <p>
         <label for="pro_ad_location"><strong>Ubicación:</strong></label><br>
         <select name="pro_ad_location" id="pro_ad_location" style="width:100%;">
-            <option value="header" <?php selected(, 'header'); ?>>Header (Arriba de todo)</option>
-            <option value="in-feed-1" <?php selected(, 'in-feed-1'); ?>>In-Feed 1 (Después de Premium)</option>
-            <option value="in-feed-2" <?php selected(, 'in-feed-2'); ?>>In-Feed 2 (Después de Locales)</option>
+            <option value="header" <?php selected($location, 'header'); ?>>Header (Arriba de todo)</option>
+            <option value="in-feed-1" <?php selected($location, 'in-feed-1'); ?>>In-Feed 1 (Después de Premium)</option>
+            <option value="in-feed-2" <?php selected($location, 'in-feed-2'); ?>>In-Feed 2 (Después de Locales)</option>
         </select>
     </p>
     <p>
         <label for="pro_ad_url"><strong>URL de destino (Enlace):</strong></label><br>
-        <input type="url" name="pro_ad_url" id="pro_ad_url" value="<?php echo esc_url(); ?>" style="width:100%;">
+        <input type="url" name="pro_ad_url" id="pro_ad_url" value="<?php echo esc_url($url); ?>" style="width:100%;">
     </p>
     <p>
         <label for="pro_ad_start"><strong>Fecha/Hora de Inicio:</strong></label><br>
-        <input type="datetime-local" name="pro_ad_start" id="pro_ad_start" value="<?php echo esc_attr(); ?>" style="width:100%;">
+        <input type="datetime-local" name="pro_ad_start" id="pro_ad_start" value="<?php echo esc_attr($start); ?>" style="width:100%;">
         <small>Déjalo vacío para publicar inmediatamente.</small>
     </p>
     <p>
         <label for="pro_ad_end"><strong>Fecha/Hora de Salida (Caducidad):</strong></label><br>
-        <input type="datetime-local" name="pro_ad_end" id="pro_ad_end" value="<?php echo esc_attr(); ?>" style="width:100%;">
+        <input type="datetime-local" name="pro_ad_end" id="pro_ad_end" value="<?php echo esc_attr($end); ?>" style="width:100%;">
         <small>Déjalo vacío para que nunca caduque automáticamente.</small>
     </p>
     <p><em>* Nota: La imagen del banner debes subirla en el panel derecho de "Imagen destacada".</em></p>
@@ -486,47 +487,47 @@ function pro_ad_meta_box_html() {
 }
 
 // 3. Guardar Meta Data
-function pro_save_ad_meta() {
-    if (!isset(['pro_ad_meta_nonce']) || !wp_verify_nonce(['pro_ad_meta_nonce'], 'pro_save_ad_meta')) return;
+function pro_save_ad_meta($post_id) {
+    if (!isset($_POST['pro_ad_meta_nonce']) || !wp_verify_nonce($_POST['pro_ad_meta_nonce'], 'pro_save_ad_meta')) return;
     if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
-    if (!current_user_can('edit_post', )) return;
+    if (!current_user_can('edit_post', $post_id)) return;
 
-    if (isset(['pro_ad_location'])) update_post_meta(, '_pro_ad_location', sanitize_text_field(['pro_ad_location']));
-    if (isset(['pro_ad_url'])) update_post_meta(, '_pro_ad_url', esc_url_raw(['pro_ad_url']));
-    if (isset(['pro_ad_start'])) update_post_meta(, '_pro_ad_start', sanitize_text_field(['pro_ad_start']));
-    if (isset(['pro_ad_end'])) update_post_meta(, '_pro_ad_end', sanitize_text_field(['pro_ad_end']));
+    if (isset($_POST['pro_ad_location'])) update_post_meta($post_id, '_pro_ad_location', sanitize_text_field($_POST['pro_ad_location']));
+    if (isset($_POST['pro_ad_url'])) update_post_meta($post_id, '_pro_ad_url', esc_url_raw($_POST['pro_ad_url']));
+    if (isset($_POST['pro_ad_start'])) update_post_meta($post_id, '_pro_ad_start', sanitize_text_field($_POST['pro_ad_start']));
+    if (isset($_POST['pro_ad_end'])) update_post_meta($post_id, '_pro_ad_end', sanitize_text_field($_POST['pro_ad_end']));
 }
 add_action('save_post_pro_ad_banner', 'pro_save_ad_meta');
 
 // 4. Función para obtener banners activos por ubicación
-function pro_get_active_ads() {
-     = array(
+function pro_get_active_ads($location) {
+    $args = array(
         'post_type'      => 'pro_ad_banner',
         'post_status'    => 'publish',
         'posts_per_page' => -1,
         'meta_query'     => array(
             array(
                 'key'   => '_pro_ad_location',
-                'value' => ,
+                'value' => $location,
             )
         )
     );
-     = new WP_Query();
-     = array();
-     = current_time('Y-m-d\TH:i'); // Formato datetime-local
+    $query = new WP_Query($args);
+    $active_ads = array();
+    $current_time = current_time('Y-m-d\TH:i'); // Formato datetime-local
 
-    if (->have_posts()) {
-        while (->have_posts()) {
-            ->the_post();
-             = get_post_meta(get_the_ID(), '_pro_ad_start', true);
-               = get_post_meta(get_the_ID(), '_pro_ad_end', true);
+    if ($query->have_posts()) {
+        while ($query->have_posts()) {
+            $query->the_post();
+            $start = get_post_meta(get_the_ID(), '_pro_ad_start', true);
+            $end   = get_post_meta(get_the_ID(), '_pro_ad_end', true);
             
             // Validar si es vigente
-            if (!empty() &&  < ) continue; // Aún no empieza
-            if (!empty() &&  > ) continue;     // Ya caducó
+            if (!empty($start) && $current_time < $start) continue; // Aún no empieza
+            if (!empty($end) && $current_time > $end) continue;     // Ya caducó
 
             if (has_post_thumbnail()) {
-                [] = array(
+                $active_ads[] = array(
                     'url'   => get_post_meta(get_the_ID(), '_pro_ad_url', true),
                     'image' => get_the_post_thumbnail_url(get_the_ID(), 'full'),
                     'title' => get_the_title()
@@ -535,6 +536,5 @@ function pro_get_active_ads() {
         }
         wp_reset_postdata();
     }
-    return ;
+    return $active_ads;
 }
-
