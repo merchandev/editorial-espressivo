@@ -14,13 +14,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Registrar la página de ajustes de Portada del Día
  */
 function pro_portada_dia_settings_page() {
-    add_submenu_page(
-        'edit.php?post_type=portada',
+    add_menu_page(
         'Portada del Día',
         'Portada del Día',
         'edit_posts', // Dirección y Administradores tienen acceso
         'portada-dia',
-        'pro_portada_dia_settings_render'
+        'pro_portada_dia_settings_render',
+        'dashicons-format-image',
+        56 // Ubicación después de Páginas
     );
 }
 add_action( 'admin_menu', 'pro_portada_dia_settings_page', 20 );
@@ -29,7 +30,7 @@ add_action( 'admin_menu', 'pro_portada_dia_settings_page', 20 );
  * Cargar recursos necesarios de WP Media Uploader para la página
  */
 function pro_portada_dia_admin_assets( $hook ) {
-    if ( 'portada_page_portada-dia' !== $hook ) {
+    if ( 'toplevel_page_portada-dia' !== $hook ) {
         return;
     }
     wp_enqueue_media();
