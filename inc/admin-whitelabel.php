@@ -107,4 +107,97 @@ function pro_custom_admin_css() {
 add_action( 'admin_head', 'pro_custom_admin_css' );
 add_action( 'wp_head', 'pro_custom_admin_css' ); // También en el frontend por si está la barra
 
+/**
+ * 6. Ocultar y restringir el acceso a la sección "Clasificados" para los roles Dirección y Autor.
+ * Solo los administradores pueden verlo y acceder.
+ */
+function pro_restrict_clasificados_menu() {
+    if ( pro_is_target_role() ) {
+        // Eliminar el menú principal de Clasificados
+        remove_menu_page( 'edit.php?post_type=clasificado' );
+        // Eliminar submenús de las taxonomías asociadas por si acaso
+        remove_submenu_page( 'edit.php?post_type=clasificado', 'edit-tags.php?taxonomy=municipio&amp;post_type=clasificado' );
+        remove_submenu_page( 'edit.php?post_type=clasificado', 'edit-tags.php?taxonomy=tipo_clasificado&amp;post_type=clasificado' );
+    }
+}
+add_action( 'admin_menu', 'pro_restrict_clasificados_menu', 9999 );
+
+// Bloquear acceso directo por URL a Clasificados o taxonomías para Dirección y Autor
+function pro_block_clasificados_direct_access() {
+    if ( pro_is_target_role() ) {
+        $screen = get_current_screen();
+        if ( $screen && ( 'clasificado' === $screen->post_type || 'edit-municipio' === $screen->taxonomy || 'edit-tipo_clasificado' === $screen->taxonomy ) ) {
+            wp_die( esc_html__( 'No tienes permisos suficientes para acceder a la sección de Clasificados.', 'pro' ) );
+        }
+    }
+}
+add_action( 'current_screen', 'pro_block_clasificados_direct_access' );
+
+/**
+ * 7. Restringir a los usuarios del rol Dirección de ver, editar o borrar administradores.
+ */
+
+// 7a. Excluir a los administradores de la lista de usuarios en wp-admin/users.php
+function pro_exclude_admins_from_users_list( $args ) {
+    $current_user = wp_get_current_user();
+    if ( in_array( 'direccion', (array) $current_user->roles ) ) {
+        if ( ! isset( $args['role__not_in'] ) ) {
+            $args['role__not_in'] = array();
+        }
+        // Excluir rol de administrador
+        $args['role__not_in'] = array_merge( (array) $args['role__not_in'], array( 'administrator' ) );
+    }
+    return $args;
+}
+add_filter( 'users_list_table_query_args', 'pro_exclude_admins_from_users_list' );
+
+// 7b. Ocultar la pestaña/filtro "Administrador" de las vistas superiores en la lista de usuarios
+function pro_hide_admin_view_tab( $views ) {
+    $current_user = wp_get_current_user();
+    if ( in_array( 'direccion', (array) $current_user->roles ) ) {
+        unset( $views['administrator'] );
+    }
+    return $views;
+}
+add_filter( 'views_users', 'pro_hide_admin_view_tab' );
+
+// 7c. Eliminar el rol de Administrador de los roles editables/asignables
+function pro_exclude_admin_from_editable_roles( $roles ) {
+    $current_user = wp_get_current_user();
+    if ( in_array( 'direccion', (array) $current_user->roles ) ) {
+        unset( $roles['administrator'] );
+    }
+    return $roles;
+}
+add_filter( 'editable_roles', 'pro_exclude_admin_from_editable_roles' );
+
+// 7d. Bloquear de forma absoluta cualquier acción (edición, borrado, etc.) sobre administradores por parte de Dirección
+function pro_prevent_actions_on_admins() {
+    $current_user = wp_get_current_user();
+    if ( in_array( 'direccion', (array) $current_user->roles ) ) {
+        $user_ids = array();
+        
+        // Obtener IDs de usuarios implicados en la petición (GET o POST)
+        if ( isset( $_GET['user'] ) ) {
+            $user_ids[] = intval( $_GET['user'] );
+        }
+        if ( isset( $_GET['user_id'] ) ) {
+            $user_ids[] = intval( $_GET['user_id'] );
+        }
+        if ( isset( $_POST['users'] ) ) {
+            $user_ids = array_merge( $user_ids, array_map( 'intval', (array) $_POST['users'] ) );
+        }
+        
+        foreach ( $user_ids as $id ) {
+            if ( $id ) {
+                $target_user = get_userdata( $id );
+                if ( $target_user && in_array( 'administrator', (array) $target_user->roles ) ) {
+                    wp_die( esc_html__( 'No tienes permisos suficientes para ver o realizar acciones sobre un usuario Administrador.', 'pro' ) );
+                }
+            }
+        }
+    }
+}
+add_action( 'admin_init', 'pro_prevent_actions_on_admins' );
+
 ?>
