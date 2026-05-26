@@ -2153,3 +2153,404 @@ img {
     color: #ffffff;
     transform: translateX(3px);
 }
+
+/* ==========================================================================
+   PORTADAS DE REVISTA GRID & INTERACTIVE LIGHTBOX
+   ========================================================================== */
+
+.portadas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+    margin-bottom: 50px;
+}
+
+/* Contenedor centralizado si hay pocos elementos */
+@media (min-width: 1024px) {
+    .portadas-grid {
+        grid-template-columns: repeat(auto-fill, 280px);
+        justify-content: center;
+    }
+}
+
+.card-portada {
+    background: var(--color-bg-secondary, #fff);
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm, 0 4px 20px rgba(0,0,0,0.06));
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-border, #f1f5f9);
+}
+
+.card-portada:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-lg, 0 15px 35px rgba(0,0,0,0.12));
+    border-color: var(--color-text-muted, #cbd5e1);
+}
+
+.portada-thumbnail {
+    position: relative;
+    width: 100%;
+    padding-top: 140%; /* Proporción ideal de portada de revista (A4/Carta) */
+    background: #0f172a;
+    overflow: hidden;
+    border-bottom: 1px solid var(--color-border, #e2e8f0);
+}
+
+.portada-thumbnail img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    transition: transform 0.5s ease;
+}
+
+.card-portada:hover .portada-thumbnail img {
+    transform: scale(1.05);
+}
+
+.placeholder-portada {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+}
+
+.placeholder-portada .material-symbols-outlined {
+    font-size: 5rem;
+    color: #cbd5e1;
+}
+
+.portada-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.8);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    backdrop-filter: blur(4px);
+    z-index: 2;
+}
+
+.card-portada:hover .portada-overlay {
+    opacity: 1;
+}
+
+.portada-overlay .portada-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    color: #3b82f6; /* Azul moderno premium */
+    background: rgba(59, 130, 246, 0.15);
+    padding: 15px;
+    border-radius: 50%;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.card-portada:hover .portada-overlay .portada-icon {
+    transform: scale(1.1) rotate(90deg);
+}
+
+.portada-overlay span:last-child {
+    font-weight: 600;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+}
+
+.portada-content {
+    padding: 20px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: var(--color-bg-secondary, #fff);
+    text-align: center;
+}
+
+.portada-content .post-meta {
+    font-size: 0.8rem;
+    color: var(--color-text-muted, #64748b);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.portada-content .entry-title {
+    font-size: 1.15rem;
+    line-height: 1.4;
+    margin: 0;
+    color: var(--color-text, #0f172a);
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   INTERACTIVE PORTADA LIGHTBOX (CAJA DE LUZ)
+   ========================================================================== */
+
+.portada-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999999;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    outline: none;
+}
+
+/* Backdrop con desenfoque de fondo premium */
+.portada-modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity: 0;
+}
+
+/* Barra superior de controles */
+.portada-modal-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 70px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 30px;
+    color: #fff;
+    z-index: 10;
+    background: linear-gradient(to bottom, rgba(15, 23, 42, 0.8) 0%, rgba(15, 23, 42, 0) 100%);
+    transform: translateY(-20px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.portada-modal-bar h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    max-width: 60%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.portada-modal-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.portada-action-btn,
+.portada-modal-close {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-radius: 50px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+    text-decoration: none;
+}
+
+.portada-modal-close {
+    width: 44px;
+    height: 44px;
+}
+
+.portada-action-btn {
+    padding: 0 20px;
+    height: 44px;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.portada-action-btn:hover,
+.portada-modal-close:hover {
+    background: #fff;
+    color: #0f172a;
+    transform: scale(1.05);
+}
+
+/* Contenedor del viewport de la imagen */
+.portada-modal-body {
+    position: absolute;
+    top: 70px;
+    bottom: 90px;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    padding: 20px;
+}
+
+.portada-viewport {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: visible;
+}
+
+/* Imagen en el Lightbox con soporte interactivo */
+#portada-lightbox-image {
+    max-width: 95%;
+    max-height: 95%;
+    object-fit: contain;
+    border-radius: 6px;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+    user-select: none;
+    -webkit-user-drag: none;
+    transform-origin: center center;
+    transition: transform 0.15s ease-out; /* Suavizar transiciones de zoom rápidos */
+    cursor: zoom-in;
+    transform: scale(0.9);
+    opacity: 0;
+}
+
+/* Cursor de arrastre cuando tiene zoom */
+#portada-lightbox-image.panning {
+    cursor: grab;
+}
+
+#portada-lightbox-image.panning:active {
+    cursor: grabbing;
+}
+
+/* Controles de Zoom Flotantes Inferiores */
+.portada-zoom-controls {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 8px 12px;
+    border-radius: 50px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    z-index: 10;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.zoom-btn {
+    background: transparent;
+    border: none;
+    color: #fff;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.zoom-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.05);
+}
+
+.zoom-btn.text-btn {
+    width: auto;
+    padding: 0 12px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 0;
+}
+
+/* Animaciones al Abrir el Modal */
+.portada-modal.active {
+    display: flex;
+}
+
+.portada-modal.active .portada-modal-backdrop {
+    opacity: 1;
+}
+
+.portada-modal.active .portada-modal-bar {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.portada-modal.active #portada-lightbox-image {
+    opacity: 1;
+    transform: scale(1);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+
+.portada-modal.active .portada-zoom-controls {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+/* Soporte responsive para la barra de control */
+@media (max-width: 576px) {
+    .portada-modal-bar {
+        padding: 0 15px;
+    }
+    .portada-modal-bar h3 {
+        font-size: 1rem;
+    }
+    .portada-action-btn .btn-text {
+        display: none; /* Ocultar texto en móviles para ahorrar espacio */
+    }
+    .portada-action-btn {
+        padding: 0;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+    }
+    .portada-zoom-controls {
+        bottom: 20px;
+    }
+}
+

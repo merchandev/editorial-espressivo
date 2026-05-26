@@ -276,6 +276,23 @@ function pro_register_cpts() {
         'hierarchical' => true,
         'show_in_rest' => true
     ));
+
+    // Portadas de Revista / Ediciones Impresas
+    register_post_type('portada', array(
+        'labels'      => array(
+            'name'          => 'Portadas', 
+            'singular_name' => 'Portada',
+            'add_new'       => 'Añadir Nueva Portada',
+            'add_new_item'  => 'Añadir Nueva Portada de Revista',
+            'edit_item'     => 'Editar Portada',
+            'all_items'     => 'Todas las Portadas'
+        ),
+        'public'      => true,
+        'has_archive' => true,
+        'supports'    => array('title', 'editor', 'thumbnail'),
+        'menu_icon'   => 'dashicons-format-image',
+        'show_in_rest' => true
+    ));
 }
 
 /**

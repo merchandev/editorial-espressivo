@@ -458,4 +458,187 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // ==========================================
+    // LIGHTBOX INTERACTIVO DE PORTADAS (ZOOM & PAN)
+    // ==========================================
+    const portadas = document.querySelectorAll('.card-portada');
+    const portadaModal = document.getElementById('portada-lightbox-modal');
+    
+    if (portadas.length > 0 && portadaModal) {
+        const modalImage = document.getElementById('portada-lightbox-image');
+        const modalTitle = document.getElementById('portada-modal-title');
+        const downloadBtn = document.getElementById('portada-download-btn');
+        const closeBtn = document.querySelector('.portada-modal-close');
+        const backdrop = document.querySelector('.portada-modal-backdrop');
+        
+        // Botones de Zoom
+        const zoomInBtn = document.getElementById('portada-zoom-in');
+        const zoomOutBtn = document.getElementById('portada-zoom-out');
+        const zoomResetBtn = document.getElementById('portada-zoom-reset');
+        
+        // Variables de Estado de Zoom y Arrastre (Pan)
+        let zoomScale = 1;
+        let isDragging = false;
+        let startX = 0, startY = 0;
+        let translateX = 0, translateY = 0;
+        
+        const zoomStep = 0.25;
+        const maxZoom = 4;
+        const minZoom = 0.5;
+        
+        // Función para aplicar transformaciones CSS de forma unificada
+        const applyTransform = () => {
+            modalImage.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoomScale})`;
+        };
+        
+        // Función para abrir el Lightbox
+        portadas.forEach(portada => {
+            portada.addEventListener('click', function(e) {
+                e.preventDefault();
+                const fullUrl = this.getAttribute('data-full-url');
+                const title = this.querySelector('.entry-title').innerText;
+                
+                if (fullUrl) {
+                    modalTitle.innerText = title;
+                    modalImage.src = fullUrl;
+                    downloadBtn.href = fullUrl;
+                    
+                    // Resetear estado
+                    zoomScale = 1;
+                    translateX = 0;
+                    translateY = 0;
+                    applyTransform();
+                    
+                    portadaModal.classList.add('active');
+                    portadaModal.setAttribute('aria-hidden', 'false');
+                    document.body.style.overflow = 'hidden'; // Previene scroll de fondo
+                }
+            });
+        });
+        
+        // Función para cerrar el Lightbox
+        const closePortadaModal = () => {
+            portadaModal.classList.remove('active');
+            portadaModal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+            
+            setTimeout(() => {
+                modalImage.src = ''; // Limpiar src para liberar memoria
+            }, 300);
+        };
+        
+        // Cerrar al hacer clic en el botón cerrar o en el fondo difuminado
+        closeBtn.addEventListener('click', closePortadaModal);
+        backdrop.addEventListener('click', closePortadaModal);
+        
+        // Cerrar con Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && portadaModal.classList.contains('active')) {
+                closePortadaModal();
+            }
+        });
+        
+        // --- CONTROL DE ZOOM ---
+        
+        // Acercar
+        zoomInBtn.addEventListener('click', () => {
+            if (zoomScale < maxZoom) {
+                zoomScale += zoomStep;
+                applyTransform();
+            }
+        });
+        
+        // Alejar
+        zoomOutBtn.addEventListener('click', () => {
+            if (zoomScale > minZoom) {
+                zoomScale -= zoomStep;
+                // Si vuelve a la escala normal o inferior, centrar imagen automáticamente
+                if (zoomScale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+                applyTransform();
+            }
+        });
+        
+        // Restablecer Zoom
+        zoomResetBtn.addEventListener('click', () => {
+            zoomScale = 1;
+            translateX = 0;
+            translateY = 0;
+            applyTransform();
+        });
+        
+        // Zoom con la rueda del ratón (Mousewheel)
+        portadaModal.addEventListener('wheel', (e) => {
+            if (!portadaModal.classList.contains('active')) return;
+            e.preventDefault();
+            
+            const delta = e.deltaY < 0 ? 1 : -1;
+            
+            if (delta === 1 && zoomScale < maxZoom) {
+                zoomScale += zoomStep;
+            } else if (delta === -1 && zoomScale > minZoom) {
+                zoomScale -= zoomStep;
+                if (zoomScale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+            }
+            applyTransform();
+        }, { passive: false });
+        
+        // --- CONTROL DE PANNING / DRAG (ARRASTRE) ---
+        
+        // Evento mouse down
+        modalImage.addEventListener('mousedown', (e) => {
+            if (zoomScale > 1) { // Solo permitir arrastre si hay zoom aplicado
+                isDragging = true;
+                modalImage.classList.add('panning');
+                
+                // Calcular posición inicial considerando la traslación actual
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+                
+                e.preventDefault();
+            }
+        });
+        
+        // Evento mouse move (en document por si sale del viewport)
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                applyTransform();
+            }
+        });
+        
+        // Evento mouse up
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            modalImage.classList.remove('panning');
+        });
+        
+        // --- SOPORTE TÁCTIL (MÓVILES) ---
+        modalImage.addEventListener('touchstart', (e) => {
+            if (zoomScale > 1 && e.touches.length === 1) {
+                isDragging = true;
+                startX = e.touches[0].clientX - translateX;
+                startY = e.touches[0].clientY - translateY;
+            }
+        }, { passive: true });
+        
+        document.addEventListener('touchmove', (e) => {
+            if (isDragging && e.touches.length === 1) {
+                translateX = e.touches[0].clientX - startX;
+                translateY = e.touches[0].clientY - startY;
+                applyTransform();
+            }
+        }, { passive: true });
+        
+        document.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+    }
+
 });

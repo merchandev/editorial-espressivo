@@ -26,6 +26,12 @@ Este es un tema y framework de WordPress diseñado y desarrollado a medida para 
 - **Menús Inteligentes:** Flechas desplegables automáticas y anulación de enlaces vacíos (`#`).
 - **Diseño Estético y Limpio:** Enfoque en tipografía, espacios y colores de alto contraste para facilitar la lectura.
 
+### 5. Portadas de Revista Interactivas (Zoom & Drag Lightbox)
+- **Custom Post Type Dedicado (Portadas):** Organiza y publica portadas de revista o ediciones impresas directamente desde el menú del panel de control.
+- **Lightbox Premium con Glassmorphism:** Al hacer clic en una portada, se abre un visor interactivo a pantalla completa con fondo oscurecido y desenfocado con desenfoque nativo.
+- **Zoom y Panning Fluido:** Controles flotantes para acercar (Zoom In), alejar (Zoom Out) y restaurar (100%), con soporte para zoom mediante la rueda del ratón y arrastre interactivo (click-and-drag / touch) para móviles y PCs.
+- **Descarga Directa de Alta Resolución:** Botón superior para descargar de forma instantánea el archivo original de la portada de revista.
+
 ---
 
 ## 🔐 Seguridad
