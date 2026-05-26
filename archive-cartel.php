@@ -10,12 +10,9 @@ get_header();
 
 <main id="primary" class="site-main container archive-container">
 
-    <header class="carteles-hero">
-        <div class="carteles-hero-content">
-            <h1 class="page-title">Carteles y Edictos</h1>
-            <p class="page-description">Consulta los avisos legales, edictos, notificaciones y resoluciones oficiales publicados en nuestro portal.</p>
-        </div>
-    </header><!-- .carteles-hero -->
+    <header class="page-header">
+        <h1 class="page-title">Carteles y Edictos</h1>
+    </header><!-- .page-header -->
 
     <?php if ( have_posts() ) : ?>
         <div class="carteles-grid">
