@@ -82,9 +82,9 @@
 {
   "@context": "https://schema.org",
   "@type": "NewsMediaOrganization",
-  "name": "<?php bloginfo('name'); ?>",
-  "url": "<?php echo esc_url( home_url( '/' ) ); ?>",
-  "logo": "<?php echo has_custom_logo() ? wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ), 'full' ) : ''; ?>"
+  "name": <?php echo wp_json_encode( get_bloginfo( 'name' ) ); ?>,
+  "url": <?php echo wp_json_encode( esc_url( home_url( '/' ) ) ); ?>,
+  "logo": <?php echo wp_json_encode( has_custom_logo() ? wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ), 'full' ) : '' ); ?>
 }
 </script>
 </body>

@@ -107,15 +107,24 @@ function pro_scripts() {
     ));
 
     global $wp_query;
-    // Obtener la fecha del post más reciente para el polling
-    $latest_post = get_posts( array(
-        'post_type'      => 'post',
-        'post_status'    => 'publish',
-        'posts_per_page' => 1,
-        'orderby'        => 'date',
-        'order'          => 'DESC'
-    ) );
-    $latest_date = ! empty( $latest_post ) ? $latest_post[0]->post_date : '';
+    // Usar transient para evitar query extra en cada carga de página
+    $latest_date = get_transient( 'pro_latest_post_date' );
+    if ( false === $latest_date ) {
+        $latest_post = get_posts( array(
+            'post_type'      => 'post',
+            'post_status'    => 'publish',
+            'posts_per_page' => 1,
+            'orderby'        => 'date',
+            'order'          => 'DESC',
+            'fields'         => 'ids',
+        ) );
+        if ( ! empty( $latest_post ) ) {
+            $latest_date = get_post_field( 'post_date', $latest_post[0] );
+        } else {
+            $latest_date = '';
+        }
+        set_transient( 'pro_latest_post_date', $latest_date, 60 ); // Cache 60 segundos
+    }
 
     $cat_id = 0;
     if ( is_category() ) {
@@ -138,6 +147,16 @@ function pro_scripts() {
     ));
 }
 add_action( 'wp_enqueue_scripts', 'pro_scripts' );
+
+// Limpiar transients al publicar un nuevo post
+add_action( 'transition_post_status', 'pro_clear_latest_post_transient', 10, 3 );
+function pro_clear_latest_post_transient( $new_status, $old_status, $post ) {
+    if ( 'post' === $post->post_type && ( 'publish' === $new_status || 'publish' === $old_status ) ) {
+        delete_transient( 'pro_latest_post_date' );
+        delete_transient( 'pro_ticker_posts' );
+    }
+}
+
 
 /**
  * Diferir scripts (Defer) para no bloquear el renderizado
@@ -326,7 +345,7 @@ function pro_load_more_posts() {
                     </div>
                     <h2 class="entry-title"><a href="<?php the_permalink(); ?>" rel="bookmark"><?php the_title(); ?></a></h2>
                     <div class="entry-excerpt">
-                        <?php echo wp_trim_words( get_the_excerpt(), 20, '...' ); ?>
+                        <?php echo esc_html( wp_strip_all_tags( wp_trim_words( get_the_excerpt(), 20, '...' ) ) ); ?>
                     </div>
                 </div>
             </article>
@@ -342,15 +361,17 @@ add_action('wp_ajax_pro_load_more_posts', 'pro_load_more_posts');
  * Polling AJAX: Comprobar si hay nuevas noticias
  */
 function pro_check_new_posts() {
-    check_ajax_referer('pro_ajax_nonce', 'nonce');
-    
-    $latest_date = isset($_POST['latest_date']) ? sanitize_text_field($_POST['latest_date']) : '';
-    
-    if ( ! empty( $latest_date ) ) {
+    check_ajax_referer( 'pro_ajax_nonce', 'nonce' );
+
+    $latest_date = isset( $_POST['latest_date'] ) ? sanitize_text_field( wp_unslash( $_POST['latest_date'] ) ) : '';
+
+    // Validar que sea una fecha con formato MySQL válido antes de usarla en la query
+    if ( ! empty( $latest_date ) && preg_match( '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $latest_date ) ) {
         $args = array(
             'post_type'      => 'post',
             'post_status'    => 'publish',
             'posts_per_page' => 1,
+            'fields'         => 'ids',
             'date_query'     => array(
                 array(
                     'after'     => $latest_date,
@@ -359,12 +380,12 @@ function pro_check_new_posts() {
             ),
         );
         $query = new WP_Query( $args );
-        
+
         if ( $query->have_posts() ) {
             wp_send_json_success( array( 'has_new_posts' => true ) );
         }
     }
-    
+
     wp_send_json_success( array( 'has_new_posts' => false ) );
 }
 add_action('wp_ajax_nopriv_pro_check_new_posts', 'pro_check_new_posts');
@@ -848,7 +869,7 @@ function pro_save_cartel_pdf_data( $post_id ) {
         return;
     }
 
-    $my_data = sanitize_text_field( $_POST['pro_cartel_pdf_url'] );
+    $my_data = esc_url_raw( wp_unslash( $_POST['pro_cartel_pdf_url'] ) );
     update_post_meta( $post_id, '_cartel_pdf_url', $my_data );
 }
 add_action( 'save_post', 'pro_save_cartel_pdf_data' );
@@ -924,11 +945,11 @@ add_action( 'wp_ajax_pro_submit_contact_form', 'pro_submit_contact_form' );
 function pro_submit_contact_form() {
     check_ajax_referer( 'pro_ajax_nonce', 'nonce' );
 
-    $required_fields = ['name', 'email', 'phone', 'address', 'department', 'message'];
-    foreach ($required_fields as $field) {
-        if ( empty( $_POST[$field] ) ) {
+    $required_fields = [ 'name', 'email', 'phone', 'address', 'department', 'message' ];
+    foreach ( $required_fields as $field ) {
+        if ( empty( $_POST[ $field ] ) ) {
+            // wp_send_json_error llama wp_die() internamente, no repetir
             wp_send_json_error( array( 'message' => 'Por favor, completa todos los campos obligatorios.' ) );
-            wp_die();
         }
     }
 
@@ -941,22 +962,19 @@ function pro_submit_contact_form() {
 
     if ( ! is_email( $email ) ) {
         wp_send_json_error( array( 'message' => 'El correo electrónico no es válido.' ) );
-        wp_die();
     }
 
     // Seguridad Extrema: Evitar Inyecciones, Enlaces y Código
     $security_check = $name . ' ' . $address . ' ' . $message;
     
     // Bloquear enlaces
-    if ( preg_match('/(http|https|ftp|ftps)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\/\S*)?/', $security_check) || stripos($security_check, 'www.') !== false || stripos($security_check, '.com/') !== false ) {
+    if ( preg_match( '/(http|https|ftp|ftps):\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\/\S*)?/', $security_check ) || stripos( $security_check, 'www.' ) !== false || stripos( $security_check, '.com/' ) !== false ) {
         wp_send_json_error( array( 'message' => 'Por seguridad, no se permiten enlaces ni URLs en el formulario.' ) );
-        wp_die();
     }
 
     // Bloquear HTML, scripts e inyecciones SQL básicas
-    if ( preg_match('/(<|>|\[url|\[link|script|union select|drop table|concat\(|-- )/i', $security_check) ) {
+    if ( preg_match( '/(<|>|\[url|\[link|script|union select|drop table|concat\(|-- )/i', $security_check ) ) {
         wp_send_json_error( array( 'message' => 'Se han detectado caracteres especiales o comandos no permitidos en el texto.' ) );
-        wp_die();
     }
 
     $post_data = array(
@@ -978,7 +996,7 @@ function pro_submit_contact_form() {
     } else {
         wp_send_json_error( array( 'message' => 'Hubo un error al guardar tu mensaje.' ) );
     }
-    wp_die();
+    // wp_send_json_success/error ya llama wp_die() — no es necesario aquí
 }
 
 // 4. Botón de Exportar a CSV en la vista del CPT

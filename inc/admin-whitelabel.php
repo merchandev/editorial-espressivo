@@ -2,7 +2,13 @@
 /**
  * Personalización y White-label del Dashboard de WordPress
  * para los roles Direccion y Autor.
+ *
+ * @package Pro
  */
+
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 
 // Función auxiliar para comprobar si el usuario actual es de los roles especificados
 function pro_is_target_role() {

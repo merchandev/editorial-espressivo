@@ -81,15 +81,15 @@ get_header();
         {
             "@context": "https://schema.org",
             "@type": "NewsArticle",
-            "headline": "<?php echo esc_js( get_the_title() ); ?>",
+            "headline": <?php echo wp_json_encode( get_the_title() ); ?>,
             "image": [
-                "<?php echo esc_url( get_the_post_thumbnail_url( get_the_ID(), 'full' ) ); ?>"
+                <?php echo wp_json_encode( esc_url( get_the_post_thumbnail_url( get_the_ID(), 'full' ) ) ); ?>
             ],
-            "datePublished": "<?php echo get_the_date('c'); ?>",
-            "dateModified": "<?php echo get_the_modified_date('c'); ?>",
+            "datePublished": <?php echo wp_json_encode( get_the_date( 'c' ) ); ?>,
+            "dateModified": <?php echo wp_json_encode( get_the_modified_date( 'c' ) ); ?>,
             "author": [{
                 "@type": "Person",
-                "name": "<?php echo esc_js( get_the_author() ); ?>"
+                "name": <?php echo wp_json_encode( get_the_author() ); ?>
             }]
         }
         </script>

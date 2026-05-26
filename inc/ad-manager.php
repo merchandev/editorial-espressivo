@@ -1,9 +1,15 @@
 <?php
 /**
  * Gestor de Publicidad (Ad Manager)
- * 
+ *
  * Registra el CPT para los anuncios, meta boxes y funciones auxiliares.
+ *
+ * @package Pro
  */
+
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 
 // 1. Registrar Custom Post Type para Publicidad
 function pro_register_ad_cpt() {
@@ -85,7 +91,7 @@ function pro_ad_meta_box_html($post) {
         $url_val = get_post_meta($post->ID, '_pro_ad_url_'.$i, true);
     ?>
     <div style="background:#f9f9f9; padding:15px; margin-bottom:15px; border:1px solid #ccc;">
-        <strong>Slide <?php echo $i; ?></strong>
+        <strong>Slide <?php echo esc_html( $i ); ?></strong>
         <p>
             <label>Imagen URL:</label><br>
             <input type="text" name="pro_ad_image_<?php echo $i; ?>" id="pro_ad_image_<?php echo $i; ?>" value="<?php echo esc_attr($img_val); ?>" style="width:70%;">
@@ -184,7 +190,7 @@ function pro_save_ad_meta($post_id) {
         update_post_meta($post_id, '_pro_ad_location', sanitize_text_field($_POST['pro_ad_location']));
     }
     if (isset($_POST['pro_ad_url'])) {
-        update_post_meta($post_id, '_pro_ad_url', sanitize_url($_POST['pro_ad_url']));
+        update_post_meta($post_id, '_pro_ad_url', esc_url_raw($_POST['pro_ad_url']));
     }
     if (isset($_POST['pro_ad_start'])) {
         update_post_meta($post_id, '_pro_ad_start', sanitize_text_field($_POST['pro_ad_start']));

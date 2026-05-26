@@ -51,7 +51,7 @@
                     $pro_description = get_bloginfo( 'description', 'display' );
                     if ( $pro_description || is_customize_preview() ) :
                         ?>
-                        <p class="site-description"><?php echo $pro_description; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
+                        <p class="site-description"><?php echo esc_html( $pro_description ); ?></p>
                     <?php endif;
                 }
                 ?>
@@ -107,7 +107,7 @@
                         <form role="search" method="get" class="search-form ajax-search-form" action="<?php echo esc_url( home_url( '/' ) ); ?>">
                             <label>
                                 <span class="screen-reader-text"><?php echo _x( 'Buscar:', 'label', 'pro' ); ?></span>
-                                <input type="search" class="search-field ajax-search-input" placeholder="<?php echo esc_attr_x( 'Buscar noticias...', 'placeholder', 'pro' ); ?>" value="<?php echo get_search_query(); ?>" name="s" autocomplete="off" />
+                                <input type="search" class="search-field ajax-search-input" placeholder="<?php echo esc_attr_x( 'Buscar noticias...', 'placeholder', 'pro' ); ?>" value="<?php echo esc_attr( get_search_query() ); ?>" name="s" autocomplete="off" />
                             </label>
                             <button type="submit" class="search-submit" aria-label="Buscar">
                                 <span class="material-symbols-outlined">search</span>
@@ -120,13 +120,24 @@
         </div>
         
         <?php
-        // Ticker de Último Minuto
-        $ticker_args = array(
-            'post_type'      => 'post',
-            'posts_per_page' => 10,
-            'post_status'    => 'publish',
-        );
-        $ticker_query = new WP_Query( $ticker_args );
+        // Ticker de Último Minuto — con transient para evitar query en cada carga
+        $ticker_posts = get_transient( 'pro_ticker_posts' );
+        if ( false === $ticker_posts ) {
+            $ticker_query_tmp = new WP_Query( array(
+                'post_type'      => 'post',
+                'posts_per_page' => 10,
+                'post_status'    => 'publish',
+                'fields'         => 'ids',
+            ) );
+            $ticker_posts = $ticker_query_tmp->posts;
+            set_transient( 'pro_ticker_posts', $ticker_posts, 5 * MINUTE_IN_SECONDS );
+        }
+        $ticker_query = new WP_Query( array(
+            'post_type'   => 'post',
+            'post_status' => 'publish',
+            'post__in'    => ! empty( $ticker_posts ) ? $ticker_posts : array( 0 ),
+            'orderby'     => 'post__in',
+        ) );
         
         if ( $ticker_query->have_posts() ) : ?>
             <div class="news-ticker-wrapper">
