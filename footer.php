@@ -13,13 +13,23 @@
                     </ul>
                 </div>
 
-                <div class="footer-headquarters">
-                    <h3 style="font-family: var(--font-ui); font-size: 1.1rem; font-weight: bold; margin-bottom: 20px; text-transform: uppercase;">Visita Nuestra Sede</h3>
-                    <p style="color: #94a3b8; line-height: 1.8; font-size: 0.95rem;">
-                        Calle Giraldot con antigua Barreto, sector Centro<br>
-                        Edificio Empresarial Karelvis Maturín 6201 Monagas<br>
-                        VE, C. Barreto, Maturín 6201, Monagas
-                    </p>
+                <div class="footer-categories">
+                    <h3 style="font-family: var(--font-ui); font-size: 1.1rem; font-weight: bold; margin-bottom: 20px; text-transform: uppercase;">Secciones Populares</h3>
+                    <ul class="footer-category-list" style="margin: 0; padding: 0; list-style: none;">
+                        <?php
+                        $top_cats = get_categories( array(
+                            'orderby' => 'count',
+                            'order'   => 'DESC',
+                            'number'  => 5
+                        ) );
+                        
+                        if ( ! empty( $top_cats ) ) {
+                            foreach ( $top_cats as $cat ) {
+                                echo '<li style="margin-bottom: 15px;"><a href="' . esc_url( get_category_link( $cat->term_id ) ) . '" style="color: #94a3b8; text-decoration: none; transition: color 0.2s;">' . esc_html( $cat->name ) . '</a></li>';
+                            }
+                        }
+                        ?>
+                    </ul>
                 </div>
 
                 <div class="footer-social-section">
