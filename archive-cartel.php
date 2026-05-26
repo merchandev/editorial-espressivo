@@ -12,7 +12,6 @@ get_header();
 
     <header class="carteles-hero">
         <div class="carteles-hero-content">
-            <span class="material-symbols-outlined hero-icon">gavel</span>
             <h1 class="page-title">Carteles y Edictos</h1>
             <p class="page-description">Consulta los avisos legales, edictos, notificaciones y resoluciones oficiales publicados en nuestro portal.</p>
         </div>

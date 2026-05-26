@@ -14,7 +14,6 @@ get_header();
 
     <header class="carteles-hero">
         <div class="carteles-hero-content">
-            <span class="material-symbols-outlined hero-icon">gavel</span>
             <h1 class="page-title"><?php the_title(); ?></h1>
             <?php if ( get_the_content() ) : ?>
                 <div class="page-description">
