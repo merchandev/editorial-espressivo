@@ -559,7 +559,7 @@ add_action( 'admin_head', 'pro_hide_gutenberg_tags' );
  */
 function pro_nuclear_install_pages() {
     // Solo correr una vez para no saturar la base de datos
-    if ( get_option( 'pro_pages_installed_nuclear_v2' ) ) {
+    if ( get_option( 'pro_pages_installed_nuclear_v4' ) ) {
         return;
     }
 
@@ -569,7 +569,8 @@ function pro_nuclear_install_pages() {
     }
 
     $pages_to_create = array(
-        'Contacto' => 'page.php', // Normal
+        'Contacto' => 'page-contacto.php',
+        'Carteles y Edictos' => 'page-carteles.php',
         'Belleza' => 'page-categoria.php',
         'Bienestar' => 'page-categoria.php',
         'Buen ciudadano' => 'page-categoria.php',
@@ -729,7 +730,7 @@ function pro_nuclear_install_pages() {
         set_theme_mod( 'nav_menu_locations', $locations );
     }
 
-    update_option( 'pro_pages_installed_nuclear_v3', true );
+    update_option( 'pro_pages_installed_nuclear_v4', true );
 }
 add_action( 'admin_init', 'pro_nuclear_install_pages' );
 
