@@ -16,6 +16,14 @@ add_filter( 'deprecated_file_trigger_error', '__return_false' );
 add_filter( 'deprecated_argument_trigger_error', '__return_false' );
 add_filter( 'deprecated_hook_trigger_error', '__return_false' );
 
+// Forzar la hora local de Caracas / Venezuela de manera global en todo WordPress y el tema
+add_filter( 'pre_option_timezone_string', function() {
+    return 'America/Caracas';
+} );
+add_filter( 'pre_option_gmt_offset', function() {
+    return -4;
+} );
+
 /**
  * Configuración inicial del tema.
  */

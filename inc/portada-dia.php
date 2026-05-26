@@ -45,7 +45,7 @@ function pro_check_scheduled_portada_swap() {
     $fecha = get_option( 'pro_portada_reemplazo_fecha' ); // YYYY-MM-DD
     
     if ( $reemplazo && $fecha ) {
-        $timezone = wp_timezone();
+        $timezone = new DateTimeZone( 'America/Caracas' );
         $now = new DateTime( 'now', $timezone );
         $scheduled_time = new DateTime( $fecha . ' 05:00:00', $timezone );
         
@@ -183,12 +183,12 @@ function pro_portada_dia_settings_render() {
                 
                 <!-- Mostrar Hora del Servidor para referencia del administrador -->
                 <?php
-                $timezone = wp_timezone();
+                $timezone = new DateTimeZone('America/Caracas');
                 $server_now = new DateTime('now', $timezone);
                 ?>
                 <span style="color:#64748b; font-size:0.9rem; font-weight:500; display:flex; align-items:center; gap:5px;">
                     <span class="dashicons dashicons-time" style="font-size:18px; width:18px; height:18px;"></span>
-                    Hora del Servidor (Local): <strong><?php echo $server_now->format('d/m/Y H:i:s'); ?></strong>
+                    Hora de Venezuela (Caracas): <strong><?php echo $server_now->format('d/m/Y H:i:s'); ?></strong>
                 </span>
             </div>
         </form>
