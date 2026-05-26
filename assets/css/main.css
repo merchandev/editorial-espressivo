@@ -1696,30 +1696,39 @@ img {
    PÁGINA DE CONTACTO Y FORMULARIO
    ========================================================================== */
 .contact-page-wrapper {
-    background-color: #000;
-    color: #fff;
+    background-color: #f8fafc;
+    color: #334155;
     padding: 60px 0 100px;
     min-height: calc(100vh - 200px);
 }
 
 .contact-header {
     text-align: center;
-    margin-bottom: 50px;
+    margin-bottom: 40px;
 }
 
 .contact-header .page-title {
-    color: #fff;
-    font-size: 2.5rem;
+    color: #0f172a;
+    font-size: 2.8rem;
     margin-bottom: 15px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.contact-header p {
+    color: #64748b;
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
 }
 
 .contact-form-container {
-    max-width: 600px;
+    max-width: 650px;
     margin: 0 auto;
-    background: #111;
-    padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    background: #ffffff;
+    padding: 50px;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px -15px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.02);
     position: relative;
 }
 
@@ -1730,23 +1739,23 @@ img {
 .pro-contact-form label {
     display: block;
     margin-bottom: 8px;
-    font-weight: 500;
+    font-weight: 600;
     font-size: 0.95rem;
-    color: #f1f5f9;
+    color: #1e293b;
 }
 
 .pro-contact-form input,
 .pro-contact-form select,
 .pro-contact-form textarea {
     width: 100%;
-    padding: 12px 15px;
-    background: #fff;
+    padding: 14px 18px;
+    background: #f1f5f9;
     border: 2px solid transparent;
-    border-radius: 6px;
-    color: #333;
+    border-radius: 8px;
+    color: #334155;
     font-family: inherit;
     font-size: 1rem;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .pro-contact-form input:focus,
@@ -1782,12 +1791,25 @@ img {
 
 .pro-contact-form button[type="submit"] {
     width: 100%;
-    padding: 15px;
+    padding: 16px;
     font-size: 1.1rem;
+    font-weight: 600;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 10px;
+    background: #0f172a;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.pro-contact-form button[type="submit"]:hover {
+    background: #1e293b;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.15);
 }
 
 .btn-spinner {
@@ -1808,10 +1830,11 @@ img {
 .contact-success-layer h2 {
     color: #10b981;
     margin-bottom: 15px;
+    font-size: 2rem;
 }
 
 .contact-success-layer p {
-    color: #cbd5e1;
+    color: #475569;
     font-size: 1.1rem;
     line-height: 1.6;
 }
