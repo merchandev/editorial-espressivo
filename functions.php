@@ -9,6 +9,12 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Salir si se accede directamente.
 }
 
+// Ocultar mensajes de funciones obsoletas (Deprecated) generados por plugins de terceros
+add_filter( 'deprecated_function_trigger_error', '__return_false' );
+add_filter( 'deprecated_file_trigger_error', '__return_false' );
+add_filter( 'deprecated_argument_trigger_error', '__return_false' );
+add_filter( 'deprecated_hook_trigger_error', '__return_false' );
+
 /**
  * Configuración inicial del tema.
  */
