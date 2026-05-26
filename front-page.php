@@ -16,14 +16,17 @@ get_header();
     <!-- PORTADA DEL DÍA (EDICIÓN IMPRESA) -->
     <?php
     $portada_img = get_option( 'pro_portada_actual' );
-    $is_demo = false;
     if ( ! $portada_img ) {
         $portada_img = get_template_directory_uri() . '/screenshot.png';
-        $is_demo = true;
     }
     ?>
-    <div class="home-portada-banner card-portada" data-full-url="<?php echo esc_url($portada_img); ?>">
-        <div class="home-portada-wrapper">
+    <div class="home-portada-section">
+        <div class="home-portada-card card-portada" data-full-url="<?php echo esc_url($portada_img); ?>">
+            <div class="home-portada-header">
+                <span class="edition-badge">Edición Impresa</span>
+                <h2 class="edition-title"><?php echo esc_html( get_bloginfo('name') ); ?> — Portada</h2>
+            </div>
+            
             <div class="home-portada-thumbnail">
                 <img src="<?php echo esc_url($portada_img); ?>" alt="Portada del Día" loading="eager">
                 <div class="portada-overlay">
@@ -31,32 +34,14 @@ get_header();
                     <span>Ampliar Portada</span>
                 </div>
             </div>
-            <div class="home-portada-info">
-                <span class="edition-badge" style="<?php echo $is_demo ? 'background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.25);' : ''; ?>">
-                    <?php echo $is_demo ? 'Vista Previa (Demostración)' : 'Edición Impresa de Hoy'; ?>
-                </span>
-                <h2 class="edition-title"><?php echo esc_html( get_bloginfo('name') ); ?> — Portada Oficial</h2>
-                <p class="edition-desc">
-                    <?php if ( $is_demo ) : ?>
-                        Esta es una demostración de la portada del día. Puedes reemplazar esta imagen y configurar la portada oficial de tu periódico o revista (así como programar la del día siguiente a las 05:00 AM) directamente desde el menú <strong>Portadas > Portada del Día</strong> en tu panel de control.
-                    <?php else : ?>
-                        Explora la portada oficial del día de hoy en alta resolución. Haz clic en la imagen para abrir el visor interactivo donde podrás hacer zoom, mover la imagen y examinar todos los detalles con total claridad, o descárgala directamente en tu dispositivo.
-                    <?php endif; ?>
-                </p>
-                <div class="edition-buttons">
-                    <button type="button" class="btn-edition-open">
-                        <span class="material-symbols-outlined">zoom_in</span> Ver Portada
-                    </button>
-                    <a href="<?php echo esc_url($portada_img); ?>" download class="btn-edition-download">
-                        <span class="material-symbols-outlined">download</span> Descargar Portada
-                    </a>
-                </div>
-                
-                <?php if ( $is_demo && current_user_can( 'edit_posts' ) ) : ?>
-                    <div style="margin-top: 20px; padding: 10px 15px; background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6; border-radius: 4px; font-size: 0.85rem; color: #93c5fd;">
-                        💡 <strong>Nota del Editor:</strong> Esta portada de prueba solo se muestra porque aún no has subido una imagen en tu panel. Entra a <strong>Portadas > Portada del Día</strong> para personalizarla.
-                    </div>
-                <?php endif; ?>
+            
+            <div class="edition-buttons">
+                <button type="button" class="btn-edition-open">
+                    <span class="material-symbols-outlined">zoom_in</span> Ver Portada
+                </button>
+                <a href="<?php echo esc_url($portada_img); ?>" download class="btn-edition-download">
+                    <span class="material-symbols-outlined">download</span> Descargar
+                </a>
             </div>
         </div>
     </div>
