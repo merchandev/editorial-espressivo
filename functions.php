@@ -938,6 +938,21 @@ function pro_submit_contact_form() {
         wp_die();
     }
 
+    // Seguridad Extrema: Evitar Inyecciones, Enlaces y Código
+    $security_check = $name . ' ' . $address . ' ' . $message;
+    
+    // Bloquear enlaces
+    if ( preg_match('/(http|https|ftp|ftps)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\/\S*)?/', $security_check) || stripos($security_check, 'www.') !== false || stripos($security_check, '.com/') !== false ) {
+        wp_send_json_error( array( 'message' => 'Por seguridad, no se permiten enlaces ni URLs en el formulario.' ) );
+        wp_die();
+    }
+
+    // Bloquear HTML, scripts e inyecciones SQL básicas
+    if ( preg_match('/(<|>|\[url|\[link|script|union select|drop table|concat\(|-- )/i', $security_check) ) {
+        wp_send_json_error( array( 'message' => 'Se han detectado caracteres especiales o comandos no permitidos en el texto.' ) );
+        wp_die();
+    }
+
     $post_data = array(
         'post_title'   => $name,
         'post_content' => $message,
@@ -1024,3 +1039,8 @@ function pro_export_mensajes_csv_handler() {
  * Cargar personalizaciones del panel de administración (White-label)
  */
 require_once get_template_directory() . '/inc/admin-whitelabel.php';
+
+/**
+ * Cargar configuraciones de seguridad (Login URL y prevención)
+ */
+require_once get_template_directory() . '/inc/security.php';
