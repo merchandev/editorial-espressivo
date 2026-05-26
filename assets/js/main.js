@@ -494,9 +494,15 @@ document.addEventListener('DOMContentLoaded', function() {
         // Función para abrir el Lightbox
         portadas.forEach(portada => {
             portada.addEventListener('click', function(e) {
+                // Si el clic proviene de un elemento de descarga, permitir comportamiento nativo
+                if (e.target.closest('a[download]')) {
+                    return;
+                }
+                
                 e.preventDefault();
                 const fullUrl = this.getAttribute('data-full-url');
-                const title = this.querySelector('.entry-title').innerText;
+                const titleElement = this.querySelector('.entry-title') || this.querySelector('.edition-title');
+                const title = titleElement ? titleElement.innerText : 'Visor de Portada';
                 
                 if (fullUrl) {
                     modalTitle.innerText = title;
