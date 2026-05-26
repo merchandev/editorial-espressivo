@@ -2,15 +2,25 @@
         <div class="footer-widgets container">
             <div class="footer-grid">
                 <div class="footer-about">
-                    <h3 style="font-family: var(--font-ui); font-size: 1.1rem; font-weight: bold; margin-bottom: 20px; text-transform: uppercase;">Sobre Nosotros</h3>
-                    <ul class="footer-category-list" style="column-count: 1; margin: 0; padding: 0; list-style: none;">
-                        <li style="margin-bottom: 15px;"><a href="#" style="color: #94a3b8; text-decoration: none;">Sobre Nosotros</a></li>
-                        <li style="margin-bottom: 15px;"><a href="#" style="color: #94a3b8; text-decoration: none;">Vital 101.5 | Señal en vivo</a></li>
-                        <li style="margin-bottom: 15px;"><a href="#" style="color: #94a3b8; text-decoration: none;">Contacto</a></li>
-                        <li style="margin-bottom: 15px;"><a href="#" style="color: #94a3b8; text-decoration: none;">Grupo de WhatsApp – Noticias en Venezuela</a></li>
-                        <li style="margin-bottom: 15px;"><a href="#" style="color: #94a3b8; text-decoration: none;">Relevantes</a></li>
-                        <li><a href="#" style="color: #94a3b8; text-decoration: none;">Google Noticias</a></li>
-                    </ul>
+                    <h3 style="font-family: var(--font-ui); font-size: 1.1rem; font-weight: bold; margin-bottom: 20px; text-transform: uppercase;">Enlaces Útiles</h3>
+                    <?php
+                    if ( has_nav_menu( 'footer' ) ) {
+                        wp_nav_menu( array(
+                            'theme_location' => 'footer',
+                            'menu_class'     => 'footer-category-list',
+                            'container'      => false,
+                            'depth'          => 1,
+                        ) );
+                    } else {
+                        echo '<ul class="footer-category-list">';
+                        wp_list_pages( array(
+                            'title_li' => '',
+                            'depth'    => 1,
+                            'number'   => 5
+                        ) );
+                        echo '</ul>';
+                    }
+                    ?>
                 </div>
 
                 <div class="footer-categories">
@@ -18,15 +28,18 @@
                     <ul class="footer-category-list" style="margin: 0; padding: 0; list-style: none;">
                         <?php
                         $top_cats = get_categories( array(
-                            'orderby' => 'count',
-                            'order'   => 'DESC',
-                            'number'  => 5
+                            'orderby'    => 'count',
+                            'order'      => 'DESC',
+                            'number'     => 5,
+                            'hide_empty' => false // Mostrar incluso si no tienen noticias aún
                         ) );
                         
                         if ( ! empty( $top_cats ) ) {
                             foreach ( $top_cats as $cat ) {
                                 echo '<li style="margin-bottom: 15px;"><a href="' . esc_url( get_category_link( $cat->term_id ) ) . '" style="color: #94a3b8; text-decoration: none; transition: color 0.2s;">' . esc_html( $cat->name ) . '</a></li>';
                             }
+                        } else {
+                            echo '<li style="margin-bottom: 15px; color: #64748b; font-style: italic;">Sin categorías</li>';
                         }
                         ?>
                     </ul>

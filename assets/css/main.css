@@ -2043,3 +2043,32 @@ img {
 .custom-search-form .search-submit:hover {
     background: #b91c1c;
 }
+
+/* ==========================================================================
+   LISTAS DEL FOOTER (MENÚS Y CATEGORÍAS)
+   ========================================================================== */
+.footer-category-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.footer-category-list li {
+    margin: 0;
+    padding: 0;
+}
+
+.footer-category-list a {
+    color: #94a3b8;
+    text-decoration: none;
+    transition: color 0.2s ease, transform 0.2s ease;
+    display: inline-block;
+}
+
+.footer-category-list a:hover {
+    color: #ffffff;
+    transform: translateX(3px);
+}
