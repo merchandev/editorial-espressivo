@@ -1019,3 +1019,8 @@ function pro_export_mensajes_csv_handler() {
     fclose($output);
     exit();
 }
+
+/**
+ * Cargar personalizaciones del panel de administración (White-label)
+ */
+require_once get_template_directory() . '/inc/admin-whitelabel.php';
