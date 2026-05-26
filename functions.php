@@ -1086,3 +1086,8 @@ require_once get_template_directory() . '/inc/admin-whitelabel.php';
  * Cargar configuraciones de seguridad (Login URL y prevención)
  */
 require_once get_template_directory() . '/inc/security.php';
+
+/**
+ * Cargar gestor de Portada del Día (Programación de portadas a las 05:00 AM)
+ */
+require_once get_template_directory() . '/inc/portada-dia.php';
