@@ -91,11 +91,13 @@
         <div class="header-navigation-wrapper">
             <div class="container navigation-inner">
                 <nav id="site-navigation" class="main-navigation">
-                    <button class="menu-toggle" aria-controls="primary-menu" aria-expanded="false"><span class="material-symbols-outlined" style="vertical-align: middle;">menu</span> <?php esc_html_e( 'Menú', 'pro' ); ?></button>
+                    <button class="menu-toggle" aria-controls="primary-menu" aria-expanded="false" aria-label="<?php esc_attr_e( 'Menú', 'pro' ); ?>"><span class="material-symbols-outlined" style="vertical-align: middle;">menu</span></button>
                     <?php
                     wp_nav_menu( array(
+                        'menu'           => 'Menú Principal Nuclear',
                         'theme_location' => 'primary',
                         'menu_id'        => 'primary-menu',
+                        'fallback_cb'    => '__return_false', // Evitar que WP escupa todas las páginas si falla
                     ) );
                     ?>
                 </nav><!-- #site-navigation -->
@@ -117,6 +119,36 @@
             </div>
         </div>
         
+        <?php
+        // Ticker de Último Minuto
+        $ticker_args = array(
+            'post_type'      => 'post',
+            'posts_per_page' => 10,
+            'post_status'    => 'publish',
+        );
+        $ticker_query = new WP_Query( $ticker_args );
+        
+        if ( $ticker_query->have_posts() ) : ?>
+            <div class="news-ticker-wrapper">
+                <div class="container news-ticker-inner">
+                    <div class="news-ticker-label">Último minuto</div>
+                    <div class="news-ticker-slider" id="newsTickerSlider">
+                        <?php 
+                        $ticker_index = 0;
+                        while ( $ticker_query->have_posts() ) : $ticker_query->the_post(); 
+                        ?>
+                            <div class="ticker-slide <?php echo ($ticker_index === 0) ? 'active' : ''; ?>">
+                                <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
+                            </div>
+                        <?php 
+                        $ticker_index++;
+                        endwhile; 
+                        wp_reset_postdata(); 
+                        ?>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
         <?php if ( is_single() ) : ?>
             <div id="reading-progress-container" class="reading-progress-container">
                 <div id="reading-progress-bar" class="reading-progress-bar"></div>

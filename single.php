@@ -37,6 +37,11 @@ get_header();
                 </div>
                 <h1 class="entry-title"><?php the_title(); ?></h1>
                 
+                <?php $firma = get_post_meta( get_the_ID(), '_pro_firma_autor', true ); ?>
+                <?php if ( ! empty( $firma ) ) : ?>
+                    <p class="post-signature" style="font-style: italic; font-size: 0.95rem; margin-top: 5px; margin-bottom: 15px; color: var(--color-text-muted); font-family: var(--font-ui);">Por <?php echo esc_html( $firma ); ?></p>
+                <?php endif; ?>
+                
                 <div class="entry-meta">
                     <span class="posted-on">Publicado el <time datetime="<?php echo get_the_date('c'); ?>"><?php echo get_the_date('j \d\e F \d\e Y'); ?></time></span>
                 </div>

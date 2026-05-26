@@ -1,0 +1,108 @@
+<?php
+/**
+ * Template Name: Página de Categoría Automática
+ *
+ * Plantilla para las páginas físicas que muestran las noticias de su misma categoría.
+ *
+ * @package Pro
+ */
+
+get_header();
+
+// Obtenemos el nombre exacto de la página (ej: "Deportes", "Salud")
+$cat_name = get_the_title();
+$category = get_term_by( 'name', $cat_name, 'category' );
+
+$paged = ( get_query_var( 'paged' ) ) ? get_query_var( 'paged' ) : 1;
+$args = array(
+    'post_type' => 'post',
+    'paged'     => $paged,
+);
+
+if ( $category ) {
+    $args['cat'] = $category->term_id;
+} else {
+    // Si por alguna razón no existe la categoría con ese nombre exacto, muestra vacío
+    $args['cat'] = -1; 
+}
+
+$query = new WP_Query( $args );
+?>
+
+<main id="primary" class="site-main container archive-container">
+
+    <header class="page-header">
+        <h1 class="page-title"><?php echo esc_html( $cat_name ); ?></h1>
+    </header><!-- .page-header -->
+
+    <?php if ( $query->have_posts() ) : ?>
+        <div class="category-grid-wrapper">
+            <?php
+            $post_count = 0;
+            if ( $paged == 1 && $query->have_posts() ) {
+                $query->the_post();
+                $post_count++;
+                ?>
+                <article id="post-<?php the_ID(); ?>" <?php post_class('category-hero'); ?>>
+                    <a href="<?php the_permalink(); ?>" class="post-thumbnail hero-thumbnail" aria-hidden="true" tabindex="-1">
+                        <?php the_post_thumbnail( 'large', array( 'loading' => 'eager' ) ); ?>
+                    </a>
+                    <div class="hero-content">
+                        <div class="post-meta">
+                            <?php pro_post_categories(); ?>
+                            <time datetime="<?php echo get_the_date('c'); ?>"><?php echo get_the_date(); ?></time>
+                        </div>
+                        <h2 class="entry-title hero-title"><a href="<?php the_permalink(); ?>" rel="bookmark"><?php the_title(); ?></a></h2>
+                        <div class="entry-excerpt">
+                            <?php echo wp_trim_words( get_the_excerpt(), 35, '...' ); ?>
+                        </div>
+                    </div>
+                </article>
+                <?php
+            }
+            ?>
+            <div class="category-grid">
+                <?php
+                while ( $query->have_posts() ) :
+                    $query->the_post();
+                    ?>
+                    <article id="post-<?php the_ID(); ?>" <?php post_class('card-post'); ?>>
+                        <a href="<?php the_permalink(); ?>" class="post-thumbnail" aria-hidden="true" tabindex="-1">
+                            <?php the_post_thumbnail( 'card-thumbnail', array( 'loading' => 'lazy' ) ); ?>
+                        </a>
+                        <div class="card-content">
+                            <div class="post-meta">
+                                <?php pro_post_categories(); ?>
+                                <time datetime="<?php echo get_the_date('c'); ?>"><?php echo get_the_date(); ?></time>
+                            </div>
+                            <h2 class="entry-title"><a href="<?php the_permalink(); ?>" rel="bookmark"><?php the_title(); ?></a></h2>
+                            <div class="entry-excerpt">
+                                <?php echo wp_trim_words( get_the_excerpt(), 20, '...' ); ?>
+                            </div>
+                        </div>
+                    </article>
+                    <?php
+                endwhile;
+                wp_reset_postdata();
+                ?>
+            </div>
+        </div>
+
+        <?php if ( $query->max_num_pages > 1 && $paged < $query->max_num_pages ) : ?>
+            <div class="infinite-scroll-trigger" data-cat-id="<?php echo esc_attr( $category ? $category->term_id : 0 ); ?>" data-current-page="<?php echo esc_attr( $paged ); ?>" data-max-pages="<?php echo esc_attr( $query->max_num_pages ); ?>">
+                <div class="loading-spinner">Cargando más noticias...</div>
+            </div>
+        <?php endif; ?>
+
+    <?php else : ?>
+        <section class="no-results not-found">
+            <div class="page-content">
+                <p><?php esc_html_e( 'Aún no hay noticias en esta sección.', 'pro' ); ?></p>
+            </div>
+        </section>
+    <?php endif; ?>
+
+</main><!-- #primary -->
+
+<?php
+get_footer();

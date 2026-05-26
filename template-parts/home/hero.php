@@ -5,6 +5,7 @@
  */
 
 $hero_args = array(
+    'category_name'       => 'relevantes',
     'posts_per_page'      => 3,
     'post_status'         => 'publish',
     'ignore_sticky_posts' => 1
@@ -32,7 +33,7 @@ if ( $hero_query->have_posts() ) : ?>
                         ?>
                     </a>
                     <div class="hero-content">
-                        <?php if (function_exists('pro_post_categories')) pro_post_categories(); ?>
+                        <?php if (function_exists('pro_post_categories')) pro_post_categories(null, 'relevantes'); ?>
                         <h2 class="entry-title"><a href="<?php the_permalink(); ?>" rel="bookmark"><?php the_title(); ?></a></h2>
                         <div class="entry-summary">
                             <?php the_excerpt(); ?>
@@ -57,7 +58,7 @@ if ( $hero_query->have_posts() ) : ?>
                         ?>
                     </a>
                     <div class="hero-content">
-                        <?php if (function_exists('pro_post_categories')) pro_post_categories(); ?>
+                        <?php if (function_exists('pro_post_categories')) pro_post_categories(null, 'relevantes'); ?>
                         <h3 class="entry-title"><a href="<?php the_permalink(); ?>" rel="bookmark"><?php the_title(); ?></a></h3>
                         <div class="post-meta-footer">
                             <time datetime="<?php echo get_the_date('c'); ?>"><?php echo get_the_date(); ?></time>

@@ -3,45 +3,52 @@ $sec_cats = array(
     'deportes' => 'Deportes', 'cultura-y-entretenimiento' => 'Cultura', 
     'ciencia-y-tecnologia' => 'Ciencia', 'opinion' => 'Opinión', 
     'salud' => 'Salud', 'educacion' => 'Educación', 
-    'servicios-publicos' => 'Servicios', 'comunidad' => 'Comunidad'
+    'servicios-publicos' => 'Servicios', 'comunidad' => 'Comunidad',
+    'sucesos' => 'Sucesos', 'nacional' => 'Nacional', 
+    'internacional' => 'Internacional', 'economia' => 'Economía', 
+    'politica' => 'Política'
 );
+
+ob_start();
+foreach($sec_cats as $slug => $name) :
+    $cat_obj = get_category_by_slug($slug);
+    $cat_link = $cat_obj ? esc_url(get_category_link($cat_obj->term_id)) : '#';
+    
+    $sec_q = new WP_Query(array('category_name' => $slug, 'posts_per_page' => 1));
+    if($sec_q->have_posts()): ?>
+        <div class="sec-card" style="background:var(--color-bg-secondary); border:1px solid var(--color-border); border-top:4px solid var(--color-primary); border-radius:var(--border-radius); overflow:hidden; display:flex; flex-direction:column; box-shadow:var(--shadow-sm); transition:transform 0.3s ease, box-shadow 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='var(--shadow-lg)';" onmouseout="this.style.transform='none'; this.style.boxShadow='var(--shadow-sm)';">
+            
+            <div style="padding: 15px 20px 10px; display:flex; align-items:center; justify-content:space-between;">
+                <a href="<?php echo $cat_link; ?>" style="color:var(--color-primary); text-decoration:none; font-family:var(--font-ui); font-size:0.85rem; font-weight:800; text-transform:uppercase; letter-spacing:1px;"><?php echo esc_html($name); ?></a>
+                <span style="font-family:'Material Symbols Outlined'; font-size:1.1rem; color:var(--color-text-muted);">arrow_forward</span>
+            </div>
+
+            <div style="padding: 0 20px 20px; flex-grow:1; display:flex; flex-direction:column;">
+                <?php while($sec_q->have_posts()): $sec_q->the_post(); ?>
+                    <a href="<?php the_permalink(); ?>" style="display:block; width:100%; aspect-ratio:16/9; overflow:hidden; border-radius:4px; margin-bottom:15px;">
+                        <?php 
+                        if (has_post_thumbnail()) {
+                            the_post_thumbnail('medium', array('style' => 'width:100%; height:100%; object-fit:cover; transition:transform 0.5s ease;', 'onmouseover' => "this.style.transform='scale(1.05)'", 'onmouseout' => "this.style.transform='scale(1)'"));
+                        } else {
+                            echo '<div style="width:100%; height:100%; background:#f1f5f9; display:flex; align-items:center; justify-content:center; font-size:0.8rem; color:#94a3b8; font-family:var(--font-ui);">Sin Foto</div>';
+                        }
+                        ?>
+                    </a>
+                    <h4 style="font-size:1.15rem; margin:0 0 10px 0; line-height:1.4;"><a href="<?php the_permalink(); ?>" style="color:var(--color-text); text-decoration:none;"><?php echo wp_trim_words(get_the_title(), 12, '...'); ?></a></h4>
+                    <div style="font-size:0.8rem; color:var(--color-text-muted); margin-top:auto; font-family:var(--font-ui);"><?php echo get_the_date(); ?></div>
+                <?php endwhile; wp_reset_postdata(); ?>
+            </div>
+        </div>
+    <?php endif; 
+endforeach;
+$sec_content = ob_get_clean();
+
+if ( !empty(trim($sec_content)) ) :
 ?>
 <section class="wapo-category-section secondary-zone">
     <h2 class="wapo-section-title"><span>Más Secciones</span></h2>
-    
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 30px;">
-        <?php foreach($sec_cats as $slug => $name) :
-            $cat_obj = get_category_by_slug($slug);
-            $cat_link = $cat_obj ? esc_url(get_category_link($cat_obj->term_id)) : '#';
-            
-            $sec_q = new WP_Query(array('category_name' => $slug, 'posts_per_page' => 1));
-            ?>
-            <div class="sec-card" style="background:var(--color-bg-secondary); border:1px solid var(--color-border); border-top:4px solid var(--color-primary); border-radius:var(--border-radius); overflow:hidden; display:flex; flex-direction:column; box-shadow:var(--shadow-sm); transition:transform 0.3s ease, box-shadow 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='var(--shadow-lg)';" onmouseout="this.style.transform='none'; this.style.boxShadow='var(--shadow-sm)';">
-                
-                <div style="padding: 15px 20px 10px; display:flex; align-items:center; justify-content:space-between;">
-                    <a href="<?php echo $cat_link; ?>" style="color:var(--color-primary); text-decoration:none; font-family:var(--font-ui); font-size:0.85rem; font-weight:800; text-transform:uppercase; letter-spacing:1px;"><?php echo esc_html($name); ?></a>
-                    <span style="font-family:'Material Symbols Outlined'; font-size:1.1rem; color:var(--color-text-muted);">arrow_forward</span>
-                </div>
-
-                <div style="padding: 0 20px 20px; flex-grow:1; display:flex; flex-direction:column;">
-                    <?php if($sec_q->have_posts()): while($sec_q->have_posts()): $sec_q->the_post(); ?>
-                        <a href="<?php the_permalink(); ?>" style="display:block; width:100%; aspect-ratio:16/9; overflow:hidden; border-radius:4px; margin-bottom:15px;">
-                            <?php 
-                            if (has_post_thumbnail()) {
-                                the_post_thumbnail('medium', array('style' => 'width:100%; height:100%; object-fit:cover; transition:transform 0.5s ease;', 'onmouseover' => "this.style.transform='scale(1.05)'", 'onmouseout' => "this.style.transform='scale(1)'"));
-                            } else {
-                                echo '<div style="width:100%; height:100%; background:#f1f5f9; display:flex; align-items:center; justify-content:center; font-size:0.8rem; color:#94a3b8; font-family:var(--font-ui);">Sin Foto</div>';
-                            }
-                            ?>
-                        </a>
-                        <h4 style="font-size:1.15rem; margin:0 0 10px 0; line-height:1.4;"><a href="<?php the_permalink(); ?>" style="color:var(--color-text); text-decoration:none;"><?php echo wp_trim_words(get_the_title(), 12, '...'); ?></a></h4>
-                        <div style="font-size:0.8rem; color:var(--color-text-muted); margin-top:auto; font-family:var(--font-ui);"><?php echo get_the_date(); ?></div>
-                    <?php endwhile; else: ?>
-                        <div style="width:100%; aspect-ratio:16/9; background:#f8fafc; border-radius:4px; margin-bottom:15px; display:flex; align-items:center; justify-content:center; font-size:0.8rem; color:#cbd5e1; border:1px dashed #e2e8f0; font-family:var(--font-ui);">Pendiente</div>
-                        <h4 style="font-size:1.1rem; margin:0 0 10px 0; line-height:1.4; color:#94a3b8;">Aún no hay noticias publicadas en esta sección.</h4>
-                    <?php endif; wp_reset_postdata(); ?>
-                </div>
-            </div>
-        <?php endforeach; ?>
+        <?php echo $sec_content; ?>
     </div>
 </section>
+<?php endif; ?>

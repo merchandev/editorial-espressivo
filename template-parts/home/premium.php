@@ -3,12 +3,12 @@ $premium_cats = array('nacional' => 'Nacional', 'internacional' => 'Internaciona
 foreach ( $premium_cats as $cat_slug => $cat_name ) :
     $cat_args = array('category_name' => $cat_slug, 'posts_per_page' => 4, 'post_status' => 'publish');
     $cat_query = new WP_Query( $cat_args );
+    if ( $cat_query->have_posts() ) :
     ?>
     <section class="wapo-category-section">
         <h2 class="wapo-section-title"><span><?php echo esc_html( $cat_name ); ?></span></h2>
         <div class="wapo-grid">
             <?php
-            if ( $cat_query->have_posts() ) {
                 $count = 0;
                 while ( $cat_query->have_posts() ) : $cat_query->the_post();
                     if ( $count === 0 ) :
@@ -37,14 +37,16 @@ foreach ( $premium_cats as $cat_slug => $cat_name ) :
                     $count++;
                 endwhile;
                 if ( $count > 1 ) { echo '</div>'; } elseif ( $count === 1 ) { echo '<div class="wapo-side-articles empty-side"></div>'; }
-            } else {
-                if ( function_exists('pro_render_placeholder_main') ) {
-                    pro_render_placeholder_main("Noticia de " . $cat_name);
-                    pro_render_placeholder_side(3);
-                }
-            }
             ?>
         </div>
     </section>
-    <?php wp_reset_postdata(); ?>
+    <?php endif; wp_reset_postdata(); ?>
+    
+    <?php if ( $cat_slug === 'internacional' ) : ?>
+        <!-- Publicidad Extra Entre Secciones -->
+        <div class="premium-ads-single" style="margin: 40px 0;">
+            <?php get_template_part('template-parts/ads/in-feed', null, array('location' => 'internacional-ad', 'size' => '1200x200')); ?>
+        </div>
+    <?php endif; ?>
+
 <?php endforeach; ?>
