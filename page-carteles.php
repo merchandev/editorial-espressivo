@@ -12,14 +12,19 @@ get_header();
 
 <main id="primary" class="site-main container archive-container">
 
-    <header class="page-header">
-        <h1 class="page-title"><?php the_title(); ?></h1>
-        <?php if ( get_the_content() ) : ?>
-            <div class="page-description">
-                <?php the_content(); ?>
-            </div>
-        <?php endif; ?>
-    </header><!-- .page-header -->
+    <header class="carteles-hero">
+        <div class="carteles-hero-content">
+            <span class="material-symbols-outlined hero-icon">gavel</span>
+            <h1 class="page-title"><?php the_title(); ?></h1>
+            <?php if ( get_the_content() ) : ?>
+                <div class="page-description">
+                    <?php the_content(); ?>
+                </div>
+            <?php else: ?>
+                <p class="page-description">Consulta los avisos legales, edictos, notificaciones y resoluciones oficiales publicados en nuestro portal.</p>
+            <?php endif; ?>
+        </div>
+    </header><!-- .carteles-hero -->
 
     <?php 
     $paged = ( get_query_var( 'paged' ) ) ? get_query_var( 'paged' ) : 1;

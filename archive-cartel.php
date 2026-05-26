@@ -10,10 +10,13 @@ get_header();
 
 <main id="primary" class="site-main container archive-container">
 
-    <header class="page-header">
-        <h1 class="page-title">Carteles y Edictos</h1>
-        <p class="page-description">Documentos legales, avisos oficiales y clasificados.</p>
-    </header><!-- .page-header -->
+    <header class="carteles-hero">
+        <div class="carteles-hero-content">
+            <span class="material-symbols-outlined hero-icon">gavel</span>
+            <h1 class="page-title">Carteles y Edictos</h1>
+            <p class="page-description">Consulta los avisos legales, edictos, notificaciones y resoluciones oficiales publicados en nuestro portal.</p>
+        </div>
+    </header><!-- .carteles-hero -->
 
     <?php if ( have_posts() ) : ?>
         <div class="carteles-grid">
