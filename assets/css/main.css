@@ -2017,12 +2017,8 @@ img {
     border-color: var(--color-primary);
 }
 
-.custom-search-form label {
-    flex-grow: 1;
-    margin: 0;
-}
-
 .custom-search-form .search-field {
+    flex-grow: 1;
     width: 100%;
     border: none;
     background: transparent;
