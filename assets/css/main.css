@@ -1869,3 +1869,108 @@ img {
     text-align: left;
     margin-bottom: 30px;
 }
+
+/* ==========================================================================
+   BANNER DE CARTELES Y EDICTOS (HOME)
+   ========================================================================== */
+.home-carteles-banner {
+    margin: 60px 0 20px 0;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border-radius: 12px;
+    padding: 40px;
+    color: #fff;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.home-carteles-banner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 300px;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03));
+    transform: skewX(-15deg);
+}
+
+.carteles-banner-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+    position: relative;
+    z-index: 2;
+}
+
+.carteles-banner-content .banner-icon {
+    flex-shrink: 0;
+    background: rgba(225, 29, 72, 0.15);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #e11d48;
+}
+
+.carteles-banner-content .banner-icon .material-symbols-outlined {
+    font-size: 2.5rem;
+}
+
+.carteles-banner-content .banner-text {
+    flex-grow: 1;
+}
+
+.carteles-banner-content .banner-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+    color: #fff;
+}
+
+.carteles-banner-content .banner-desc {
+    font-size: 1.05rem;
+    color: #cbd5e1;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.carteles-banner-content .banner-action {
+    flex-shrink: 0;
+}
+
+.btn-carteles {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #e11d48;
+    color: #fff;
+    padding: 14px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.btn-carteles:hover {
+    background: #be123c;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(225, 29, 72, 0.3);
+}
+
+@media (max-width: 768px) {
+    .carteles-banner-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .home-carteles-banner {
+        padding: 30px 20px;
+    }
+}

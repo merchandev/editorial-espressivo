@@ -68,6 +68,9 @@ get_header();
         <!-- ZONA COLUMNAS (Secciones Secundarias) -->
         <?php get_template_part('template-parts/home/secondary'); ?>
 
+        <!-- BANNER CARTELES Y EDICTOS -->
+        <?php get_template_part('template-parts/home/carteles'); ?>
+
     </div>
 
 </main><!-- #primary -->
