@@ -403,4 +403,59 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    /* ==========================================================================
+       VALIDACIÓN DE FORMULARIOS DE BÚSQUEDA
+       ========================================================================== */
+    const searchForms = document.querySelectorAll('form[role="search"], .search-form');
+    
+    searchForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const input = form.querySelector('input[name="s"]');
+            if (!input) return;
+            
+            let val = input.value.trim();
+            
+            // 1. Vacío o muy corto
+            if (val.length < 2) {
+                e.preventDefault();
+                input.focus();
+                // Opcional: mostrar un mensaje visual pequeño
+                input.style.border = '2px solid #ef4444';
+                setTimeout(() => input.style.border = '', 2000);
+                return;
+            }
+            
+            // 2. Contiene enlaces o dominios
+            const urlPattern = /(http|https|ftp|ftps)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\/\S*)?|www\.|[a-zA-Z0-9\-\.]+\.(com|net|org|info)/i;
+            if (urlPattern.test(val)) {
+                e.preventDefault();
+                input.value = '';
+                input.placeholder = 'Enlaces no permitidos';
+                input.style.border = '2px solid #ef4444';
+                setTimeout(() => {
+                    input.placeholder = 'Buscar noticias...';
+                    input.style.border = '';
+                }, 3000);
+                return;
+            }
+            
+            // 3. Contiene solo números o caracteres extraños (permitir letras, espacios, acentos, y puntuación básica de texto)
+            // Rechaza si hay etiquetas HTML, corchetes, o demasiados signos
+            const strictPattern = /^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\s\.,\-\¿\?¡!]+$/;
+            
+            // Si el valor NO coincide con el patrón estricto
+            if (!strictPattern.test(val)) {
+                e.preventDefault();
+                input.value = '';
+                input.placeholder = 'Texto inválido (evita números/símbolos)';
+                input.style.border = '2px solid #ef4444';
+                setTimeout(() => {
+                    input.placeholder = 'Buscar noticias...';
+                    input.style.border = '';
+                }, 3000);
+                return;
+            }
+        });
+    });
+
 });

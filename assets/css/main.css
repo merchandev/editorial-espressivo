@@ -1997,3 +1997,53 @@ img {
         padding: 30px 20px;
     }
 }
+
+/* ==========================================================================
+   FORMULARIO DE BÚSQUEDA GLOBAL
+   ========================================================================== */
+.custom-search-form {
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border-radius: 50px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: box-shadow 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.custom-search-form:focus-within {
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+    border-color: var(--color-primary);
+}
+
+.custom-search-form label {
+    flex-grow: 1;
+    margin: 0;
+}
+
+.custom-search-form .search-field {
+    width: 100%;
+    border: none;
+    background: transparent;
+    padding: 16px 25px;
+    outline: none;
+    font-size: 1.1rem;
+    color: var(--color-text);
+}
+
+.custom-search-form .search-submit {
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    padding: 16px 30px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s ease;
+}
+
+.custom-search-form .search-submit:hover {
+    background: #b91c1c;
+}
