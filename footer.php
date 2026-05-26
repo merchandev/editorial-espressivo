@@ -31,7 +31,8 @@
                             'orderby'    => 'count',
                             'order'      => 'DESC',
                             'number'     => 5,
-                            'hide_empty' => false // Mostrar incluso si no tienen noticias aún
+                            'hide_empty' => false, // Mostrar incluso si no tienen noticias aún
+                            'exclude'    => get_option( 'default_category' ) // Excluir "Sin categoría"
                         ) );
                         
                         if ( ! empty( $top_cats ) ) {
