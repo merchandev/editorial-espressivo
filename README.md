@@ -1,6 +1,6 @@
-# Tema WordPress "Pro" — Portal de Noticias Avanzado
+# Tema WordPress "Edit-Pro" — Portal de Noticias Avanzado y Framework SaaS
 
-Este es un tema de WordPress diseñado y desarrollado a medida para un portal de noticias moderno, rápido y profesional. Está construido desde cero para optimizar el rendimiento, evitar el uso excesivo de plugins y ofrecer una experiencia de usuario (UX) premium.
+Este es un tema y framework de WordPress diseñado y desarrollado a medida para portales de noticias modernos, rápidos, profesionales y de alto rendimiento. Construido desde cero bajo una arquitectura de marca blanca (white-label) y SaaS, está optimizado para su fácil duplicación, reventa y distribución a editoriales y medios de comunicación digitales. Evita el uso excesivo de plugins de terceros y ofrece una experiencia de usuario (UX) premium de alto impacto comercial.
 
 ## 🚀 Características Principales
 
@@ -84,9 +84,9 @@ CSS y JS actualizan su versión automáticamente mediante `filemtime()` para evi
 ## 🛠 Instalación y Configuración
 
 1. **Subir el Tema:**
-   Copia esta carpeta `pro/` en el directorio `wp-content/themes/` de tu instalación de WordPress.
+   Copia esta carpeta `edit-pro/` (o el nombre que asignes a la carpeta del tema) en el directorio `wp-content/themes/` de tu instalación de WordPress.
 2. **Activar el Tema:**
-   Ve a *Apariencia > Temas* en el panel de WordPress y activa el tema "Pro".
+   Ve a *Apariencia > Temas* en el panel de WordPress y activa el tema "Edit-Pro".
 3. **Guardar Enlaces Permanentes (OBLIGATORIO):**
    Ve a *Ajustes > Enlaces permanentes* y haz clic en **Guardar cambios** sin modificar nada. Esto es crucial para que WordPress reconozca la nueva URL de `/carteles/` y los endpoints de contacto.
 
@@ -140,4 +140,4 @@ CSS y JS actualizan su versión automáticamente mediante `filemtime()` para evi
 - ✅ `deprecated_function_trigger_error` suprimido para evitar warnings de terceros en producción
 
 ---
-*Desarrollado a medida para maximizar el rendimiento, la seguridad y la organización editorial.*
+*Desarrollado y distribuido por Arturo Merchan | Merchan.Dev — Framework editorial SaaS premium de alto rendimiento para medios digitales e impresos.*

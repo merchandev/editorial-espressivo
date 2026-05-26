@@ -1,8 +1,9 @@
 <?php
 /**
- * Funciones y definiciones del tema Pro
+ * Funciones y definiciones del tema Edit-Pro
+ * Framework editorial premium white-label/SaaS para diarios digitales e impresos.
  *
- * @package Pro
+ * @package Edit-Pro
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
