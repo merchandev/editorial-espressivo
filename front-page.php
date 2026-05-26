@@ -22,26 +22,12 @@ get_header();
     ?>
     <div class="home-portada-section">
         <div class="home-portada-card card-portada" data-full-url="<?php echo esc_url($portada_img); ?>">
-            <div class="home-portada-header">
-                <span class="edition-badge">Edición Impresa</span>
-                <h2 class="edition-title"><?php echo esc_html( get_bloginfo('name') ); ?> — Portada</h2>
-            </div>
-            
             <div class="home-portada-thumbnail">
                 <img src="<?php echo esc_url($portada_img); ?>" alt="Portada del Día" loading="eager">
                 <div class="portada-overlay">
                     <span class="material-symbols-outlined portada-icon">zoom_in</span>
                     <span>Ampliar Portada</span>
                 </div>
-            </div>
-            
-            <div class="edition-buttons">
-                <button type="button" class="btn-edition-open">
-                    <span class="material-symbols-outlined">zoom_in</span> Ver Portada
-                </button>
-                <a href="<?php echo esc_url($portada_img); ?>" download class="btn-edition-download">
-                    <span class="material-symbols-outlined">download</span> Descargar
-                </a>
             </div>
         </div>
     </div>
