@@ -126,25 +126,19 @@ CSS y JS actualizan su versión automáticamente mediante `filemtime()`.
 ### v1.3.0 — Mayo 2026 (sesión actual)
 
 #### Footer
-- ✅ Sección "Redes Sociales" con URLs fijas para el medio:
-  - **Facebook:** `facebook.com/ElOrientaldeMonagas`
-  - **Instagram:** `instagram.com/diarioeloriental/`
-  - **WhatsApp:** grupo de difusión oficial del medio
+- ✅ Sección "Redes Sociales" actualizada con enlaces oficiales del medio
 - ✅ Título "**Más información**" reemplaza "Enlaces Útiles"
 - ✅ Categoría "**Local**" excluida del bloque "Secciones Populares" vía filtro por slug
 - ✅ **Política de Privacidad** eliminada del footer (solo permanecen Términos y Cookies)
 
 #### Páginas Legales (Nuclear Install)
-- ✅ **`page-terminos-y-condiciones.php`** — Plantilla de página creada con contenido legal completo
-- ✅ **`page-politica-de-cookies.php`** — Plantilla nueva con política de cookies
-- ✅ Ambas páginas se crean **automáticamente** en la base de datos al entrar al admin (versión nuclear `v5`), sin pasos manuales en WordPress
+- ✅ Plantilla de **Términos y Condiciones** — creada con contenido legal completo
+- ✅ Plantilla de **Política de Cookies** — nueva plantilla añadida
+- ✅ Ambas páginas se crean **automáticamente** al entrar al admin (versión nuclear `v5`), sin pasos manuales en WordPress
 - ✅ Los links del footer apuntan correctamente a sus slugs
 
 #### Firma de Autor
-- ✅ **Comentario HTML** visible en el código fuente de cada página:
-  ```html
-  <!-- Diseñado y desarrollado por: Merchan.Dev & Espressivo Venezuela, C.A -->
-  ```
+- ✅ **Comentario HTML** de autoría visible en el código fuente de cada página
 - ✅ **Firma estilizada en la consola del navegador** (DevTools → Console) con estilos de color corporativo
 
 ### v1.2.0 — Auditoría y funcionalidades (Mayo 2026)
