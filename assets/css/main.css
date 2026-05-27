@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @author Arturo Merchan | Merchan.Dev | Espressivo Venezuela,C.A
  * 
  * ADVERTENCIA LEGAL:
@@ -480,6 +480,13 @@ img {
 .card-post:hover .post-thumbnail img {
     transform: scale(1.05);
 }
+/* Cards sin imagen destacada: mostrar bloque de color en lugar de espacio vacío */
+.card-post .post-thumbnail:not(:has(img)) {
+    display: none;
+}
+.card-post:not(:has(.post-thumbnail img)) .card-content {
+    padding-top: 20px;
+}
 .card-content {
     padding: 15px;
 }
@@ -528,18 +535,31 @@ img {
 }
 
 /* Colores específicos por slug de categoría */
-.cat-monagas-local { background-color: #1D4ED8; }
-.cat-nacional { background-color: #10B981; }
-.cat-internacional { background-color: #8B5CF6; }
-.cat-deportes { background-color: #F97316; }
-.cat-economia { background-color: #047857; }
-.cat-eventos-y-negocios { background-color: #D97706; }
-.cat-ciencia-y-tecnologia { background-color: #0E7490; }
-.cat-sucesos { background-color: #E11D48; }
-.cat-educacion { background-color: #3B82F6; }
-.cat-entrevistas { background-color: #BE185D; }
-.cat-conociendo-a-nuestra-gente { background-color: #4338CA; }
-.cat-salud { background-color: #14B8A6; }
+.cat-monagas-local   { background-color: #1D4ED8; }
+.cat-local           { background-color: #1D4ED8; }
+.cat-nacional        { background-color: #10B981; }
+.cat-internacional   { background-color: #8B5CF6; }
+.cat-deportes        { background-color: #F97316; }
+.cat-economia        { background-color: #047857; }
+.cat-politica        { background-color: #DC2626; }
+.cat-sucesos         { background-color: #E11D48; }
+.cat-ciencia-y-tecnologia  { background-color: #0E7490; }
+.cat-tecnologia      { background-color: #0E7490; }
+.cat-educacion       { background-color: #3B82F6; }
+.cat-entretenimiento { background-color: #EC4899; }
+.cat-gastronomia     { background-color: #D97706; }
+.cat-salud           { background-color: #14B8A6; }
+.cat-belleza         { background-color: #DB2777; }
+.cat-bienestar       { background-color: #059669; }
+.cat-opinion         { background-color: #6D28D9; }
+.cat-entrevistas     { background-color: #BE185D; }
+.cat-regiones        { background-color: #0284C7; }
+.cat-municipios      { background-color: #7C3AED; }
+.cat-monagas         { background-color: #16A34A; }
+.cat-buen-ciudadano  { background-color: #CA8A04; }
+.cat-relevantes      { background-color: #DC2626; }
+.cat-eventos-y-negocios          { background-color: #D97706; }
+.cat-conociendo-a-nuestra-gente  { background-color: #4338CA; }
 
 /* ==========================================================================
    Single Post (Artículo)
