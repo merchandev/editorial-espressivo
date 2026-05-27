@@ -19,7 +19,7 @@ console.log(
     'background:#111827; color:#f59e0b; font-weight:bold; font-size:13px; padding:4px 8px; border-radius:4px 0 0 4px;',
     'background:#f59e0b; color:#111827; font-weight:bold; font-size:13px; padding:4px 8px; border-radius:0 4px 4px 0;'
 );
-console.log('%cDiseño y desarrollo web · https://arturomerchan.com', 'color:#6b7280; font-size:11px;');
+console.log('%cDiseño y desarrollo web · https://merchan.dev', 'color:#6b7280; font-size:11px;');
 
 document.addEventListener('DOMContentLoaded', function() {
     

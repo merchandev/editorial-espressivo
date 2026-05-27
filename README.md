@@ -157,4 +157,4 @@ CSS y JS actualizan su versión automáticamente mediante `filemtime()`.
 ---
 
 *Diseñado y desarrollado por **Merchan.Dev & Espressivo Venezuela, C.A** — Framework editorial SaaS premium para medios digitales e impresos.*
-*Web: [arturomerchan.com](https://arturomerchan.com)*
+*Web: [merchan.dev](https://merchan.dev)*

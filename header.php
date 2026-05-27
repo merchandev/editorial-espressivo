@@ -135,7 +135,7 @@
   Diseñado y desarrollado por:
   Merchan.Dev & Espressivo Venezuela, C.A
 
-  Web:    https://arturomerchan.com
+  Web:    https://merchan.dev
   Email:  contacto@arturomerchan.com
 
   © <?php echo date('Y'); ?> Todos los derechos reservados.
