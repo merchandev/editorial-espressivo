@@ -1,3 +1,11 @@
+﻿/**
+ * @author Arturo Merchan | Merchan.Dev | Espressivo Venezuela,C.A
+ * 
+ * ADVERTENCIA LEGAL:
+ * Queda totalmente prohibida su reproduccion, edicion, venta, propaganda, alteracion 
+ * o cualquier otra accion que de una u otra forma violente la propiedad intelectual, 
+ * material y digital de este proyecto. Esta infraccion esta prohibida y penada por la ley.
+ */
 /* 
  * MAIN.CSS - Pro
  * Mobile-first CSS usando variables CSS y Layouts modernos (Grid/Flexbox)
@@ -46,7 +54,7 @@ a {
 
 a:hover {
     color: var(--color-primary-hover);
-    text-decoration: underline;
+    text-decoration: none !important;
 }
 
 img {
@@ -366,7 +374,7 @@ img {
     font-weight: 500;
 }
 .ticker-slide a:hover {
-    text-decoration: underline;
+    text-decoration: none !important;
 }
 
 /* ==========================================================================
@@ -631,8 +639,10 @@ img {
 }
 .single-hero-image img {
     width: 100%;
-    height: auto;
-    border-radius: var(--border-radius);
+    aspect-ratio: 16 / 9; /* Relación de aspecto horizontal perfecta 16:9 */
+    object-fit: cover; /* Recorta la imagen a la proporción sin deformarla */
+    border-radius: 12px; /* Hermosos bordes redondeados y pulidos */
+    box-shadow: var(--shadow-md, 0 10px 25px rgba(0,0,0,0.05)); /* Sombras premium */
     margin-bottom: 10px;
 }
 .single-hero-image figcaption {
@@ -2582,9 +2592,11 @@ img {
 
 .hero-portada-column {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     width: 100%;
+    gap: 10px;
 }
 
 /* Tarjeta de la Portada en la columna de 40% */
@@ -2593,7 +2605,7 @@ img {
     border-radius: 16px;
     padding: 10px;
     width: 100%;
-    max-width: 320px; /* Ancho máximo para mantener la proporción vertical hermosa */
+    max-width: 380px; /* Ancho máximo para mantener la proporción vertical hermosa y balanceada con 3 noticias */
     box-shadow: 0 15px 40px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.03);
     border: 1px solid var(--color-border, #e2e8f0);
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -2632,11 +2644,13 @@ img {
     height: 100%;
     object-fit: cover;
     object-position: center;
-    transition: transform 0.5s ease;
+    transition: transform 0.5s ease, filter 0.5s ease;
+    filter: blur(4px); /* Difuminada por defecto para generar curiosidad e interactividad (CTA) */
 }
 
 .hero-portada-column .home-portada-card:hover .home-portada-thumbnail img {
     transform: scale(1.04);
+    filter: blur(0); /* Nítida en hover para ver el adelanto de la portada */
 }
 
 .portada-overlay {
@@ -2645,40 +2659,54 @@ img {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(15, 23, 42, 0.8);
+    background: rgba(15, 23, 42, 0.4); /* Fondo semi-translúcido visible por defecto */
     color: #fff;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    backdrop-filter: blur(4px);
+    opacity: 1; /* Visible por defecto */
+    transition: all 0.35s ease;
     z-index: 2;
 }
 
-.home-portada-thumbnail:hover .portada-overlay {
-    opacity: 1;
+.hero-portada-column .home-portada-card:hover .portada-overlay {
+    opacity: 0; /* Desaparece en hover para revelar la portada súper limpia */
 }
 
-.portada-overlay .portada-icon {
-    font-size: 2.5rem;
-    margin-bottom: 8px;
-    color: #3b82f6;
-    background: rgba(59, 130, 246, 0.15);
-    padding: 12px;
-    border-radius: 50%;
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.home-portada-thumbnail:hover .portada-icon {
-    transform: scale(1.1) rotate(90deg);
-}
-
-.portada-overlay span:last-child {
-    font-weight: 600;
+.portada-overlay-button {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-family: var(--font-ui, 'Inter', sans-serif);
+    font-weight: 700;
     font-size: 0.95rem;
-    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: scale(1); /* Escala normal por defecto */
+}
+
+.portada-overlay-button .overlay-lupa-icon {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #0f172a;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+/* Hover del botón interno para máxima interacción */
+.portada-overlay-button:hover {
+    background: #b91c1c !important;
+    color: #ffffff !important;
+    box-shadow: 0 12px 30px rgba(185, 28, 28, 0.4);
+}
+
+.portada-overlay-button:hover .overlay-lupa-icon {
+    color: #ffffff;
+    transform: rotate(90deg);
 }
 
 /* Tarjeta de Noticias Relevantes en la columna de 60% */
@@ -2758,7 +2786,7 @@ img {
         gap: 40px;
     }
     .hero-portada-column .home-portada-card {
-        max-width: 280px; /* Un poco más pequeño en tablets */
+        max-width: 320px; /* Un poco más grande para mantener la legibilidad */
     }
 }
 
@@ -2771,3 +2799,126 @@ img {
     }
 }
 
+/* Soporte Dark Mode para la noticia relevante principal */
+.dark-mode .hero-main-post {
+    background: #1e293b;
+    border-color: #334155;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.15);
+}
+.dark-mode .hero-main-post .post-thumbnail {
+    background-color: #0f172a;
+}
+.dark-mode .hero-main-post .entry-title a {
+    color: #ffffff;
+}
+.dark-mode .hero-main-post .entry-title a:hover {
+    color: #3b82f6;
+}
+
+/* Responsividad para la noticia relevante principal */
+@media (max-width: 767px) {
+    .hero-main-post .entry-title {
+        font-size: 1.7rem;
+        margin: 12px 0;
+    }
+    .hero-main-post .post-thumbnail {
+        padding: 15px;
+    }
+}
+
+/* Botón de descarga de la portada (Charcoal Matte & Crimson Red Hover) */
+.button-download-under {
+    background: #0f172a !important; /* Antracita mate ultra-premium */
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 25px rgba(15, 23, 42, 0.2);
+    font-weight: 700;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    padding: 0 24px !important;
+    height: 46px !important;
+    border-radius: 50px !important;
+}
+
+.button-download-under:hover {
+    background: #b91c1c !important; /* Rojo carmesí editorial de alto impacto */
+    border-color: #b91c1c !important;
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 10px 25px rgba(185, 28, 28, 0.4);
+}
+
+.button-download-under:active {
+    transform: scale(0.98) translateY(0);
+}
+
+/* Cabecera de la Portada en el Home */
+.portada-header-badge {
+    text-align: center;
+    margin-bottom: 12px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.portada-eyebrow {
+    display: block;
+    font-family: var(--font-ui, 'Inter', sans-serif);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #b91c1c; /* Crimson a juego */
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.portada-main-title {
+    font-family: var(--font-heading, 'Playfair Display', serif);
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: var(--color-text, #0f172a);
+    margin: 0 0 6px 0 !important;
+    line-height: 1.2;
+}
+
+.dark-mode .portada-main-title {
+    color: #ffffff;
+}
+
+.portada-hint-click {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font-ui, 'Inter', sans-serif);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-muted, #64748b);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: rgba(100, 116, 139, 0.05);
+    padding: 4px 10px;
+    border-radius: 30px;
+    border: 1px solid rgba(100, 116, 139, 0.08);
+    transition: all 0.25s ease;
+}
+
+.dark-mode .portada-hint-click {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+.portada-hint-click .hint-icon {
+    font-size: 0.95rem;
+    color: #b91c1c;
+}
+
+/* Interactividad al pasar el ratón por la columna de la portada */
+.hero-portada-column:hover .portada-hint-click {
+    background: rgba(185, 28, 28, 0.08);
+    border-color: rgba(185, 28, 28, 0.15);
+    color: #b91c1c;
+    transform: translateY(-1px);
+}
+
+
+/* Remove hover underlines globally as requested */
+a:hover, button:hover, .button:hover, input[type='submit']:hover { text-decoration: none !important; }

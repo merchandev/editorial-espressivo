@@ -1,4 +1,12 @@
-<?php
+﻿<?php
+/**
+ * @author Arturo Merchan | Merchan.Dev | Espressivo Venezuela,C.A
+ * 
+ * ADVERTENCIA LEGAL:
+ * Queda totalmente prohibida su reproduccion, edicion, venta, propaganda, alteracion 
+ * o cualquier otra accion que de una u otra forma violente la propiedad intelectual, 
+ * material y digital de este proyecto. Esta infraccion esta prohibida y penada por la ley.
+ */
 /**
  * Plantilla para posts individuales (Artículos de noticias).
  *
@@ -37,6 +45,15 @@ get_header();
                 </div>
                 <h1 class="entry-title"><?php the_title(); ?></h1>
                 
+                <?php if ( has_post_thumbnail() ) : ?>
+                    <figure class="post-thumbnail single-hero-image" style="margin-top: 20px; margin-bottom: 20px;">
+                        <?php the_post_thumbnail( 'full', array( 'loading' => 'eager', 'style' => 'width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; border-radius: 12px;' ) ); ?>
+                        <?php if ( wp_get_attachment_caption( get_post_thumbnail_id() ) ) : ?>
+                            <figcaption><?php echo wp_get_attachment_caption( get_post_thumbnail_id() ); ?></figcaption>
+                        <?php endif; ?>
+                    </figure>
+                <?php endif; ?>
+                
                 <?php $firma = get_post_meta( get_the_ID(), '_pro_firma_autor', true ); ?>
                 <?php if ( ! empty( $firma ) ) : ?>
                     <p class="post-signature" style="font-style: italic; font-size: 0.95rem; margin-top: 5px; margin-bottom: 15px; color: var(--color-text-muted); font-family: var(--font-ui);">Por <?php echo esc_html( $firma ); ?></p>
@@ -46,15 +63,6 @@ get_header();
                     <span class="posted-on">Publicado el <time datetime="<?php echo get_the_date('c'); ?>"><?php echo get_the_date('j \d\e F \d\e Y'); ?></time></span>
                 </div>
             </header>
-
-            <?php if ( has_post_thumbnail() ) : ?>
-                <figure class="post-thumbnail single-hero-image">
-                    <?php the_post_thumbnail( 'full', array( 'loading' => 'eager' ) ); ?>
-                    <?php if ( wp_get_attachment_caption( get_post_thumbnail_id() ) ) : ?>
-                        <figcaption><?php echo wp_get_attachment_caption( get_post_thumbnail_id() ); ?></figcaption>
-                    <?php endif; ?>
-                </figure>
-            <?php endif; ?>
 
             <div class="entry-content" data-paywall="content">
                 <?php

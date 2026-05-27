@@ -1,4 +1,12 @@
-<?php
+﻿<?php
+/**
+ * @author Arturo Merchan | Merchan.Dev | Espressivo Venezuela,C.A
+ * 
+ * ADVERTENCIA LEGAL:
+ * Queda totalmente prohibida su reproduccion, edicion, venta, propaganda, alteracion 
+ * o cualquier otra accion que de una u otra forma violente la propiedad intelectual, 
+ * material y digital de este proyecto. Esta infraccion esta prohibida y penada por la ley.
+ */
 $premium_cats = array('nacional' => 'Nacional', 'internacional' => 'Internacional', 'economia' => 'Economía', 'sucesos' => 'Sucesos');
 foreach ( $premium_cats as $cat_slug => $cat_name ) :
     $cat_args = array('category_name' => $cat_slug, 'posts_per_page' => 4, 'post_status' => 'publish');

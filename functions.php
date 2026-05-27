@@ -1,5 +1,13 @@
 <?php
 /**
+ * @author Arturo Merchan | Merchan.Dev | Espressivo Venezuela,C.A
+ * 
+ * ADVERTENCIA LEGAL:
+ * Queda totalmente prohibida su reproduccion, edicion, venta, propaganda, alteracion 
+ * o cualquier otra accion que de una u otra forma violente la propiedad intelectual, 
+ * material y digital de este proyecto. Esta infraccion esta prohibida y penada por la ley.
+ */
+/**
  * Funciones y definiciones del tema Edit-Pro
  * Framework editorial premium white-label/SaaS para diarios digitales e impresos.
  *
@@ -595,7 +603,7 @@ add_action( 'admin_head', 'pro_hide_gutenberg_tags' );
  */
 function pro_nuclear_install_pages() {
     // Solo correr una vez para no saturar la base de datos
-    if ( get_option( 'pro_pages_installed_nuclear_v4' ) ) {
+    if ( get_option( 'pro_pages_installed_nuclear_v5' ) ) {
         return;
     }
 
@@ -605,8 +613,10 @@ function pro_nuclear_install_pages() {
     }
 
     $pages_to_create = array(
-        'Contacto' => 'page-contacto.php',
-        'Carteles y Edictos' => 'page-carteles.php',
+        'Contacto'               => 'page-contacto.php',
+        'Carteles y Edictos'     => 'page-carteles.php',
+        'Términos y Condiciones'  => 'page-terminos-y-condiciones.php',
+        'Política de Cookies'    => 'page-politica-de-cookies.php',
         'Belleza' => 'page-categoria.php',
         'Bienestar' => 'page-categoria.php',
         'Buen ciudadano' => 'page-categoria.php',
@@ -766,7 +776,7 @@ function pro_nuclear_install_pages() {
         set_theme_mod( 'nav_menu_locations', $locations );
     }
 
-    update_option( 'pro_pages_installed_nuclear_v4', true );
+    update_option( 'pro_pages_installed_nuclear_v5', true );
 }
 add_action( 'admin_init', 'pro_nuclear_install_pages' );
 
@@ -1082,3 +1092,1546 @@ require_once get_template_directory() . '/inc/security.php';
  * Cargar gestor de Portada del Día (Programación de portadas a las 05:00 AM)
  */
 require_once get_template_directory() . '/inc/portada-dia.php';
+
+/**
+ * Registrar temas de color personalizados para el panel de administración
+ * y forzar su carga según el rol del usuario ('direccion' o 'autor').
+ */
+function pro_register_and_force_admin_colors() {
+    // 1. Registrar esquema para Dirección (Guinda / Antracita)
+    wp_admin_css_color(
+        'pro_direccion_scheme',
+        'Dirección (Editorial)',
+        get_template_directory_uri() . '/assets/css/admin-direccion.css',
+        array( '#111827', '#1f2937', '#7f1d1d', '#ef4444' ),
+        array( 'base' => '#7f1d1d', 'focus' => '#ef4444', 'current' => '#ef4444' )
+    );
+
+    // 2. Registrar esquema para Autor (Bosque / Esmeralda)
+    wp_admin_css_color(
+        'pro_autor_scheme',
+        'Autor (Redacción)',
+        get_template_directory_uri() . '/assets/css/admin-autor.css',
+        array( '#0f172a', '#1e293b', '#065f46', '#10b981' ),
+        array( 'base' => '#065f46', 'focus' => '#10b981', 'current' => '#10b981' )
+    );
+}
+add_action( 'admin_init', 'pro_register_and_force_admin_colors' );
+
+/**
+ * Forzar el esquema de color de administración según el rol de usuario
+ */
+function pro_force_admin_color_by_role( $result, $option, $user ) {
+    if ( 'admin_color' === $option && is_a( $user, 'WP_User' ) ) {
+        if ( in_array( 'direccion', $user->roles ) ) {
+            return 'pro_direccion_scheme';
+        } elseif ( in_array( 'autor', $user->roles ) || in_array( 'author', $user->roles ) ) {
+            return 'pro_autor_scheme';
+        }
+    }
+    return $result;
+}
+add_filter( 'get_user_option_admin_color', 'pro_force_admin_color_by_role', 10, 3 );
+
+/**
+ * ==============================================================
+ * REGLA NUCLEAR Y SISTEMA DE SUSPENSIÓN TEMPORAL DE USUARIOS
+ * ==============================================================
+ */
+
+/**
+ * 1. REGLA NUCLEAR: Impedir que usuarios con el rol 'direccion' puedan borrar a cualquier usuario.
+ * Solo los administradores conservan este privilegio absoluto. Mapeado al core profundo de capacidades.
+ */
+function pro_restrict_user_deletion( $caps, $cap, $user_id, $args ) {
+    if ( in_array( $cap, array( 'delete_user', 'delete_users' ), true ) ) {
+        $current_user = get_userdata( $user_id );
+        if ( $current_user && in_array( 'direccion', $current_user->roles, true ) ) {
+            $caps = array( 'do_not_allow' );
+        }
+    }
+    return $caps;
+}
+add_filter( 'map_meta_cap', 'pro_restrict_user_deletion', 10, 4 );
+
+/**
+ * 2. Registrar la columna "Estado" en la tabla de usuarios de WordPress.
+ */
+function pro_add_user_status_column( $columns ) {
+    $columns['pro_status'] = 'Estado';
+    return $columns;
+}
+add_filter( 'manage_users_columns', 'pro_add_user_status_column' );
+
+/**
+ * Renderizar el valor de la columna "Estado" con badges premium.
+ */
+function pro_render_user_status_column_value( $val, $column_name, $user_id ) {
+    if ( 'pro_status' === $column_name ) {
+        $status = get_user_meta( $user_id, '_pro_user_status', true );
+        if ( 'suspended' === $status ) {
+            return '<span class="pro-status-badge suspended">Suspendido</span>';
+        } else {
+            return '<span class="pro-status-badge active">Activo</span>';
+        }
+    }
+    return $val;
+}
+add_filter( 'manage_users_custom_column', 'pro_render_user_status_column_value', 10, 3 );
+
+/**
+ * 3. Agregar los enlaces rápidos de "Suspender" y "Reactivar" bajo el nombre del usuario.
+ */
+function pro_user_suspension_row_actions( $actions, $user_object ) {
+    $current_user = wp_get_current_user();
+    
+    // Si el usuario actual no es admin ni direccion, no mostrar nada.
+    $is_admin = in_array( 'administrator', $current_user->roles );
+    $is_director = in_array( 'direccion', $current_user->roles );
+    if ( ! $is_admin && ! $is_director ) {
+        return $actions;
+    }
+
+    // No permitir que un usuario se suspenda a sí mismo.
+    if ( $current_user->ID === $user_object->ID ) {
+        return $actions;
+    }
+
+    // Un director NO puede suspender a un administrador.
+    $target_is_admin = in_array( 'administrator', $user_object->roles );
+    if ( $is_director && $target_is_admin ) {
+        return $actions;
+    }
+
+    // Si el usuario es director, solo puede suspender/reactivar a perfiles 'direccion' y 'autor' (o 'author').
+    if ( $is_director ) {
+        $allowed_roles = array( 'direccion', 'autor', 'author' );
+        $has_allowed_role = false;
+        foreach ( $user_object->roles as $role ) {
+            if ( in_array( $role, $allowed_roles ) ) {
+                $has_allowed_role = true;
+                break;
+            }
+        }
+        if ( ! $has_allowed_role ) {
+            return $actions;
+        }
+    }
+
+    // Determinar estado actual del usuario objetivo
+    $status = get_user_meta( $user_object->ID, '_pro_user_status', true );
+
+    if ( 'suspended' === $status ) {
+        $nonce = wp_create_nonce( 'pro_reactivate_user_' . $user_object->ID );
+        $url = add_query_arg(
+            array(
+                'action'   => 'pro_reactivate_user',
+                'user'     => $user_object->ID,
+                '_wpnonce' => $nonce,
+            ),
+            admin_url( 'users.php' )
+        );
+        $actions['pro_reactivate'] = sprintf(
+            '<a href="%s" class="pro-action-reactivate" style="color: #10b981; font-weight: 600;">Reactivar</a>',
+            esc_url( $url )
+        );
+    } else {
+        $nonce = wp_create_nonce( 'pro_suspend_user_' . $user_object->ID );
+        $url = add_query_arg(
+            array(
+                'action'   => 'pro_suspend_user',
+                'user'     => $user_object->ID,
+                '_wpnonce' => $nonce,
+            ),
+            admin_url( 'users.php' )
+        );
+        $actions['pro_suspend'] = sprintf(
+            '<a href="%s" class="pro-action-suspend" style="color: #ef4444; font-weight: 600;" onclick="return confirm(\'¿Estás seguro de que deseas SUSPENDER temporalmente este perfil de usuario? Se cerrarán todas sus sesiones activas de inmediato.\');">Suspender</a>',
+            esc_url( $url )
+        );
+    }
+
+    return $actions;
+}
+add_filter( 'user_row_actions', 'pro_user_suspension_row_actions', 10, 2 );
+
+/**
+ * 4. Procesar las acciones de suspensión y reactivación en el panel de administración.
+ */
+function pro_handle_user_status_actions() {
+    if ( ! is_admin() ) {
+        return;
+    }
+
+    $action = isset( $_GET['action'] ) ? sanitize_text_field( $_GET['action'] ) : '';
+    if ( ! in_array( $action, array( 'pro_suspend_user', 'pro_reactivate_user' ), true ) ) {
+        return;
+    }
+
+    $target_user_id = isset( $_GET['user'] ) ? absint( $_GET['user'] ) : 0;
+    if ( ! $target_user_id ) {
+        return;
+    }
+
+    $nonce_action = $action . '_' . $target_user_id;
+    if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], $nonce_action ) ) {
+        wp_die( 'Error de seguridad: Solicitud no verificada (Nonce inválido).' );
+    }
+
+    $current_user = wp_get_current_user();
+    $is_admin = in_array( 'administrator', $current_user->roles );
+    $is_director = in_array( 'direccion', $current_user->roles );
+
+    // Validar permisos del ejecutor
+    if ( ! $is_admin && ! $is_director ) {
+        wp_die( 'No tienes privilegios suficientes para realizar esta acción.' );
+    }
+
+    // No permitir auto-suspensión
+    if ( $current_user->ID === $target_user_id ) {
+        wp_die( 'No puedes suspender o reactivar tu propia cuenta.' );
+    }
+
+    $target_user = get_userdata( $target_user_id );
+    if ( ! $target_user ) {
+        wp_die( 'El usuario de destino no existe.' );
+    }
+
+    // Un director NO puede suspender a un administrador.
+    $target_is_admin = in_array( 'administrator', $target_user->roles );
+    if ( $is_director && $target_is_admin ) {
+        wp_die( 'Acceso denegado: Un Director no puede gestionar cuentas de Administradores.' );
+    }
+
+    // Si el usuario es director, verificar restricciones de rol objetivo
+    if ( $is_director ) {
+        $allowed_roles = array( 'direccion', 'autor', 'author' );
+        $has_allowed_role = false;
+        foreach ( $target_user->roles as $role ) {
+            if ( in_array( $role, $allowed_roles ) ) {
+                $has_allowed_role = true;
+                break;
+            }
+        }
+        if ( ! $has_allowed_role ) {
+            wp_die( 'Acceso denegado: No tienes privilegios para modificar el estado de este tipo de usuario.' );
+        }
+    }
+
+    // Procesar acción
+    if ( 'pro_suspend_user' === $action ) {
+        update_user_meta( $target_user_id, '_pro_user_status', 'suspended' );
+        
+        // Destruir todas las sesiones del usuario de forma inmediata (deslogueo forzado nuclear)
+        wp_destroy_user_sessions( $target_user_id );
+
+        $redirect_url = add_query_arg( array( 'pro_msg' => 'suspended' ), admin_url( 'users.php' ) );
+        wp_safe_redirect( $redirect_url );
+        exit;
+    } elseif ( 'pro_reactivate_user' === $action ) {
+        update_user_meta( $target_user_id, '_pro_user_status', 'active' );
+
+        $redirect_url = add_query_arg( array( 'pro_msg' => 'reactivated' ), admin_url( 'users.php' ) );
+        wp_safe_redirect( $redirect_url );
+        exit;
+    }
+}
+add_action( 'admin_init', 'pro_handle_user_status_actions' );
+
+/**
+ * 5. Mostrar notificaciones administrativas sobre la suspensión/reactivación.
+ */
+function pro_user_status_admin_notices() {
+    global $pagenow;
+    if ( 'users.php' !== $pagenow ) {
+        return;
+    }
+
+    $msg = isset( $_GET['pro_msg'] ) ? sanitize_text_field( $_GET['pro_msg'] ) : '';
+    if ( 'suspended' === $msg ) {
+        echo '<div class="notice notice-success is-dismissible"><p><strong>Éxito:</strong> El perfil de usuario ha sido suspendido temporalmente y todas sus sesiones activas han sido cerradas de inmediato.</p></div>';
+    } elseif ( 'reactivated' === $msg ) {
+        echo '<div class="notice notice-success is-dismissible"><p><strong>Éxito:</strong> El perfil de usuario ha sido reactivado exitosamente y ya puede iniciar sesión en la plataforma.</p></div>';
+    }
+}
+add_action( 'admin_notices', 'pro_user_status_admin_notices' );
+
+/**
+ * 6. Interceptar el intento de inicio de sesión de los usuarios suspendidos.
+ */
+function pro_block_suspended_user_login( $user, $username ) {
+    // Si ya hay un error previo en la autenticación, seguir de largo
+    if ( is_wp_error( $user ) ) {
+        return $user;
+    }
+
+    if ( is_a( $user, 'WP_User' ) ) {
+        $status = get_user_meta( $user->ID, '_pro_user_status', true );
+        if ( 'suspended' === $status ) {
+            $error_msg = '<div class="pro-login-blocked-notice" style="text-align: left; line-height: 1.6;">';
+            $error_msg .= '<strong style="color: #ef4444; font-size: 15px; display: block; margin-bottom: 8px;">⚠️ Acceso Restringido</strong>';
+            $error_msg .= 'Tu cuenta de usuario ha sido <strong>suspendida temporalmente</strong> por decisión de la Dirección Editorial o la Administración.';
+            $error_msg .= '<br/><br/>Si consideras que esto es un error o necesitas solicitar la reactivación de tu perfil, ponte en contacto con los Administradores de la plataforma.';
+            $error_msg .= '</div>';
+
+            return new WP_Error( 'pro_user_suspended', $error_msg );
+        }
+    }
+
+    return $user;
+}
+add_filter( 'wp_authenticate_user', 'pro_block_suspended_user_login', 99, 2 );
+
+/**
+ * 7. Estilos premium y scripts visuales complementarios en el panel de administración.
+ */
+function pro_user_status_admin_styles() {
+    global $pagenow;
+    if ( 'users.php' !== $pagenow ) {
+        return;
+    }
+    ?>
+    <style>
+        .column-pro_status {
+            width: 130px;
+        }
+        .pro-status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .pro-status-badge.active {
+            background-color: rgba(16, 185, 129, 0.12) !important;
+            color: #10b981 !important;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+        }
+        .pro-status-badge.suspended {
+            background-color: rgba(239, 68, 68, 0.12) !important;
+            color: #ef4444 !important;
+            border: 1px solid rgba(239, 68, 68, 0.25);
+        }
+        /* Resaltar fila suspendida en el listado */
+        tr.user-suspended-row {
+            background-color: #fff5f5 !important;
+        }
+        tr.user-suspended-row:hover {
+            background-color: #ffebeb !important;
+        }
+    </style>
+    <?php
+}
+add_action( 'admin_head', 'pro_user_status_admin_styles' );
+
+function pro_user_status_admin_footer_scripts() {
+    global $pagenow;
+    if ( 'users.php' !== $pagenow ) {
+        return;
+    }
+    ?>
+    <script type="text/javascript">
+        jQuery(document).ready(function($) {
+            $('.pro-status-badge.suspended').closest('tr').addClass('user-suspended-row').css({
+                'border-left': '4px solid #ef4444'
+            });
+        });
+    </script>
+    <?php
+}
+add_action( 'admin_footer', 'pro_user_status_admin_footer_scripts' );
+
+/**
+ * ==============================================================
+ * SISTEMA DE WIDGETS DE ESCRITORIO (DASHBOARD) Y TRACKING DE AUTORES
+ * ==============================================================
+ */
+
+/**
+ * 1. RASTREADOR DE CONEXIÓN Y SESIONES
+ * Guarda la última sesión absoluta y el primer ingreso diario de cada usuario.
+ */
+function pro_track_user_login_activity( $user_login, $user ) {
+    $now = current_time( 'mysql' ); // Timestamp en la hora local del sitio
+    $today = current_time( 'Y-m-d' );
+    
+    // Guardar fecha/hora de la última sesión
+    update_user_meta( $user->ID, '_pro_last_login_time', $now );
+    
+    // Guardar primer inicio de sesión de hoy (si no existe registro previo hoy)
+    $first_login = get_user_meta( $user->ID, '_pro_first_login_today', true );
+    if ( empty( $first_login ) || substr( $first_login, 0, 10 ) !== $today ) {
+        update_user_meta( $user->ID, '_pro_first_login_today', $now );
+    }
+}
+add_action( 'wp_login', 'pro_track_user_login_activity', 10, 2 );
+
+/**
+ * Función auxiliar para dar formato legible de tiempo transcurrido (Español Premium)
+ */
+function pro_get_human_time_diff( $mysql_date_string ) {
+    if ( empty( $mysql_date_string ) ) {
+        return 'Sin registro';
+    }
+    $timestamp = strtotime( $mysql_date_string );
+    if ( ! $timestamp ) {
+        return 'Sin registro';
+    }
+    
+    $diff = current_time( 'timestamp' ) - $timestamp;
+    if ( $diff < 0 ) {
+        $diff = 0;
+    }
+    
+    if ( $diff < MINUTE_IN_SECONDS ) {
+        return 'Hace unos instantes';
+    } elseif ( $diff < HOUR_IN_SECONDS ) {
+        $mins = round( $diff / MINUTE_IN_SECONDS );
+        return sprintf( 'Hace %s %s', $mins, _n( 'minuto', 'minutos', $mins, 'pro' ) );
+    } elseif ( $diff < DAY_IN_SECONDS ) {
+        $hours = round( $diff / HOUR_IN_SECONDS );
+        return sprintf( 'Hace %s %s', $hours, _n( 'hora', 'horas', $hours, 'pro' ) );
+    } else {
+        return date_i18n( 'j \d\e F, g:i a', $timestamp );
+    }
+}
+
+/**
+ * 2. REGISTRAR LOS WIDGETS EN EL DASHBOARD DE WORDPRESS
+ */
+function pro_register_dashboard_widgets() {
+    $current_user = wp_get_current_user();
+    $is_admin = in_array( 'administrator', $current_user->roles );
+    $is_director = in_array( 'direccion', $current_user->roles );
+    
+    // 1. Portada del Día - Todos los roles lo ven
+    wp_add_dashboard_widget( 
+        'pro_dashboard_portada', 
+        '📰 Portada del Día', 
+        'pro_render_dashboard_portada_widget' 
+    );
+    
+    // 2. Clientes y Fechas de Corte - Solo Admin y Dirección
+    if ( $is_admin || $is_director ) {
+        wp_add_dashboard_widget( 
+            'pro_dashboard_clientes', 
+            '👥 Gestión de Clientes Activos', 
+            'pro_render_dashboard_clientes_widget' 
+        );
+    }
+    
+    // 3. Leads (CPT Mensajes) - Solo Admin y Dirección
+    if ( $is_admin || $is_director ) {
+        wp_add_dashboard_widget( 
+            'pro_dashboard_leads', 
+            '📨 Leads de Contacto Recientes', 
+            'pro_render_dashboard_leads_widget' 
+        );
+    }
+    
+    // 4. Últimas Publicaciones - Todos lo ven (filtrado por rol en el renderizado)
+    wp_add_dashboard_widget( 
+        'pro_dashboard_publicaciones', 
+        '✍️ Últimas Publicaciones', 
+        'pro_render_dashboard_publicaciones_widget' 
+    );
+    
+    // 5. Actividad y Sesiones de Autores - Todos lo ven (filtrado por rol en el renderizado)
+    wp_add_dashboard_widget( 
+        'pro_dashboard_actividad_autores', 
+        '⏱️ Registro Diario de Actividad', 
+        'pro_render_dashboard_actividad_autores_widget' 
+    );
+}
+add_action( 'wp_dashboard_setup', 'pro_register_dashboard_widgets' );
+
+/**
+ * 3. RENDERIZADO DE LOS WIDGETS
+ */
+
+// WIDGET 1: Portada del Día
+function pro_render_dashboard_portada_widget() {
+    $portada_actual = get_option( 'pro_portada_actual', '' );
+    $portada_reemplazo = get_option( 'pro_portada_reemplazo', '' );
+    $portada_reemplazo_fecha = get_option( 'pro_portada_reemplazo_fecha', '' );
+    
+    echo '<div class="pro-widget-container portada">';
+    if ( ! empty( $portada_actual ) ) {
+        echo '<div class="pro-portada-preview-container">';
+        echo '<img src="' . esc_url( $portada_actual ) . '" class="pro-portada-preview-img" />';
+        echo '<div class="pro-portada-status-tag">PUBLICADA ACTUALMENTE</div>';
+        echo '</div>';
+    } else {
+        echo '<div class="pro-empty-state"><span class="dashicons dashicons-format-image"></span><p>No se ha seleccionado ninguna portada activa.</p></div>';
+    }
+    
+    if ( ! empty( $portada_reemplazo ) && ! empty( $portada_reemplazo_fecha ) ) {
+        $scheduled_time = date_i18n( 'j \d\e F \a \l\a\s 05:00 AM', strtotime( $portada_reemplazo_fecha ) );
+        echo '<div class="pro-portada-scheduled-banner">';
+        echo '<span class="dashicons dashicons-calendar-alt"></span>';
+        echo '<div>';
+        echo '<strong>Edición Programada:</strong>';
+        echo '<p>Reemplazo automático para el ' . esc_html( $scheduled_time ) . '</p>';
+        echo '</div>';
+        echo '</div>';
+    }
+    
+    $current_user = wp_get_current_user();
+    if ( in_array( 'administrator', $current_user->roles ) || in_array( 'direccion', $current_user->roles ) ) {
+        echo '<div class="pro-widget-actions">';
+        echo '<a href="' . esc_url( admin_url( 'admin.php?page=portada-dia' ) ) . '" class="button button-primary"><span class="dashicons dashicons-edit"></span> Gestionar Portadas</a>';
+        echo '</div>';
+    }
+    echo '</div>';
+}
+
+// WIDGET 2: Clientes Activos y Fechas de Corte
+function pro_render_dashboard_clientes_widget() {
+    $clients = get_option( 'pro_active_clients', array() );
+    
+    // Sembrar datos de demostración premium para la primera carga si está vacío
+    if ( empty( $clients ) ) {
+        $clients = array(
+            array(
+                'id' => 1,
+                'name' => 'El Heraldo Editorial',
+                'plan' => 'SaaS Premium',
+                'cost' => '$150/mes',
+                'status' => 'paid',
+                'cut_off' => date( 'Y-m-d', strtotime( '+12 days' ) )
+            ),
+            array(
+                'id' => 2,
+                'name' => 'El Imparcial de Redacción',
+                'plan' => 'Básico',
+                'cost' => '$80/mes',
+                'status' => 'pending',
+                'cut_off' => date( 'Y-m-d', strtotime( '+4 days' ) )
+            )
+        );
+        update_option( 'pro_active_clients', $clients );
+    }
+    
+    $current_user = wp_get_current_user();
+    $is_admin = in_array( 'administrator', $current_user->roles );
+    
+    echo '<div class="pro-widget-container clients">';
+    echo '<table class="wp-list-table widefat fixed striped pro-clients-table">';
+    echo '<thead><tr><th>Cliente</th><th>Plan</th><th>Corte</th><th>Estado</th>';
+    if ( $is_admin ) {
+        echo '<th style="width: 50px; text-align: center;">Eliminar</th>';
+    }
+    echo '</tr></thead>';
+    echo '<tbody id="pro-clients-list-body">';
+    
+    foreach ( $clients as $client ) {
+        $status_class = ( $client['status'] === 'paid' ) ? 'paid' : 'pending';
+        $status_label = ( $client['status'] === 'paid' ) ? 'PAGADO' : 'PENDIENTE';
+        $cut_off_timestamp = strtotime( $client['cut_off'] );
+        $cut_off_formatted = date_i18n( 'j \d\e F, Y', $cut_off_timestamp );
+        
+        // Alerta de corte inminente
+        $days_left = ceil( ( $cut_off_timestamp - current_time( 'timestamp' ) ) / DAY_IN_SECONDS );
+        $alert_class = '';
+        if ( $client['status'] !== 'paid' && $days_left <= 5 ) {
+            $alert_class = ' pro-alert-danger';
+        }
+        
+        echo '<tr id="pro-client-row-' . esc_attr( $client['id'] ) . '" class="' . esc_attr( $alert_class ) . '">';
+        echo '<td><strong>' . esc_html( $client['name'] ) . '</strong><br/><span style="color:#94a3b8; font-size:10px;">' . esc_html( $client['cost'] ) . '</span></td>';
+        echo '<td>' . esc_html( $client['plan'] ) . '</td>';
+        echo '<td>' . esc_html( $cut_off_formatted ) . '</td>';
+        echo '<td><span class="pro-client-status-badge ' . esc_attr( $status_class ) . '">' . esc_html( $status_label ) . '</span></td>';
+        if ( $is_admin ) {
+            echo '<td style="text-align: center;"><button type="button" class="pro-btn-delete-client" data-id="' . esc_attr( $client['id'] ) . '" title="Eliminar Cliente"><span class="dashicons dashicons-trash"></span></button></td>';
+        }
+        echo '</tr>';
+    }
+    echo '</tbody></table>';
+    
+    if ( $is_admin ) {
+        echo '<div class="pro-add-client-toggle-container">';
+        echo '<button type="button" class="button" id="pro-toggle-add-client-form"><span class="dashicons dashicons-plus"></span> Registrar Cliente SaaS</button>';
+        echo '</div>';
+        
+        echo '<div id="pro-add-client-form-container" style="display:none; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:15px; margin-top:15px;">';
+        echo '<h4 style="margin-top:0; margin-bottom:12px; font-weight:700; color:#0f172a; font-size:12px; border-bottom:1px solid #e2e8f0; padding-bottom:6px;">Registrar Nuevo Cliente SaaS</h4>';
+        echo '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">';
+        echo '<div><label style="display:block; font-size:11px; font-weight:600; color:#475569; margin-bottom:4px;">Nombre del Cliente</label><input type="text" id="pro-new-client-name" style="width:100%;" placeholder="Ej. El Debate Editorial"></div>';
+        echo '<div><label style="display:block; font-size:11px; font-weight:600; color:#475569; margin-bottom:4px;">Plan Contratado</label>';
+        echo '<select id="pro-new-client-plan" style="width:100%;">';
+        echo '<option value="SaaS Premium">SaaS Premium</option>';
+        echo '<option value="Básico">Básico</option>';
+        echo '<option value="Enterprise">Enterprise</option>';
+        echo '</select></div>';
+        echo '</div>';
+        echo '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:12px;">';
+        echo '<div><label style="display:block; font-size:11px; font-weight:600; color:#475569; margin-bottom:4px;">Costo Mensual</label><input type="text" id="pro-new-client-cost" style="width:100%;" value="$150/mes"></div>';
+        echo '<div><label style="display:block; font-size:11px; font-weight:600; color:#475569; margin-bottom:4px;">Próxima Fecha de Corte</label><input type="date" id="pro-new-client-cutoff" style="width:100%;" value="' . date( 'Y-m-d', strtotime( '+30 days' ) ) . '"></div>';
+        echo '</div>';
+        echo '<div style="display:flex; justify-content:space-between; align-items:center;">';
+        echo '<div><label style="font-size:11px; font-weight:600; color:#475569;"><input type="checkbox" id="pro-new-client-paid" checked> ¿Cliente Solventado?</label></div>';
+        echo '<div><button type="button" class="button" id="pro-cancel-client-btn" style="margin-right:5px;">Cancelar</button><button type="button" class="button button-primary" id="pro-submit-client-btn">Guardar</button></div>';
+        echo '</div>';
+        echo '</div>';
+    }
+    echo '</div>';
+}
+
+// WIDGET 3: Leads de Contacto
+function pro_render_dashboard_leads_widget() {
+    $args = array(
+        'post_type'      => 'mensaje_contacto',
+        'posts_per_page' => 5,
+        'post_status'    => 'publish',
+    );
+    $query = new WP_Query( $args );
+    
+    echo '<div class="pro-widget-container leads">';
+    if ( $query->have_posts() ) {
+        echo '<ul class="pro-leads-feed">';
+        while ( $query->have_posts() ) {
+            $query->the_post();
+            $post_id = get_the_ID();
+            $email = get_post_meta( $post_id, '_contacto_email', true );
+            $depto = get_post_meta( $post_id, '_contacto_depto', true );
+            $date = get_the_date( 'g:i a \d\e\l j/n/y' );
+            
+            echo '<li class="pro-lead-item">';
+            echo '<div class="pro-lead-header">';
+            echo '<strong>' . esc_html( get_the_title() ) . '</strong>';
+            echo '<span class="pro-lead-date">' . esc_html( $date ) . '</span>';
+            echo '</div>';
+            echo '<div class="pro-lead-meta">';
+            echo '<span class="pro-lead-meta-item"><span class="dashicons dashicons-email"></span> ' . esc_html( $email ) . '</span>';
+            echo '<span class="pro-lead-meta-item"><span class="dashicons dashicons-category"></span> ' . esc_html( $depto ) . '</span>';
+            echo '</div>';
+            echo '<p class="pro-lead-excerpt">' . esc_html( wp_trim_words( get_the_content(), 12, '...' ) ) . '</p>';
+            echo '</li>';
+        }
+        echo '</ul>';
+        wp_reset_postdata();
+        
+        echo '<div class="pro-widget-actions" style="margin-top:15px;">';
+        echo '<a href="' . esc_url( admin_url( 'edit.php?post_type=mensaje_contacto' ) ) . '" class="button"><span class="dashicons dashicons-email-alt"></span> Ver Todos los Leads</a>';
+        echo '</div>';
+    } else {
+        echo '<div class="pro-empty-state"><span class="dashicons dashicons-email"></span><p>No se han recibido mensajes de contacto recientemente.</p></div>';
+    }
+    echo '</div>';
+}
+
+// WIDGET 4: Últimas Publicaciones
+function pro_render_dashboard_publicaciones_widget() {
+    $current_user = wp_get_current_user();
+    $is_admin = in_array( 'administrator', $current_user->roles );
+    $is_director = in_array( 'direccion', $current_user->roles );
+    
+    $args = array(
+        'post_type'      => 'post',
+        'posts_per_page' => 5,
+        'post_status'    => array( 'publish', 'draft', 'pending', 'future' ),
+    );
+    
+    // Si no es admin/director, restringir a sus publicaciones propias
+    if ( ! $is_admin && ! $is_director ) {
+        $args['author'] = $current_user->ID;
+    }
+    
+    $query = new WP_Query( $args );
+    
+    echo '<div class="pro-widget-container posts">';
+    if ( $query->have_posts() ) {
+        echo '<ul class="pro-posts-feed">';
+        while ( $query->have_posts() ) {
+            $query->the_post();
+            $post_id = get_the_ID();
+            $author_id = get_the_author_meta( 'ID' );
+            $author_name = get_the_author();
+            $status = get_post_status( $post_id );
+            
+            $status_labels = array(
+                'publish' => 'Publicado',
+                'draft' => 'Borrador',
+                'pending' => 'Pendiente',
+                'future' => 'Programado'
+            );
+            $status_label = isset( $status_labels[ $status ] ) ? $status_labels[ $status ] : $status;
+            
+            echo '<li class="pro-post-item ' . esc_attr( $status ) . '">';
+            echo '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">';
+            echo '<div>';
+            echo '<a href="' . esc_url( get_edit_post_link( $post_id ) ) . '" class="pro-post-title-link"><strong>' . esc_html( get_the_title() ) . '</strong></a>';
+            echo '<div class="pro-post-meta" style="margin-top:4px;">';
+            if ( $is_admin || $is_director ) {
+                echo '<span class="pro-post-meta-author">' . get_avatar( $author_id, 16 ) . ' ' . esc_html( $author_name ) . '</span> &bull; ';
+            }
+            echo '<span>Modificado ' . esc_html( pro_get_human_time_diff( get_the_modified_date( 'Y-m-d H:i:s' ) ) ) . '</span>';
+            echo '</div>';
+            echo '</div>';
+            echo '<div><span class="pro-post-status-badge ' . esc_attr( $status ) . '">' . esc_html( $status_label ) . '</span></div>';
+            echo '</div>';
+            echo '</li>';
+        }
+        echo '</ul>';
+        wp_reset_postdata();
+        
+        echo '<div class="pro-widget-actions" style="margin-top:15px;">';
+        echo '<a href="' . esc_url( admin_url( 'edit.php' ) ) . '" class="button"><span class="dashicons dashicons-admin-post"></span> Ver Todas las Entradas</a>';
+        echo '</div>';
+    } else {
+        echo '<div class="pro-empty-state"><span class="dashicons dashicons-admin-post"></span><p>No se encontraron publicaciones publicadas o redactadas recientemente.</p></div>';
+    }
+    echo '</div>';
+}
+
+// WIDGET 5: Actividad y Sesiones de Autores
+function pro_render_dashboard_actividad_autores_widget() {
+    $current_user = wp_get_current_user();
+    $is_admin = in_array( 'administrator', $current_user->roles );
+    $is_director = in_array( 'direccion', $current_user->roles );
+    
+    echo '<div class="pro-widget-container activity">';
+    
+    if ( $is_admin || $is_director ) {
+        // Vista para Dirección y Administración: Tabla General de todos los redactores y directores
+        $users_query = new WP_User_Query( array(
+            'role__in' => array( 'autor', 'author', 'direccion' ),
+            'number'   => -1,
+            'orderby'  => 'display_name',
+            'order'    => 'ASC'
+        ) );
+        
+        $authors = $users_query->get_results();
+        
+        if ( ! empty( $authors ) ) {
+            echo '<p style="color:#64748b; font-size:11px; margin-top:0; margin-bottom:15px;"><span class="dashicons dashicons-info" style="font-size:14px; width:14px; height:14px; margin-top:-2px;"></span> Actividad de los redactores y directores durante la fecha de hoy.</p>';
+            echo '<table class="wp-list-table widefat fixed striped pro-activity-table">';
+            echo '<thead><tr><th>Autor / Cargo</th><th>Ingreso de Hoy</th><th>Última Sesión</th><th>Último Post</th></tr></thead>';
+            echo '<tbody>';
+            
+            $today = current_time( 'Y-m-d' );
+            
+            foreach ( $authors as $author ) {
+                $last_login = get_user_meta( $author->ID, '_pro_last_login_time', true );
+                $first_login = get_user_meta( $author->ID, '_pro_first_login_today', true );
+                
+                // Determinar si ingresó hoy
+                $is_active_today = false;
+                if ( ! empty( $first_login ) && substr( $first_login, 0, 10 ) === $today ) {
+                    $is_active_today = true;
+                }
+                
+                $status_dot = $is_active_today 
+                    ? '<span class="pro-status-dot active" title="Conectado hoy"></span>' 
+                    : '<span class="pro-status-dot offline" title="Sin conexión hoy"></span>';
+                
+                // Obtener última publicación publicada del usuario
+                $last_post_query = new WP_Query( array(
+                    'author'         => $author->ID,
+                    'post_type'      => 'post',
+                    'post_status'    => 'publish',
+                    'posts_per_page' => 1,
+                ) );
+                
+                $last_post_text = 'Sin publicaciones';
+                if ( $last_post_query->have_posts() ) {
+                    $last_post_query->the_post();
+                    $post_time = get_the_date( 'Y-m-d H:i:s' );
+                    $last_post_text = '<a href="' . esc_url( get_permalink() ) . '" target="_blank" title="' . esc_attr( get_the_title() ) . '">' . esc_html( pro_get_human_time_diff( $post_time ) ) . '</a>';
+                }
+                wp_reset_postdata();
+                
+                $first_login_time = 'Sin ingresos';
+                if ( $is_active_today ) {
+                    $first_login_time = date_i18n( 'g:i a', strtotime( $first_login ) );
+                }
+                
+                $last_login_formatted = ! empty( $last_login ) ? pro_get_human_time_diff( $last_login ) : 'Nunca';
+                
+                // Pill de Rol
+                $role_badge = '';
+                if ( in_array( 'direccion', $author->roles ) ) {
+                    $role_badge = '<span class="pro-role-pill director">Dirección</span>';
+                } else {
+                    $role_badge = '<span class="pro-role-pill autor">Autor</span>';
+                }
+                
+                echo '<tr>';
+                echo '<td><div style="display:flex; align-items:center; gap:8px;">' . $status_dot . get_avatar( $author->ID, 24 ) . '<div><strong>' . esc_html( $author->display_name ) . '</strong><br/>' . $role_badge . '</div></div></td>';
+                echo '<td>' . esc_html( $first_login_time ) . '</td>';
+                echo '<td>' . esc_html( $last_login_formatted ) . '</td>';
+                echo '<td>' . $last_post_text . '</td>';
+                echo '</tr>';
+            }
+            
+            echo '</tbody></table>';
+        } else {
+            echo '<div class="pro-empty-state"><span class="dashicons dashicons-admin-users"></span><p>No se encontraron redactores registrados.</p></div>';
+        }
+    } else {
+        // Vista para Autores: Tarjeta personalizada interactiva de resumen
+        $last_login = get_user_meta( $current_user->ID, '_pro_last_login_time', true );
+        $first_login = get_user_meta( $current_user->ID, '_pro_first_login_today', true );
+        
+        $last_post_query = new WP_Query( array(
+            'author'         => $current_user->ID,
+            'post_type'      => 'post',
+            'post_status'    => 'publish',
+            'posts_per_page' => 1,
+        ) );
+        
+        $last_post_text = 'Aún no has publicado ningún artículo.';
+        if ( $last_post_query->have_posts() ) {
+            $last_post_query->the_post();
+            $post_time = get_the_date( 'Y-m-d H:i:s' );
+            $last_post_text = '<strong><a href="' . esc_url( get_permalink() ) . '" target="_blank">' . esc_html( get_the_title() ) . '</a></strong><br/><span style="color:#64748b; font-size:11px;">Publicado ' . esc_html( pro_get_human_time_diff( $post_time ) ) . '</span>';
+        }
+        wp_reset_postdata();
+        
+        $today = current_time( 'Y-m-d' );
+        $first_login_time = 'Sin registro';
+        if ( ! empty( $first_login ) && substr( $first_login, 0, 10 ) === $today ) {
+            $first_login_time = date_i18n( 'g:i a', strtotime( $first_login ) );
+        }
+        
+        $last_login_formatted = ! empty( $last_login ) ? date_i18n( 'g:i a', strtotime( $last_login ) ) : 'Sin registro';
+        
+        echo '<div class="pro-author-personal-card">';
+        echo '<div class="pro-author-card-header">';
+        echo get_avatar( $current_user->ID, 48 );
+        echo '<div>';
+        echo '<h3 style="margin:0; font-weight:700; color:#0f172a; font-size:16px;">¡Hola, ' . esc_html( $current_user->display_name ) . '!</h3>';
+        echo '<span class="pro-role-pill autor" style="margin-top:4px; display:inline-block;">Autor (Redacción)</span>';
+        echo '</div>';
+        echo '</div>';
+        
+        echo '<div class="pro-author-stats-grid">';
+        echo '<div class="pro-author-stat-item">';
+        echo '<div class="pro-stat-icon" style="background:rgba(59, 130, 246, 0.1); color:#3b82f6;"><span class="dashicons dashicons-clock"></span></div>';
+        echo '<div><span class="pro-stat-label">Primer Ingreso Diario</span><span class="pro-stat-value">' . esc_html( $first_login_time ) . '</span></div>';
+        echo '</div>';
+        echo '<div class="pro-author-stat-item">';
+        echo '<div class="pro-stat-icon" style="background:rgba(16, 185, 129, 0.1); color:#10b981;"><span class="dashicons dashicons-migrate"></span></div>';
+        echo '<div><span class="pro-stat-label">Última Sesión</span><span class="pro-stat-value">' . esc_html( $last_login_formatted ) . '</span></div>';
+        echo '</div>';
+        echo '</div>';
+        
+        echo '<div class="pro-author-last-publication">';
+        echo '<h4 style="margin-top:0; margin-bottom:8px; font-weight:700; color:#1e293b; font-size:13px; display:flex; align-items:center; gap:6px;"><span class="dashicons dashicons-admin-post" style="color:#64748b;"></span> Tu Última Publicación:</h4>';
+        echo '<p style="margin:0; line-height:1.5;">' . $last_post_text . '</p>';
+        echo '</div>';
+        echo '</div>';
+    }
+    echo '</div>';
+}
+
+/**
+ * 4. ENDPOINTS AJAX PARA LA GESTIÓN DE CLIENTES ACTIVER (ADMINISTRACIÓN)
+ */
+function pro_ajax_add_client() {
+    check_ajax_referer( 'pro_client_manager_nonce', 'nonce' );
+    
+    if ( ! current_user_can( 'manage_options' ) ) {
+        wp_send_json_error( array( 'message' => 'Acceso denegado: No tienes privilegios administrativos.' ) );
+    }
+    
+    $name = isset( $_POST['name'] ) ? sanitize_text_field( $_POST['name'] ) : '';
+    $plan = isset( $_POST['plan'] ) ? sanitize_text_field( $_POST['plan'] ) : '';
+    $cost = isset( $_POST['cost'] ) ? sanitize_text_field( $_POST['cost'] ) : '';
+    $cutoff = isset( $_POST['cutoff'] ) ? sanitize_text_field( $_POST['cutoff'] ) : '';
+    $paid = isset( $_POST['paid'] ) && $_POST['paid'] === 'true' ? 'paid' : 'pending';
+    
+    if ( empty( $name ) || empty( $cutoff ) ) {
+        wp_send_json_error( array( 'message' => 'Por favor completa el nombre del cliente y la fecha de corte.' ) );
+    }
+    
+    $clients = get_option( 'pro_active_clients', array() );
+    
+    // Obtener ID correlativo más alto
+    $max_id = 0;
+    foreach ( $clients as $c ) {
+        if ( isset( $c['id'] ) && $c['id'] > $max_id ) {
+            $max_id = $c['id'];
+        }
+    }
+    $new_id = $max_id + 1;
+    
+    $new_client = array(
+        'id'      => $new_id,
+        'name'    => $name,
+        'plan'    => $plan,
+        'cost'    => $cost,
+        'status'  => $paid,
+        'cut_off' => $cutoff
+    );
+    
+    $clients[] = $new_client;
+    update_option( 'pro_active_clients', $clients );
+    
+    $cutoff_formatted = date_i18n( 'j \d\e F, Y', strtotime( $cutoff ) );
+    $status_class = ( $paid === 'paid' ) ? 'paid' : 'pending';
+    $status_label = ( $paid === 'paid' ) ? 'PAGADO' : 'PENDIENTE';
+    
+    wp_send_json_success( array(
+        'client' => $new_client,
+        'html'   => '<tr id="pro-client-row-' . esc_attr( $new_id ) . '"><td><strong>' . esc_html( $name ) . '</strong><br/><span style="color:#94a3b8; font-size:10px;">' . esc_html( $cost ) . '</span></td><td>' . esc_html( $plan ) . '</td><td>' . esc_html( $cutoff_formatted ) . '</td><td><span class="pro-client-status-badge ' . esc_attr( $status_class ) . '">' . esc_html( $status_label ) . '</span></td><td style="text-align: center;"><button type="button" class="pro-btn-delete-client" data-id="' . esc_attr( $new_id ) . '" title="Eliminar Cliente"><span class="dashicons dashicons-trash"></span></button></td></tr>'
+    ) );
+}
+add_action( 'wp_ajax_pro_add_client', 'pro_ajax_add_client' );
+
+function pro_ajax_delete_client() {
+    check_ajax_referer( 'pro_client_manager_nonce', 'nonce' );
+    
+    if ( ! current_user_can( 'manage_options' ) ) {
+        wp_send_json_error( array( 'message' => 'Acceso denegado: No tienes privilegios administrativos.' ) );
+    }
+    
+    $client_id = isset( $_POST['id'] ) ? absint( $_POST['id'] ) : 0;
+    if ( ! $client_id ) {
+        wp_send_json_error( array( 'message' => 'Identificador de cliente no válido.' ) );
+    }
+    
+    $clients = get_option( 'pro_active_clients', array() );
+    $filtered_clients = array();
+    
+    foreach ( $clients as $c ) {
+        if ( isset( $c['id'] ) && $c['id'] !== $client_id ) {
+            $filtered_clients[] = $c;
+        }
+    }
+    
+    update_option( 'pro_active_clients', $filtered_clients );
+    wp_send_json_success( array( 'message' => 'Cliente eliminado correctamente.' ) );
+}
+add_action( 'wp_ajax_pro_delete_client', 'pro_ajax_delete_client' );
+
+/**
+ * 5. INYECCIÓN DE ESTILOS CSS Y SCRIPTS JQUERY/AJAX PARA LOS WIDGETS
+ */
+function pro_dashboard_widgets_styles() {
+    global $pagenow;
+    if ( 'index.php' !== $pagenow ) {
+        return;
+    }
+    ?>
+    <style>
+        /* Contenedores de Widgets */
+        .pro-widget-container {
+            margin: -12px;
+            padding: 15px;
+            background: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        .pro-empty-state {
+            text-align: center;
+            padding: 30px 15px;
+            color: #94a3b8;
+        }
+        .pro-empty-state .dashicons {
+            font-size: 36px;
+            width: 36px;
+            height: 36px;
+            margin-bottom: 8px;
+            color: #cbd5e1;
+        }
+        .pro-empty-state p {
+            margin: 0;
+            font-size: 13px;
+        }
+        
+        /* Widget Portada */
+        .pro-portada-preview-container {
+            position: relative;
+            max-width: 200px;
+            margin: 0 auto 15px auto;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        .pro-portada-preview-img {
+            width: 100%;
+            height: auto;
+            display: block;
+            max-height: 280px;
+            object-fit: contain;
+        }
+        .pro-portada-status-tag {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            right: 8px;
+            background: rgba(15, 23, 42, 0.85);
+            color: #ffffff;
+            text-align: center;
+            padding: 4px;
+            font-size: 8px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            border-radius: 4px;
+            backdrop-filter: blur(2px);
+        }
+        .pro-portada-scheduled-banner {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(59, 130, 246, 0.08);
+            color: #1e3a8a;
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        .pro-portada-scheduled-banner .dashicons {
+            color: #3b82f6;
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+        }
+        .pro-portada-scheduled-banner strong {
+            font-size: 12px;
+        }
+        .pro-portada-scheduled-banner p {
+            margin: 2px 0 0 0;
+            font-size: 10px;
+            color: #475569;
+        }
+        
+        /* Widget Clientes */
+        .pro-clients-table th {
+            font-weight: 700 !important;
+            color: #334155;
+            font-size: 12px;
+        }
+        .pro-client-status-badge {
+            display: inline-block;
+            padding: 3px 6px;
+            font-size: 8px;
+            font-weight: 700;
+            border-radius: 6px;
+        }
+        .pro-client-status-badge.paid {
+            background: rgba(16, 185, 129, 0.12);
+            color: #10b981;
+        }
+        .pro-client-status-badge.pending {
+            background: rgba(245, 158, 11, 0.12);
+            color: #d97706;
+        }
+        tr.pro-alert-danger {
+            background: #fff8f8 !important;
+        }
+        tr.pro-alert-danger td {
+            border-left: 3px solid #ef4444 !important;
+        }
+        .pro-btn-delete-client {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+        }
+        .pro-btn-delete-client:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.08);
+        }
+        .pro-add-client-toggle-container {
+            margin-top: 12px;
+            text-align: right;
+        }
+        
+        /* Widget Leads */
+        .pro-leads-feed {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .pro-lead-item {
+            border-bottom: 1px solid #f1f5f9;
+            padding: 10px 0;
+        }
+        .pro-lead-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .pro-lead-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 3px;
+        }
+        .pro-lead-header strong {
+            font-size: 12px;
+            color: #0f172a;
+        }
+        .pro-lead-date {
+            font-size: 9px;
+            color: #94a3b8;
+        }
+        .pro-lead-meta {
+            display: flex;
+            gap: 10px;
+            font-size: 9px;
+            color: #64748b;
+            margin-bottom: 5px;
+        }
+        .pro-lead-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .pro-lead-meta-item .dashicons {
+            font-size: 11px;
+            width: 11px;
+            height: 11px;
+        }
+        .pro-lead-excerpt {
+            margin: 0;
+            font-size: 11px;
+            color: #475569;
+            line-height: 1.4;
+        }
+        
+        /* Widget Publicaciones */
+        .pro-posts-feed {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .pro-post-item {
+            border-bottom: 1px solid #f1f5f9;
+            padding: 9px 0;
+        }
+        .pro-post-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .pro-post-title-link {
+            color: #1e293b;
+            text-decoration: none;
+            font-size: 12px;
+            transition: color 0.15s ease;
+        }
+        .pro-post-title-link:hover {
+            color: #3b82f6;
+        }
+        .pro-post-meta {
+            font-size: 9px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .pro-post-meta img {
+            border-radius: 50%;
+            vertical-align: middle;
+        }
+        .pro-post-status-badge {
+            display: inline-block;
+            padding: 2px 5px;
+            font-size: 8px;
+            font-weight: 700;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+        .pro-post-status-badge.publish {
+            background: rgba(16, 185, 129, 0.08);
+            color: #10b981;
+        }
+        .pro-post-status-badge.draft {
+            background: rgba(100, 116, 139, 0.08);
+            color: #64748b;
+        }
+        .pro-post-status-badge.pending {
+            background: rgba(245, 158, 11, 0.08);
+            color: #f59e0b;
+        }
+        .pro-post-status-badge.future {
+            background: rgba(59, 130, 246, 0.08);
+            color: #3b82f6;
+        }
+        
+        /* Widget Actividad */
+        .pro-activity-table th {
+            font-weight: 700 !important;
+            color: #334155;
+            font-size: 12px;
+        }
+        .pro-status-dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .pro-status-dot.active {
+            background: #10b981;
+            box-shadow: 0 0 6px #10b981;
+        }
+        .pro-status-dot.offline {
+            background: #cbd5e1;
+        }
+        .pro-role-pill {
+            display: inline-block;
+            padding: 1px 4px;
+            font-size: 7.5px;
+            font-weight: 700;
+            border-radius: 3px;
+            text-transform: uppercase;
+        }
+        .pro-role-pill.director {
+            background: rgba(127, 29, 29, 0.08);
+            color: #7f1d1d;
+        }
+        .pro-role-pill.autor {
+            background: rgba(6, 95, 70, 0.08);
+            color: #065f46;
+        }
+        
+        /* Ficha Autor Personal */
+        .pro-author-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+        }
+        .pro-author-card-header img {
+            border-radius: 50%;
+            border: 2px solid #f1f5f9;
+        }
+        .pro-author-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .pro-author-stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f8fafc;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid #f1f5f9;
+        }
+        .pro-stat-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .pro-stat-icon .dashicons {
+            font-size: 14px;
+            width: 14px;
+            height: 14px;
+        }
+        .pro-stat-label {
+            display: block;
+            font-size: 8px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+        }
+        .pro-stat-value {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .pro-author-last-publication {
+            background: rgba(248, 250, 252, 0.5);
+            border: 1px dashed #e2e8f0;
+            border-radius: 6px;
+            padding: 10px 12px;
+        }
+        
+        .pro-widget-actions {
+            border-top: 1px solid #f1f5f9;
+            padding-top: 12px;
+            text-align: right;
+        }
+        .pro-widget-actions .button {
+            font-weight: 600 !important;
+            height: 28px !important;
+            line-height: 26px !important;
+        }
+    </style>
+    <?php
+}
+add_action( 'admin_head', 'pro_dashboard_widgets_styles' );
+
+function pro_dashboard_widgets_scripts() {
+    global $pagenow;
+    if ( 'index.php' !== $pagenow ) {
+        return;
+    }
+    
+    $nonce = wp_create_nonce( 'pro_client_manager_nonce' );
+    ?>
+    <script type="text/javascript">
+        jQuery(document).ready(function($) {
+            // Desplegar/Colapsar formulario
+            $('#pro-toggle-add-client-form').on('click', function() {
+                $('#pro-add-client-form-container').slideToggle(200);
+            });
+            
+            $('#pro-cancel-client-btn').on('click', function() {
+                $('#pro-add-client-form-container').slideUp(200);
+            });
+            
+            // Agregar cliente AJAX
+            $('#pro-submit-client-btn').on('click', function() {
+                var name = $('#pro-new-client-name').val();
+                var plan = $('#pro-new-client-plan').val();
+                var cost = $('#pro-new-client-cost').val();
+                var cutoff = $('#pro-new-client-cutoff').val();
+                var paid = $('#pro-new-client-paid').is(':checked');
+                
+                if (!name || !cutoff) {
+                    alert('Por favor, ingresa el nombre del cliente y la fecha de corte.');
+                    return;
+                }
+                
+                var btn = $(this);
+                btn.prop('disabled', true).text('Guardando...');
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'pro_add_client',
+                        nonce: '<?php echo esc_js($nonce); ?>',
+                        name: name,
+                        plan: plan,
+                        cost: cost,
+                        cutoff: cutoff,
+                        paid: paid
+                    },
+                    success: function(response) {
+                        btn.prop('disabled', false).text('Guardar');
+                        if (response.success) {
+                            $('#pro-clients-list-body').append(response.data.html);
+                            $('#pro-new-client-name').val('');
+                            $('#pro-add-client-form-container').slideUp(200);
+                        } else {
+                            alert(response.data.message);
+                        }
+                    },
+                    error: function() {
+                        btn.prop('disabled', false).text('Guardar');
+                        alert('Hubo un error de comunicación.');
+                    }
+                });
+            });
+            
+            // Eliminar cliente AJAX
+            $(document).on('click', '.pro-btn-delete-client', function() {
+                var btn = $(this);
+                var clientId = btn.data('id');
+                
+                if (!confirm('¿Estás seguro de que deseas eliminar este cliente?')) {
+                    return;
+                }
+                
+                btn.prop('disabled', true).html('<span class="dashicons dashicons-update" style="animation: spin 1s infinite linear; font-size:14px; width:14px; height:14px; margin-top:-1px;"></span>');
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'pro_delete_client',
+                        nonce: '<?php echo esc_js($nonce); ?>',
+                        id: clientId
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#pro-client-row-' + clientId).fadeOut(300, function() {
+                                $(this).remove();
+                            });
+                        } else {
+                            btn.prop('disabled', false).html('<span class="dashicons dashicons-trash"></span>');
+                            alert(response.data.message);
+                        }
+                    },
+                    error: function() {
+                        btn.prop('disabled', false).html('<span class="dashicons dashicons-trash"></span>');
+                        alert('Error al eliminar cliente.');
+                    }
+                });
+            });
+        });
+    </script>
+    <style>
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+    <?php
+}
+add_action( 'admin_footer', 'pro_dashboard_widgets_scripts' );
+
+/**
+ * ==============================================================
+ * VALIDACIÓN Y OBLIGATORIEDAD DE FIRMA EN PUBLICACIONES
+ * ==============================================================
+ */
+
+/**
+ * 1. VALIDADOR FRONT-END (JavaScript):
+ * Intercepta los intentos de hacer click en "Publicar" tanto en Gutenberg como en el Editor Clásico.
+ * Si el campo de firma está vacío, bloquea la acción, muestra una alerta premium y enfoca el campo de firma.
+ */
+function pro_firma_validation_admin_footer_scripts() {
+    global $pagenow;
+    if ( ! in_array( $pagenow, array( 'post.php', 'post-new.php' ), true ) ) {
+        return;
+    }
+    if ( get_post_type() !== 'post' ) {
+        return;
+    }
+    ?>
+    <script type="text/javascript">
+        jQuery(document).ready(function($) {
+            // A. Validación para Editor Clásico (Submit clásico)
+            $('#post').on('submit', function(e) {
+                if (document.activeElement && document.activeElement.id === 'publish') {
+                    var signature = $('#pro_firma_autor_field').val();
+                    if (!signature || signature.trim() === '') {
+                        e.preventDefault();
+                        alert('⚠️ ERROR DE PUBLICACIÓN:\n\nEs obligatorio firmar la publicación para poder hacerla pública.\n\nPor favor, escribe tu nombre en la caja "Firma" antes de continuar.');
+                        $('#pro_firma_autor_field').focus().css({
+                            'border': '2px solid #ef4444',
+                            'background-color': '#fff5f5'
+                        });
+                        return false;
+                    }
+                }
+            });
+
+            // B. Validación para Editor Gutenberg (Block Editor)
+            // Escuchar clics en el botón de abrir panel y en el de publicar definitivo
+            $(document).on('click', '.editor-post-publish-panel__toggle, .editor-post-publish-button, button.editor-post-publish-button__button', function(e) {
+                var signature = $('#pro_firma_autor_field').val();
+                if (!signature || signature.trim() === '') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    alert('⚠️ ERROR DE PUBLICACIÓN:\n\nEs obligatorio firmar la publicación para poder hacerla pública.\n\nPor favor, escribe tu nombre en la caja "Firma" antes de continuar.');
+                    
+                    // Resaltar visualmente el campo de firma vacío
+                    $('#pro_firma_autor_field').focus().css({
+                        'border': '2px solid #ef4444',
+                        'background-color': '#fff5f5',
+                        'box-shadow': '0 0 5px rgba(239, 68, 68, 0.5)'
+                    });
+                    
+                    // Hacer scroll hacia el metabox de firma para que el usuario lo vea
+                    var $metabox = $('#pro_firma_autor_metabox');
+                    if ($metabox.length) {
+                        $('html, body').animate({
+                            scrollTop: $metabox.offset().top - 120
+                        }, 300);
+                    }
+                    
+                    return false;
+                }
+            });
+        });
+    </script>
+    <?php
+}
+add_action( 'admin_footer', 'pro_firma_validation_admin_footer_scripts' );
+
+/**
+ * 2. VALIDADOR BACK-END (PHP - Red de Seguridad Nuclear):
+ * Intercepta el guardado en la base de datos. Si se intenta publicar/programar un post
+ * sin firma, revierte su estado automáticamente a Borrador y crea un transitorio de error.
+ */
+function pro_enforce_firma_on_publish( $data, $postarr ) {
+    // Aplicar únicamente al post_type 'post'
+    if ( $data['post_type'] !== 'post' ) {
+        return $data;
+    }
+
+    // Comprobar si el estado destino es público ('publish') o programado ('future')
+    if ( in_array( $data['post_status'], array( 'publish', 'future' ), true ) ) {
+        $post_id = isset( $postarr['ID'] ) ? $postarr['ID'] : 0;
+        $firma = '';
+
+        // 1. Buscar firma en la petición POST clásica
+        if ( isset( $_POST['pro_firma_autor_field'] ) ) {
+            $firma = sanitize_text_field( $_POST['pro_firma_autor_field'] );
+        }
+        // 2. Si no viene en $_POST (REST API / Gutenberg), consultar meta actual guardado
+        elseif ( $post_id ) {
+            $firma = get_post_meta( $post_id, '_pro_firma_autor', true );
+        }
+
+        // 3. Soporte adicional para peticiones crudas REST de metadatos
+        if ( empty( $firma ) && isset( $_POST['meta']['_pro_firma_autor'] ) ) {
+            $firma = sanitize_text_field( $_POST['meta']['_pro_firma_autor'] );
+        }
+
+        // Si la firma está completamente vacía
+        if ( empty( trim( $firma ) ) ) {
+            // Revertir el estado destino al estado previo (borrador o pendiente)
+            $original_status = isset( $postarr['original_post_status'] ) ? $postarr['original_post_status'] : 'draft';
+            $data['post_status'] = in_array( $original_status, array( 'draft', 'pending' ) ) ? $original_status : 'draft';
+
+            // Sembrar transitorio temporal para gatillar el aviso de error en la recarga del administrador
+            if ( $post_id ) {
+                set_transient( 'pro_firma_error_notice_' . $post_id, true, 45 );
+            }
+        }
+    }
+    return $data;
+}
+add_filter( 'wp_insert_post_data', 'pro_enforce_firma_on_publish', 10, 2 );
+
+/**
+ * 3. AVISO ADMINISTRATIVO DE ERROR (PHP):
+ * Si se activó la red de seguridad del back-end, despliega una alerta roja premium y explicativa en la pantalla de edición.
+ */
+function pro_firma_error_admin_notices() {
+    global $pagenow;
+    if ( ! in_array( $pagenow, array( 'post.php', 'post-new.php' ), true ) ) {
+        return;
+    }
+    
+    $post_id = isset( $_GET['post'] ) ? absint( $_GET['post'] ) : 0;
+    if ( ! $post_id ) {
+        return;
+    }
+
+    if ( get_transient( 'pro_firma_error_notice_' . $post_id ) ) {
+        delete_transient( 'pro_firma_error_notice_' . $post_id );
+        ?>
+        <div class="notice notice-error is-dismissible" style="border-left-color: #ef4444; border-left-width: 4px; background-color: #fffbfa; padding: 12px 18px; margin: 20px 0 10px 0; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+            <p style="font-size: 13px; line-height: 1.6; color: #1e293b; margin: 0; padding: 0;">
+                <strong style="color: #ef4444; font-size: 15px; display: block; margin-bottom: 5px; font-weight: 700;">⚠️ Entrada no Publicada - Falta Firma Obligatoria</strong>
+                Es **estrictamente obligatorio** firmar la publicación con tu nombre de autor para poder hacerla pública en el portal. 
+                El estado de esta entrada ha sido **revertido automáticamente a Borrador**.
+                <br/><br/>
+                Por favor, escribe tu nombre en el casillero **Firma** (ubicado en la barra lateral derecha o inferior) y vuelve a intentar la publicación.
+            </p>
+        </div>
+        <?php
+    }
+}
+add_action( 'admin_notices', 'pro_firma_error_admin_notices' );
+
+
+

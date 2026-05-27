@@ -1,7 +1,26 @@
 /**
+ * @author Arturo Merchan | Merchan.Dev | Espressivo Venezuela,C.A
+ * 
+ * ADVERTENCIA LEGAL:
+ * Queda totalmente prohibida su reproduccion, edicion, venta, propaganda, alteracion 
+ * o cualquier otra accion que de una u otra forma violente la propiedad intelectual, 
+ * material y digital de este proyecto. Esta infraccion esta prohibida y penada por la ley.
+ */
+/**
  * Script principal de Pro
  * Maneja el modo oscuro, menú móvil, ticker, sliders, polling de noticias y scroll infinito.
  */
+
+// =====================================================================
+//  Diseñado y desarrollado por Merchan.Dev & Espressivo Venezuela, C.A
+// =====================================================================
+console.log(
+    '%c Merchan.Dev %c & Espressivo Venezuela, C.A ',
+    'background:#111827; color:#f59e0b; font-weight:bold; font-size:13px; padding:4px 8px; border-radius:4px 0 0 4px;',
+    'background:#f59e0b; color:#111827; font-weight:bold; font-size:13px; padding:4px 8px; border-radius:0 4px 4px 0;'
+);
+console.log('%cDiseño y desarrollo web · https://arturomerchan.com', 'color:#6b7280; font-size:11px;');
+
 document.addEventListener('DOMContentLoaded', function() {
     
     // 1. Modo Oscuro (Dark Mode)
@@ -533,9 +552,20 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 300);
         };
         
-        // Cerrar al hacer clic en el botón cerrar o en el fondo difuminado
-        closeBtn.addEventListener('click', closePortadaModal);
-        backdrop.addEventListener('click', closePortadaModal);
+        // Cerrar al hacer clic en cualquier parte de la caja de luz, "tipo app"
+        portadaModal.addEventListener('click', function(e) {
+            // No cerrar si se hace clic en el botón de descarga o en los controles de zoom
+            if (e.target.closest('#portada-download-btn') || e.target.closest('.portada-zoom-controls')) {
+                return;
+            }
+            
+            // Si hacen clic sobre la imagen y tiene zoom superior a 1, no cerrar (permitir arrastrar y exploración táctil)
+            if (e.target.closest('#portada-lightbox-image') && zoomScale > 1) {
+                return;
+            }
+            
+            closePortadaModal();
+        });
         
         // Cerrar con Escape
         document.addEventListener('keydown', function(e) {
