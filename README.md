@@ -2,6 +2,8 @@
 
 Este es un tema y framework de WordPress diseñado y desarrollado a medida para portales de noticias modernos, rápidos, profesionales y de alto rendimiento. Construido desde cero bajo una arquitectura de marca blanca (white-label) y SaaS, está optimizado para su fácil duplicación, reventa y distribución a editoriales y medios de comunicación digitales. Evita el uso excesivo de plugins de terceros y ofrece una experiencia de usuario (UX) premium de alto impacto comercial.
 
+---
+
 ## 🚀 Características Principales
 
 ### 1. Sistema de "Carteles y Edictos" (PDF Lightbox)
@@ -28,9 +30,9 @@ Este es un tema y framework de WordPress diseñado y desarrollado a medida para 
 
 ### 5. Portadas de Revista Interactivas (Zoom & Drag Lightbox)
 - **Custom Post Type Dedicado (Portadas):** Organiza y publica portadas de revista o ediciones impresas directamente desde el menú del panel de control.
-- **Lightbox Premium con Glassmorphism:** Al hacer clic en una portada, se abre un visor interactivo a pantalla completa con fondo oscurecido y desenfocado con desenfoque nativo.
-- **Zoom y Panning Fluido:** Controles flotantes para acercar (Zoom In), alejar (Zoom Out) y restaurar (100%), con soporte para zoom mediante la rueda del ratón y arrastre interactivo (click-and-drag / touch) para móviles y PCs.
-- **Descarga Directa de Alta Resolución:** Botón superior para descargar de forma instantánea el archivo original de la portada de revista.
+- **Lightbox Premium con Glassmorphism:** Al hacer clic en una portada, se abre un visor interactivo a pantalla completa con fondo oscurecido y desenfocado.
+- **Zoom y Panning Fluido:** Controles flotantes para acercar (Zoom In), alejar (Zoom Out) y restaurar (100%), con soporte para zoom mediante la rueda del ratón y arrastre interactivo para móviles y PCs.
+- **Descarga Directa de Alta Resolución:** Botón superior para descargar el archivo original de la portada.
 
 ---
 
@@ -39,62 +41,55 @@ Este es un tema y framework de WordPress diseñado y desarrollado a medida para 
 ### Login URL personalizada (`/turpial`)
 - La URL de inicio de sesión por defecto (`/wp-login.php`) fue movida a `/turpial`.
 - Cualquier acceso directo a `/wp-login.php` o `/wp-admin/` por usuarios no autenticados recibe una respuesta **404**, ocultando la existencia del CMS.
-- La acción `$_REQUEST['action']` del formulario de login es sanitizada con `sanitize_key()` y la `REQUEST_URI` se procesa con `esc_url_raw()` antes de ser usada.
-- El matching de la ruta `/turpial` es exacto (`===`) para evitar que rutas como `/turpial-noticias/` activen el login accidentalmente.
+- La acción `$_REQUEST['action']` del formulario de login es sanitizada con `sanitize_key()`.
+- El matching de la ruta `/turpial` es exacto (`===`) para evitar activaciones accidentales.
 
 ### Protección contra XSS
 - Todos los `get_search_query()` en formularios de búsqueda están envueltos con `esc_attr()`.
 - La descripción del sitio usa `esc_html()`.
-- Los bloques **Schema.org JSON-LD** en `single.php` y `footer.php` usan `wp_json_encode()` en lugar de `esc_js()`, produciendo JSON válido y seguro aunque el título contenga comillas o caracteres especiales.
+- Los bloques **Schema.org JSON-LD** usan `wp_json_encode()` en lugar de `esc_js()`.
 
 ### Sanitización y validación de inputs
-- **Formulario de contacto:** Bloquea URLs, código HTML, etiquetas SQL (`union select`, `drop table`, etc.) y caracteres peligrosos mediante doble capa: regex del servidor + `sanitize_textarea_field()`.
-- **URLs de anuncios y PDF:** Guardadas con `esc_url_raw()` (no `sanitize_text_field`).
-- **Fechas del polling AJAX:** Validadas contra el formato MySQL exacto (`YYYY-MM-DD HH:MM:SS`) antes de usarse en `date_query`.
-- **AJAX endpoints:** Todos los endpoints públicos (`wp_ajax_nopriv_*`) verifican Nonce con `check_ajax_referer()`.
+- **Formulario de contacto:** Bloquea URLs, código HTML, etiquetas SQL y caracteres peligrosos.
+- **URLs de anuncios y PDF:** Guardadas con `esc_url_raw()`.
+- **Fechas del polling AJAX:** Validadas contra el formato MySQL exacto.
+- **AJAX endpoints:** Todos verifican Nonce con `check_ajax_referer()`.
 
 ### Protección de archivos PHP
-- Todos los archivos en `inc/` (`security.php`, `ad-manager.php`, `admin-whitelabel.php`) tienen el guard:
-  ```php
-  if ( ! defined( 'ABSPATH' ) ) { exit; }
-  ```
-  Esto impide el acceso directo a los archivos si el servidor web está mal configurado.
-
-### Otros
-- La versión de WordPress es eliminada del `<head>` con `remove_action('wp_head', 'wp_generator')`.
-- El selector de colores del panel y los widgets de noticias de WordPress son ocultados para el rol `Dirección` y `Autor`.
+- Todos los archivos en `inc/` tienen el guard `if ( ! defined( 'ABSPATH' ) ) { exit; }`.
 
 ---
 
 ## ⚡ Performance
 
 ### Transient Caching
-El tema implementa una capa de caché con **WordPress Transients** para eliminar consultas repetidas en cada carga de página:
 
 | Transient | TTL | Contenido |
 |-----------|-----|-----------|
-| `pro_latest_post_date` | 60 segundos | Fecha del post más reciente (para el polling de nuevas noticias) |
-| `pro_ticker_posts` | 5 minutos | IDs de los 10 posts del ticker de "Último Minuto" |
+| `pro_latest_post_date` | 60 segundos | Fecha del post más reciente (para polling) |
+| `pro_ticker_posts` | 5 minutos | IDs de los 10 posts del ticker "Último Minuto" |
 
-Ambos transients se **invalidan automáticamente** cuando se publica o despublica un post mediante el hook `transition_post_status`.
+Ambos transients se **invalidan automáticamente** con el hook `transition_post_status`.
 
 ### Cache Busting de Assets
-CSS y JS actualizan su versión automáticamente mediante `filemtime()` para evitar que los usuarios guarden versiones antiguas del diseño en la caché de su navegador.
+CSS y JS actualizan su versión automáticamente mediante `filemtime()`.
 
 ### Optimización de queries AJAX
-- El endpoint `pro_check_new_posts` usa `fields => 'ids'` para recuperar solo IDs en lugar de objetos completos.
-- El endpoint de polling de noticias reconstruye los argumentos de consulta en el servidor (nunca acepta `query_vars` del cliente).
+- `pro_check_new_posts` usa `fields => 'ids'` para recuperar solo IDs.
+- Los argumentos de consulta se reconstruyen en el servidor.
 
 ---
 
 ## 🛠 Instalación y Configuración
 
 1. **Subir el Tema:**
-   Copia esta carpeta `edit-pro/` (o el nombre que asignes a la carpeta del tema) en el directorio `wp-content/themes/` de tu instalación de WordPress.
+   Copia la carpeta del tema en `wp-content/themes/` de tu WordPress.
 2. **Activar el Tema:**
-   Ve a *Apariencia > Temas* en el panel de WordPress y activa el tema "Edit-Pro".
+   Ve a *Apariencia > Temas* y activa "Edit-Pro".
 3. **Guardar Enlaces Permanentes (OBLIGATORIO):**
-   Ve a *Ajustes > Enlaces permanentes* y haz clic en **Guardar cambios** sin modificar nada. Esto es crucial para que WordPress reconozca la nueva URL de `/carteles/` y los endpoints de contacto.
+   Ve a *Ajustes > Enlaces permanentes* y haz clic en **Guardar cambios**.
+4. **Páginas automáticas (Nuclear Install):**
+   Al entrar al panel de WordPress por primera vez, el sistema creará automáticamente todas las páginas necesarias (categorías, contacto, páginas legales) y configurará el menú principal sin intervención manual.
 
 ---
 
@@ -103,47 +98,69 @@ CSS y JS actualizan su versión automáticamente mediante `filemtime()` para evi
 ### ¿Cómo subir un Cartel o Edicto?
 1. Ve al menú **Carteles > Añadir Nuevo**.
 2. Escribe el título del documento.
-3. Asigna una **Imagen Destacada** (esta será la portada o primera página que se verá en la cuadrícula).
-4. Baja hasta la caja **"Documento PDF del Cartel"** y pega ahí la URL directa del archivo PDF (previamente subido a Medios).
-5. Publica. El cartel ya estará disponible en `tusitio.com/carteles/`.
+3. Asigna una **Imagen Destacada**.
+4. Pega la URL del PDF en la caja **"Documento PDF del Cartel"**.
+5. Publica. Estará disponible en `tusitio.com/carteles/`.
 
 ### ¿Cómo ver los Mensajes de Contacto?
-1. Para configurar el formulario en tu web, crea una Página y asígnale la plantilla **"Página de Contacto"**.
-2. Cuando los usuarios escriban, sus mensajes llegarán a la pestaña **Mensajes** (ícono de correo en el panel izquierdo).
-3. Para exportar todo a Excel, entra en la lista de Mensajes y haz clic en el botón azul **"Descargar Excel/CSV"** ubicado arriba a la izquierda.
+1. Crea una Página y asígnale la plantilla **"Página de Contacto"**.
+2. Los mensajes llegarán a la pestaña **Mensajes** del panel.
+3. Para exportar, haz clic en **"Descargar Excel/CSV"**.
 
 ### ¿Cómo iniciar sesión de forma segura?
-- Accede siempre a través de `/turpial` (no a través de `/wp-admin/` o `/wp-login.php`).
-- Los accesos directos a las rutas de WordPress devuelven un **404** como medida de seguridad.
+- Accede siempre a través de `/turpial` (no `/wp-admin/` o `/wp-login.php`).
 
 ---
 
 ## 💻 Detalles Técnicos
 
-- **AJAX:** Implementado tanto para la paginación de noticias (`functions.php` > `pro_load_more_posts`) como para el formulario de contacto (`pro_submit_contact_form`) y el buscador predictivo (`pro_ajax_search`).
-- **Cache Busting:** CSS y JS actualizan su versión automáticamente mediante `filemtime()`.
-- **Nonces:** Uso estricto de `wp_create_nonce` / `check_ajax_referer` para validar todas las peticiones AJAX.
-- **Schema.org:** JSON-LD en artículos (`NewsArticle`) y en el footer (`NewsMediaOrganization`), generado con `wp_json_encode()` para garantizar JSON válido ante cualquier carácter.
-- **Roles:** El rol personalizado `Dirección` hereda las capacidades necesarias y tiene el panel de administración con white-label (logo y colores personalizados).
+- **AJAX:** Paginación (`pro_load_more_posts`), formulario de contacto (`pro_submit_contact_form`) y buscador predictivo (`pro_ajax_search`).
+- **Nonces:** Uso estricto de `wp_create_nonce` / `check_ajax_referer` en todas las peticiones AJAX.
+- **Schema.org:** JSON-LD en artículos (`NewsArticle`) y en el footer (`NewsMediaOrganization`).
+- **Roles:** El rol `Dirección` hereda capacidades de administrador con panel white-label personalizado.
 
 ---
 
-## 🔄 Changelog de Seguridad
+## 🔄 Changelog
 
-### v1.1.0 — Auditoría completa (Mayo 2026)
-- ✅ Sanitización de `$_SERVER['REQUEST_URI']` con `esc_url_raw()` y `wp_unslash()`
-- ✅ Matching exacto de la ruta `/turpial` (corregido bypass por substring)
-- ✅ `sanitize_key()` aplicado al parámetro `action` del formulario de login
-- ✅ `esc_attr()` aplicado a todos los `get_search_query()` en formularios de búsqueda
-- ✅ `esc_html()` aplicado a la descripción del sitio en el header
-- ✅ JSON-LD migrado de `esc_js()` + comillas literales a `wp_json_encode()` seguro
-- ✅ URLs de anuncios y PDFs migradas de `sanitize_text_field()` / `sanitize_url()` a `esc_url_raw()`
-- ✅ Validación de formato de fecha antes de usar en `date_query`
-- ✅ `wp_die()` redundantes eliminados (ya incluido en `wp_send_json_error`)
-- ✅ Guard `ABSPATH` añadido a todos los archivos `inc/*.php`
-- ✅ Transient caching implementado para ticker y polling
-- ✅ Invalidación automática de transients al publicar/despublicar posts
-- ✅ `deprecated_function_trigger_error` suprimido para evitar warnings de terceros en producción
+### v1.3.0 — Mayo 2026 (sesión actual)
+
+#### Footer
+- ✅ Sección "Redes Sociales" con URLs fijas para el medio:
+  - **Facebook:** `facebook.com/ElOrientaldeMonagas`
+  - **Instagram:** `instagram.com/diarioeloriental/`
+  - **WhatsApp:** grupo de difusión oficial del medio
+- ✅ Título "**Más información**" reemplaza "Enlaces Útiles"
+- ✅ Categoría "**Local**" excluida del bloque "Secciones Populares" vía filtro por slug
+- ✅ **Política de Privacidad** eliminada del footer (solo permanecen Términos y Cookies)
+
+#### Páginas Legales (Nuclear Install)
+- ✅ **`page-terminos-y-condiciones.php`** — Plantilla de página creada con contenido legal completo
+- ✅ **`page-politica-de-cookies.php`** — Plantilla nueva con política de cookies
+- ✅ Ambas páginas se crean **automáticamente** en la base de datos al entrar al admin (versión nuclear `v5`), sin pasos manuales en WordPress
+- ✅ Los links del footer apuntan correctamente a sus slugs
+
+#### Firma de Autor
+- ✅ **Comentario HTML** visible en el código fuente de cada página:
+  ```html
+  <!-- Diseñado y desarrollado por: Merchan.Dev & Espressivo Venezuela, C.A -->
+  ```
+- ✅ **Firma estilizada en la consola del navegador** (DevTools → Console) con estilos de color corporativo
+
+### v1.2.0 — Auditoría y funcionalidades (Mayo 2026)
+- ✅ Nuclear Install v4: creación automática de páginas, menús y configuración de portada estática
+- ✅ Lightbox interactivo con Zoom & Pan para portadas
+- ✅ Rol `Dirección` con restricción de menús del panel
+- ✅ Buscador predictivo AJAX con validaciones de seguridad
+- ✅ Sistema de ticker "Último Minuto" con transient caching
+
+### v1.1.0 — Auditoría de seguridad (Mayo 2026)
+- ✅ Sanitización completa de inputs, nonces y guards ABSPATH
+- ✅ JSON-LD migrado a `wp_json_encode()`
+- ✅ Login URL personalizada `/turpial` con matching exacto
+- ✅ Cache Busting con `filemtime()` en todos los assets
 
 ---
-*Desarrollado y distribuido por Arturo Merchan | Merchan.Dev — Framework editorial SaaS premium de alto rendimiento para medios digitales e impresos.*
+
+*Diseñado y desarrollado por **Merchan.Dev & Espressivo Venezuela, C.A** — Framework editorial SaaS premium para medios digitales e impresos.*
+*Web: [arturomerchan.com](https://arturomerchan.com)*
