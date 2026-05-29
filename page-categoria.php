@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * @author Arturo Merchan | Merchan.Dev | Espressivo Venezuela,C.A
  * 
@@ -43,7 +43,16 @@ $query = new WP_Query( $args );
         <h1 class="page-title"><?php echo esc_html( $cat_name ); ?></h1>
     </header><!-- .page-header -->
 
+    <!-- BANNER PATROCINADOR DE CATEGORÍA -->
+    <?php
+    get_template_part( 'template-parts/ads/category-sponsor', null, array(
+        'cat_name' => $cat_name,
+        'location' => 'category-top',
+    ) );
+    ?>
+
     <?php if ( $query->have_posts() ) : ?>
+
         <div class="category-grid-wrapper">
             <?php
             $post_count = 0;

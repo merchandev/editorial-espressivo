@@ -43,15 +43,50 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 2. Menú Móvil
+    // 2. Menú Móvil a Pantalla Completa y Submenús
     const menuToggle = document.querySelector('.menu-toggle');
     const navMenu = document.querySelector('.main-navigation');
     
     if (menuToggle && navMenu) {
-        menuToggle.addEventListener('click', function() {
+        // Toggle principal
+        menuToggle.addEventListener('click', function(e) {
+            e.preventDefault();
             navMenu.classList.toggle('toggled');
             const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
             menuToggle.setAttribute('aria-expanded', !isExpanded);
+            
+            // Bloquear scroll de fondo si está abierto
+            if (navMenu.classList.contains('toggled')) {
+                document.body.style.overflow = 'hidden';
+                menuToggle.innerHTML = '<span class="material-symbols-outlined" style="vertical-align: middle;">close</span>';
+                menuToggle.classList.add('is-fixed-close');
+            } else {
+                document.body.style.overflow = '';
+                menuToggle.innerHTML = '<span class="material-symbols-outlined" style="vertical-align: middle;">menu</span>';
+                menuToggle.classList.remove('is-fixed-close');
+                // Cerrar todos los submenús al cerrar el principal
+                document.querySelectorAll('.main-navigation .sub-menu').forEach(sub => sub.classList.remove('is-open'));
+            }
+        });
+
+        // Lógica de Submenús (Botón volver eliminado)
+        const subMenus = navMenu.querySelectorAll('.sub-menu');
+
+
+        // Abrir submenú al tocar el elemento padre
+        const parentLinks = navMenu.querySelectorAll('.menu-item-has-children > a');
+        parentLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                // Prevenir enlace padre en pantallas móviles o cuando menú hamburguesa activo
+                if (window.innerWidth <= 767 || navMenu.classList.contains('toggled')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const subMenu = this.nextElementSibling;
+                    if (subMenu && subMenu.classList.contains('sub-menu')) {
+                        subMenu.classList.add('is-open');
+                    }
+                }
+            });
         });
     }
 

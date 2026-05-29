@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * @author Arturo Merchan | Merchan.Dev | Espressivo Venezuela,C.A
  * 
@@ -112,7 +112,7 @@ get_header();
                         <div class="portada-overlay">
                             <div class="portada-overlay-button">
                                 <span class="material-symbols-outlined overlay-lupa-icon">zoom_in</span>
-                                <span>Clic para ampliar</span>
+                                <span>Clic para ver</span>
                             </div>
                         </div>
                     </div>

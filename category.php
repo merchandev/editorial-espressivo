@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * @author Arturo Merchan | Merchan.Dev | Espressivo Venezuela,C.A
  * 
@@ -26,6 +26,15 @@ get_header();
             the_archive_description( '<div class="archive-description">', '</div>' );
             ?>
         </header><!-- .page-header -->
+
+        <!-- BANNER PATROCINADOR DE CATEGORÍA -->
+        <?php
+        $current_cat_name = is_category() ? single_cat_title( '', false ) : '';
+        get_template_part( 'template-parts/ads/category-sponsor', null, array(
+            'cat_name' => $current_cat_name,
+            'location' => 'category-top',
+        ) );
+        ?>
 
         <div class="category-grid">
             <?php

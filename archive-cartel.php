@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * @author Arturo Merchan | Merchan.Dev | Espressivo Venezuela,C.A
  * 
