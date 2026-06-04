@@ -2670,3 +2670,97 @@ add_action('init', function () {
 add_action('admin_menu', function () {
     remove_menu_page('edit-comments.php');
 }, 9999);
+
+/**
+ * Auto-actualizador para la solicitud del usuario (Seguridad y Zona deportiva)
+ */
+function pro_apply_user_updates() {
+    if ( get_option( 'pro_user_updates_applied_v2' ) ) {
+        return;
+    }
+
+    // 1. Crear o asegurar Categoría "Seguridad"
+    if ( ! term_exists( 'Seguridad', 'category' ) ) {
+        wp_insert_term( 'Seguridad', 'category' );
+    }
+
+    // 2. Crear o asegurar Página "Seguridad"
+    $seguridad_page = get_page_by_title( 'Seguridad' );
+    if ( ! $seguridad_page ) {
+        $seguridad_page_id = wp_insert_post( array(
+            'post_title'     => 'Seguridad',
+            'post_type'      => 'page',
+            'post_status'    => 'publish',
+            'post_author'    => 1,
+        ) );
+        if ( $seguridad_page_id && ! is_wp_error( $seguridad_page_id ) ) {
+            update_post_meta( $seguridad_page_id, '_wp_page_template', 'page-categoria.php' );
+            $seguridad_page = get_post( $seguridad_page_id );
+        }
+    } else {
+        update_post_meta( $seguridad_page->ID, '_wp_page_template', 'page-categoria.php' );
+    }
+
+    // 3. Crear Categoría "Zona deportiva"
+    $zona_deportiva_term = term_exists( 'Zona deportiva', 'category' );
+    if ( ! $zona_deportiva_term ) {
+        $zona_deportiva_term = wp_insert_term( 'Zona deportiva', 'category' );
+    }
+
+    // 4. Actualizar el menú "Menú Principal Nuclear"
+    $menu_name = 'Menú Principal Nuclear';
+    $menu_exists = wp_get_nav_menu_object( $menu_name );
+    
+    if ( $menu_exists && $seguridad_page ) {
+        $menu_id = $menu_exists->term_id;
+        $menu_items = wp_get_nav_menu_items( $menu_id );
+        
+        $deportes_menu_item_id = 0;
+        $has_seguridad = false;
+        $has_zona_deportiva = false;
+        $mas_menu_item_id = 0;
+
+        foreach ( $menu_items as $item ) {
+            if ( $item->title === 'Deportes' ) {
+                $deportes_menu_item_id = $item->ID;
+            }
+            if ( $item->title === 'Seguridad' ) {
+                $has_seguridad = true;
+            }
+            if ( $item->title === 'Zona deportiva' ) {
+                $has_zona_deportiva = true;
+            }
+            if ( $item->title === 'Más' ) {
+                $mas_menu_item_id = $item->ID;
+            }
+        }
+
+        // Agregar página "Seguridad" si no está en el menú (dentro de "Más")
+        if ( ! $has_seguridad ) {
+            wp_update_nav_menu_item( $menu_id, 0, array(
+                'menu-item-title'     => 'Seguridad',
+                'menu-item-object-id' => $seguridad_page->ID,
+                'menu-item-object'    => 'page',
+                'menu-item-type'      => 'post_type',
+                'menu-item-status'    => 'publish',
+                'menu-item-parent-id' => $mas_menu_item_id ? $mas_menu_item_id : 0,
+            ) );
+        }
+
+        // Agregar categoría "Zona deportiva" bajo "Deportes" si no está
+        if ( ! $has_zona_deportiva && $deportes_menu_item_id && ! is_wp_error( $zona_deportiva_term ) ) {
+            $term_id = is_array( $zona_deportiva_term ) ? $zona_deportiva_term['term_id'] : $zona_deportiva_term;
+            wp_update_nav_menu_item( $menu_id, 0, array(
+                'menu-item-title'     => 'Zona deportiva',
+                'menu-item-object-id' => $term_id,
+                'menu-item-object'    => 'category',
+                'menu-item-type'      => 'taxonomy',
+                'menu-item-status'    => 'publish',
+                'menu-item-parent-id' => $deportes_menu_item_id,
+            ) );
+        }
+    }
+
+    update_option( 'pro_user_updates_applied_v2', true );
+}
+add_action( 'admin_init', 'pro_apply_user_updates' );

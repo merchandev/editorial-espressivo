@@ -147,6 +147,8 @@ function pro_ad_meta_box_html( $post ) {
                 <option value="nacional-ad"     <?php selected( $location, 'nacional-ad' ); ?>>Después de Nacional</option>
                 <option value="internacional-ad"<?php selected( $location, 'internacional-ad' ); ?>>Después de Internacional</option>
                 <option value="economia-ad"     <?php selected( $location, 'economia-ad' ); ?>>Después de Economía</option>
+                <option value="seguridad-ad"    <?php selected( $location, 'seguridad-ad' ); ?>>Después de Seguridad</option>
+                <option value="zona-deportiva-ad"<?php selected( $location, 'zona-deportiva-ad' ); ?>>Después de Zona deportiva</option>
             </select>
         </div>
         <div class="pro-field">

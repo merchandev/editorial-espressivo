@@ -18,23 +18,23 @@ get_header();
 
 <main id="primary" class="site-main container archive-container">
 
-    <?php if ( have_posts() ) : ?>
-
-        <header class="page-header">
-            <?php
-            the_archive_title( '<h1 class="page-title">', '</h1>' );
-            the_archive_description( '<div class="archive-description">', '</div>' );
-            ?>
-        </header><!-- .page-header -->
-
-        <!-- BANNER PATROCINADOR DE CATEGORÍA -->
+    <header class="page-header">
         <?php
-        $current_cat_name = is_category() ? single_cat_title( '', false ) : '';
-        get_template_part( 'template-parts/ads/category-sponsor', null, array(
-            'cat_name' => $current_cat_name,
-            'location' => 'category-top',
-        ) );
+        the_archive_title( '<h1 class="page-title">', '</h1>' );
+        the_archive_description( '<div class="archive-description">', '</div>' );
         ?>
+    </header><!-- .page-header -->
+
+    <!-- BANNER PATROCINADOR DE CATEGORÍA -->
+    <?php
+    $current_cat_name = is_category() ? single_cat_title( '', false ) : '';
+    get_template_part( 'template-parts/ads/category-sponsor', null, array(
+        'cat_name' => $current_cat_name,
+        'location' => 'category-top',
+    ) );
+    ?>
+
+    <?php if ( have_posts() ) : ?>
 
         <div class="category-grid">
             <?php
@@ -70,9 +70,6 @@ get_header();
 
     <?php else : ?>
         <section class="no-results not-found">
-            <header class="page-header">
-                <h1 class="page-title"><?php esc_html_e( 'No hay noticias en esta sección', 'pro' ); ?></h1>
-            </header>
             <div class="page-content">
                 <p><?php esc_html_e( 'Parece que no podemos encontrar lo que buscas. Tal vez una búsqueda ayude.', 'pro' ); ?></p>
                 <?php get_search_form(); ?>
