@@ -20,20 +20,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 // 1. Redirigir wp-login.php y wp-admin a 404, a menos que se acceda por /turpial
 add_action( 'init', 'pro_custom_login_redirect' );
 function pro_custom_login_redirect() {
-    // Sanitizar REQUEST_URI antes de usarlo
     $request_uri = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
-    $login_path  = '/turpial';
+    $login_path  = 'turpial';
 
     $parsed_path = wp_parse_url( $request_uri, PHP_URL_PATH );
     $parsed_path = trim( (string) $parsed_path, '/' );
 
-    // Si están accediendo a /turpial exactamente (sin otras rutas que contengan "turpial")
-    if ( $parsed_path === ltrim( $login_path, '/' ) || $parsed_path === ltrim( $login_path, '/' ) . '/' ) {
+    // 1. Acceso permitido a la URL de login personalizada
+    if ( $parsed_path === $login_path ) {
+        if ( ! defined( 'PRO_CUSTOM_LOGIN' ) ) {
+            define( 'PRO_CUSTOM_LOGIN', true );
+        }
+        
         global $pagenow, $error, $user_login, $action;
         $pagenow    = 'wp-login.php';
         $error      = '';
         $user_login = '';
-        // Sanitizar la acción que viene del request
         $action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : 'login';
 
         $_SERVER['REQUEST_URI'] = '/wp-login.php';
@@ -45,22 +47,15 @@ function pro_custom_login_redirect() {
         exit;
     }
 
-    // Bloquear acceso a wp-admin para no logueados (mandar a 404)
+    // 2. Bloquear acceso a wp-admin para no logueados (mandar a inicio)
     if ( strpos( $parsed_path, 'wp-admin' ) === 0 && ! is_user_logged_in() && strpos( $parsed_path, 'admin-ajax.php' ) === false ) {
-        global $wp_query;
-        $wp_query->set_404();
-        status_header( 404 );
-        get_template_part( '404' );
+        wp_redirect( home_url() );
         exit;
     }
 
-    // Bloquear acceso a wp-login.php directamente (mandar a 404)
-    $method = isset( $_SERVER['REQUEST_METHOD'] ) ? sanitize_key( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) : 'GET';
-    if ( $parsed_path === 'wp-login.php' && $method === 'GET' && ! is_user_logged_in() ) {
-        global $wp_query;
-        $wp_query->set_404();
-        status_header( 404 );
-        get_template_part( '404' );
+    // 3. Bloquear acceso directo a wp-login.php (mandar a inicio)
+    if ( $parsed_path === 'wp-login.php' && ! defined( 'PRO_CUSTOM_LOGIN' ) ) {
+        wp_redirect( home_url() );
         exit;
     }
 }
