@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @author Arturo Merchan | Merchan.Dev | Espressivo Venezuela,C.A
  * 
  * ADVERTENCIA LEGAL:
@@ -495,7 +495,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // 3. Contiene solo números o caracteres extraños (permitir letras, espacios, acentos, y puntuación básica de texto)
             // Rechaza si hay etiquetas HTML, corchetes, o demasiados signos
-            const strictPattern = /^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\s\.,\-\¿\?¡!]+$/;
+            const strictPattern = /^[a-zA-ZñÑáéíóúÃÉÃÓÚüÃœ\s\.,\-\¿\?¡!]+$/;
             
             // Si el valor NO coincide con el patrón estricto
             if (!strictPattern.test(val)) {
@@ -690,7 +690,7 @@ document.addEventListener('DOMContentLoaded', function() {
             modalImage.classList.remove('panning');
         });
         
-        // --- SOPORTE TÁCTIL (MÓVILES) ---
+        // --- SOPORTE TÃCTIL (MÓVILES) ---
         modalImage.addEventListener('touchstart', (e) => {
             if (zoomScale > 1 && e.touches.length === 1) {
                 isDragging = true;
@@ -712,4 +712,39 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    
+
+    // ==========================================
+    // BUSCADOR COLAPSABLE EN TABLET Y MÓVIL
+    // ==========================================
+    const topSearchForm = document.querySelector('.header-actions .search-form');
+    const topSearchSubmit = document.querySelector('.header-actions .search-submit');
+    const topSearchInput = document.querySelector('.header-actions .search-field');
+    
+    if (topSearchForm && topSearchSubmit && topSearchInput) {
+        topSearchSubmit.addEventListener('click', function(e) {
+            if (window.innerWidth <= 1024) {
+                if (!topSearchForm.classList.contains('is-expanded')) {
+                    e.preventDefault(); 
+                    topSearchForm.classList.add('is-expanded');
+                    topSearchInput.focus();
+                } else {
+                    if (topSearchInput.value.trim() === '') {
+                        e.preventDefault();
+                        topSearchForm.classList.remove('is-expanded');
+                    }
+                }
+            }
+        });
+        
+        document.addEventListener('click', function(e) {
+            if (window.innerWidth <= 1024 && topSearchForm.classList.contains('is-expanded')) {
+                if (!topSearchForm.contains(e.target)) {
+                    topSearchForm.classList.remove('is-expanded');
+                }
+            }
+        });
+    }
+
 });
+

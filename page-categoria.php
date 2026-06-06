@@ -51,6 +51,33 @@ $query = new WP_Query( $args );
     ) );
     ?>
 
+    <?php
+    // MOSTRAR SUBCATEGORÍAS DE LA CATEGORÍA ACTUAL
+    if ( $category && $category->taxonomy === 'category' ) {
+        $parent_id = ($category->category_parent == 0) ? $category->term_id : $category->category_parent;
+        
+        $subcategories = get_categories( array(
+            'child_of'   => $parent_id,
+            'hide_empty' => false,
+        ) );
+
+        if ( ! empty( $subcategories ) ) {
+            echo '<div class="category-subnav"><ul class="subnav-list">';
+            if ($parent_id != $category->term_id) {
+                echo '<li><a href="' . esc_url( get_category_link( $parent_id ) ) . '">' . esc_html__( 'Todas', 'pro' ) . '</a></li>';
+            } else {
+                echo '<li class="current-cat"><a href="' . esc_url( get_category_link( $parent_id ) ) . '">' . esc_html__( 'Todas', 'pro' ) . '</a></li>';
+            }
+
+            foreach ( $subcategories as $subcat ) {
+                $current_class = ($subcat->term_id == $category->term_id) ? 'current-cat' : '';
+                echo '<li class="' . $current_class . '"><a href="' . esc_url( get_category_link( $subcat->term_id ) ) . '">' . esc_html( $subcat->name ) . '</a></li>';
+            }
+            echo '</ul></div>';
+        }
+    }
+    ?>
+
     <?php if ( $query->have_posts() ) : ?>
 
         <div class="category-grid-wrapper">

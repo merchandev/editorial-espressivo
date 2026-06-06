@@ -582,7 +582,7 @@ img {
     gap: 10px;
 }
 .breadcrumbs li::after {
-    content: "›";
+    content: "â€º";
     margin-left: 10px;
     color: var(--color-text-muted);
 }
@@ -1928,7 +1928,7 @@ img {
 }
 
 /* ==========================================================================
-   PÁGINA DE CONTACTO Y FORMULARIO
+   PÃGINA DE CONTACTO Y FORMULARIO
    ========================================================================== */
 .contact-page-wrapper {
     background-color: #f8fafc;
@@ -2280,7 +2280,7 @@ img {
 }
 
 /* ==========================================================================
-   LISTAS DEL FOOTER (MENÚS Y CATEGORÍAS)
+   LISTAS DEL FOOTER (MENÚS Y CATEGORÃAS)
    ========================================================================== */
 .footer-category-list {
     margin: 0;
@@ -3185,7 +3185,7 @@ a:hover, button:hover, .button:hover, input[type='submit']:hover { text-decorati
     filter: brightness(0) invert(1) opacity(0.85);
 }
 
-/* Área del banner publicitario */
+/* Ãrea del banner publicitario */
 .sponsor-banner-content {
     padding: 0;
     width: 100%;
@@ -3272,7 +3272,7 @@ a:hover, button:hover, .button:hover, input[type='submit']:hover { text-decorati
 
 
 
-/* Forzar dise�o a todo lo ancho para los contenedores de las categorias / archivos (Solucion de Seguridad) */
+/* Forzar diseño a todo lo ancho para los contenedores de las categorias / archivos (Solucion de Seguridad) */
 .archive-container {
     width: 100% !important;
     max-width: var(--container-width, 1300px) !important;
@@ -3291,3 +3291,204 @@ a:hover, button:hover, .button:hover, input[type='submit']:hover { text-decorati
     display: block !important;
 }
 
+
+/* ==========================================================================
+   BUSCADOR COLAPSABLE EN TABLET Y MÓVIL
+   ========================================================================== */
+@media (max-width: 1024px) {
+    .header-actions .search-form {
+        background: transparent;
+        transition: background-color 0.3s ease;
+    }
+    .header-actions .search-field {
+        width: 0;
+        padding: 0;
+        opacity: 0;
+        transition: width 0.3s ease, padding 0.3s ease, opacity 0.3s ease;
+        pointer-events: none;
+    }
+    .header-actions .search-form.is-expanded {
+        background: #fff;
+    }
+    .dark-mode .header-actions .search-form.is-expanded {
+        background: #1f2937;
+    }
+    .header-actions .search-form.is-expanded .search-field {
+        width: 180px;
+        padding: 8px 15px;
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+/* ==========================================================================
+   SUBNAVEGACIÓN DE CATEGORÍAS
+   ========================================================================== */
+.category-subnav {
+    margin-bottom: 30px;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 15px;
+}
+.subnav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.subnav-list li a {
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--color-text);
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+.subnav-list li.current-cat a,
+.subnav-list li a:hover {
+    background: var(--color-primary);
+    color: #fff;
+}
+.dark-mode .subnav-list li a {
+    background: rgba(255,255,255,0.05);
+    color: var(--color-text);
+}
+.dark-mode .subnav-list li.current-cat a,
+.dark-mode .subnav-list li a:hover {
+    background: var(--color-primary);
+    color: #fff;
+}
+
+/* ==========================================================================
+   MENU "MÁS" Y RESPONSIVE (DESKTOP VS MÓVIL)
+   ========================================================================== */
+@media (min-width: 768px) {
+    .mobile-only-menu-item {
+        display: none !important;
+    }
+}
+@media (max-width: 767px) {
+    .desktop-only-menu-item {
+        display: none !important;
+    }
+}
+
+/* ==========================================================================
+   MEJORAS DE DISEÑO DEL MENÚ (AESTHETICS)
+   ========================================================================== */
+.main-navigation {
+    background-color: var(--color-primary, #1e293b);
+}
+
+.main-navigation ul li a {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+/* Animación de subrayado en hover (escritorio) */
+@media (min-width: 768px) {
+    .main-navigation > ul > li > a::after {
+        content: '';
+        position: absolute;
+        bottom: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 2px;
+        background-color: var(--color-accent, #38bdf8);
+        transition: width 0.3s ease;
+        border-radius: 2px;
+    }
+    .main-navigation > ul > li:hover > a::after {
+        width: 70%;
+    }
+}
+
+/* Submenús Desplegables (Dropdowns) Premium - Sobrescribiendo reglas viejas */
+body .main-navigation .sub-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: rgba(30, 41, 59, 0.98);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    min-width: 240px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+    z-index: 9999;
+    padding: 10px 0;
+    margin: 0;
+    border-radius: 0 0 8px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 3px solid var(--color-accent, #38bdf8);
+}
+
+/* Submenús anidados (3er nivel) volando hacia un lado en vez de solaparse */
+body .main-navigation .sub-menu .sub-menu {
+    top: -3px;
+    left: 100%;
+    margin-left: 2px;
+    border-radius: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Prevención de desbordamiento de pantalla para el último ítem (MÁS) */
+body .main-navigation > ul > li:last-child > .sub-menu {
+    left: auto;
+    right: 0;
+}
+body .main-navigation > ul > li:last-child > .sub-menu .sub-menu {
+    left: auto;
+    right: 100%;
+    margin-right: 2px;
+}
+
+@media (min-width: 768px) {
+    body .main-navigation li:hover > .sub-menu,
+    body .main-navigation li:focus-within > .sub-menu {
+        display: block;
+        animation: submenuFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+}
+body .main-navigation .sub-menu li {
+    width: 100%;
+    margin: 0;
+    display: block;
+}
+body .main-navigation .sub-menu a {
+    display: block;
+    padding: 12px 24px;
+    color: #f1f5f9;
+    text-transform: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    white-space: nowrap;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+}
+body .main-navigation .sub-menu a:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    padding-left: 30px;
+    color: var(--color-accent, #38bdf8);
+}
+body .main-navigation .sub-menu li:last-child > a {
+    border-bottom: none;
+}
+
+/* Cancelar dark mode overrides para mantener el menú siempre premium oscuro */
+body.dark-mode .main-navigation .sub-menu {
+    background: rgba(30, 41, 59, 0.98);
+}
+body.dark-mode .main-navigation .sub-menu a {
+    color: #f1f5f9;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+body.dark-mode .main-navigation .sub-menu a:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}

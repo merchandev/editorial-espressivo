@@ -34,6 +34,34 @@ get_header();
     ) );
     ?>
 
+    <?php
+    // MOSTRAR SUBCATEGORÍAS DE LA CATEGORÍA ACTUAL
+    $current_category = get_queried_object();
+    if ( $current_category && $current_category->taxonomy === 'category' ) {
+        $parent_id = ($current_category->category_parent == 0) ? $current_category->term_id : $current_category->category_parent;
+        
+        $subcategories = get_categories( array(
+            'child_of'   => $parent_id,
+            'hide_empty' => false,
+        ) );
+
+        if ( ! empty( $subcategories ) ) {
+            echo '<div class="category-subnav"><ul class="subnav-list">';
+            if ($parent_id != $current_category->term_id) {
+                echo '<li><a href="' . esc_url( get_category_link( $parent_id ) ) . '">' . esc_html__( 'Todas', 'pro' ) . '</a></li>';
+            } else {
+                echo '<li class="current-cat"><a href="' . esc_url( get_category_link( $parent_id ) ) . '">' . esc_html__( 'Todas', 'pro' ) . '</a></li>';
+            }
+
+            foreach ( $subcategories as $subcat ) {
+                $current_class = ($subcat->term_id == $current_category->term_id) ? 'current-cat' : '';
+                echo '<li class="' . $current_class . '"><a href="' . esc_url( get_category_link( $subcat->term_id ) ) . '">' . esc_html( $subcat->name ) . '</a></li>';
+            }
+            echo '</ul></div>';
+        }
+    }
+    ?>
+
     <?php if ( have_posts() ) : ?>
 
         <div class="category-grid">
