@@ -19,7 +19,7 @@ class AdminPage {
             FROM {$wpdb->posts} p
             LEFT JOIN {$table_name} m ON p.ID = m.post_id
             WHERE p.post_status = 'publish' AND p.post_type = 'post' AND m.post_id IS NULL
-            LIMIT 500
+            LIMIT 50
         " );
 
         if ( empty( $posts ) ) {
@@ -28,14 +28,20 @@ class AdminPage {
 
         $db = new Database();
         foreach ( $posts as $p ) {
-            $text = strip_shortcodes( $p->post_content );
+            $content = !empty($p->post_content) ? $p->post_content : '';
+            $text = strip_shortcodes( $content );
             $text = wp_strip_all_tags( $text );
             $text = preg_replace( '/\s+/', ' ', $text );
             $text = trim( $text );
-            $desc = mb_strlen( $text, 'UTF-8' ) > 155 ? mb_strimwidth( $text, 0, 155, '...', 'UTF-8' ) : $text;
+            
+            if ( function_exists('mb_strlen') && mb_strlen( $text, 'UTF-8' ) > 155 ) {
+                $desc = mb_strimwidth( $text, 0, 155, '...', 'UTF-8' );
+            } else {
+                $desc = substr( $text, 0, 155 );
+            }
 
             $db->save_seo_data( $p->ID, [
-                'meta_title' => $p->post_title,
+                'meta_title' => !empty($p->post_title) ? $p->post_title : 'Sin Titulo',
                 'meta_desc'  => $desc
             ]);
         }
@@ -220,7 +226,7 @@ class AdminPage {
                             btn.removeClass('button-primary').css({'background':'#10b981', 'color':'#fff', 'border-color':'#10b981'});
                             setTimeout(function(){ location.reload(); }, 1500);
                         } else if (response.success && !response.data.done) {
-                            btn.html(spinner.prop('outerHTML') + ' Optimizando siguientes 500...');
+                            btn.html(spinner.prop('outerHTML') + ' Optimizando siguientes 50...');
                             processBatch();
                         } else {
                             btn.html('Error. Reintentar');
