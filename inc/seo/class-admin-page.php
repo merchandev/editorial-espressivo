@@ -42,7 +42,8 @@ class AdminPage {
         $total_posts = $total_posts ? intval( $total_posts ) : 0;
 
         // 2. Salud SEO (Porcentaje)
-        $seo_meta_count = $wpdb->get_var( "SELECT COUNT(DISTINCT post_id) FROM {$wpdb->prefix}ssivo_seo_meta" );
+        $table_name = Database::get_table_name();
+        $seo_meta_count = $wpdb->get_var( "SELECT COUNT(DISTINCT post_id) FROM {$table_name}" );
         $seo_percentage = 100;
         if ( $total_posts > 0 ) {
             $seo_percentage = round( ( $seo_meta_count / $total_posts ) * 100 );
