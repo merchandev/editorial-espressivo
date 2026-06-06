@@ -73,7 +73,7 @@ Se invalidan automáticamente mediante el hook `transition_post_status`.
 ## 🔄 Changelog
 
 ### v2.0.0 — Refactorización Espressivo & Integración SSIVO-SEO (Sesión Actual)
-- ✅ **Marca Blanca (White-label):** Se reemplazaron las dependencias semánticas del "Diario El Oriental" por nomenclatura genérica ("Espressivo", "MerchanDev").
+- ✅ **Marca Blanca (White-label):** Se reemplazaron las dependencias semánticas previas por nomenclatura genérica ("Espressivo", "MerchanDev").
 - ✅ **SSIVO-SEO Integrado:** Incorporación del motor de posicionamiento avanzado (React/PHP) sin depender de plugins de terceros.
 - ✅ **Tabla Indexable Autónoma:** Creación de `ssivo_seo_indexable` para proteger el rendimiento de la base de datos de WordPress.
 - ✅ **Panel lateral Gutenberg:** UI nativa para calcular legibilidad en tiempo real.
