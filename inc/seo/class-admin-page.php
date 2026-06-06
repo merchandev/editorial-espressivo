@@ -5,6 +5,42 @@ class AdminPage {
     public function __construct() {
         add_action( 'admin_menu', [ $this, 'register_menu' ] );
         add_action( 'admin_init', [ $this, 'register_settings' ] );
+        add_action( 'wp_ajax_ssivo_seo_optimize', [ $this, 'ajax_optimize' ] );
+    }
+
+    public function ajax_optimize() {
+        if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error();
+
+        global $wpdb;
+        $table_name = Database::get_table_name();
+        
+        $posts = $wpdb->get_results( "
+            SELECT ID, post_title, post_content
+            FROM {$wpdb->posts} p
+            LEFT JOIN {$table_name} m ON p.ID = m.post_id
+            WHERE p.post_status = 'publish' AND p.post_type = 'post' AND m.post_id IS NULL
+            LIMIT 500
+        " );
+
+        if ( empty( $posts ) ) {
+            wp_send_json_success(['done' => true]);
+        }
+
+        $db = new Database();
+        foreach ( $posts as $p ) {
+            $text = strip_shortcodes( $p->post_content );
+            $text = wp_strip_all_tags( $text );
+            $text = preg_replace( '/\s+/', ' ', $text );
+            $text = trim( $text );
+            $desc = mb_strlen( $text, 'UTF-8' ) > 155 ? mb_strimwidth( $text, 0, 155, '...', 'UTF-8' ) : $text;
+
+            $db->save_seo_data( $p->ID, [
+                'meta_title' => $p->post_title,
+                'meta_desc'  => $desc
+            ]);
+        }
+
+        wp_send_json_success(['done' => false]);
     }
 
     public function register_menu() {
@@ -82,15 +118,21 @@ class AdminPage {
                 <div style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; border-top: 4px solid <?php echo $health_color; ?>;">
                     <h3 style="margin-top: 0; color: #1e293b; font-size: 15px; margin-bottom: 15px;">Salud SEO del Sitio</h3>
                     <div style="display: flex; align-items: flex-end; gap: 10px;">
-                        <span style="font-size: 36px; font-weight: 800; color: <?php echo $health_color; ?>; line-height: 1;"><?php echo $seo_percentage; ?>%</span>
+                        <span id="seo-score-display" style="font-size: 36px; font-weight: 800; color: <?php echo $health_color; ?>; line-height: 1;"><?php echo $seo_percentage; ?>%</span>
                     </div>
-                    <p style="margin: 10px 0 0 0; font-size: 13px; color: #64748b;">
+                    <p style="margin: 10px 0 15px 0; font-size: 13px; color: #64748b; min-height: 38px;">
                         <?php if ( $seo_percentage >= 97 ) : ?>
                             ¡Excelente! Tu sitio mantiene el estándar requerido por encima del 97%.
                         <?php else : ?>
                             Atención: La salud SEO está por debajo del 97%. Optimiza artículos antiguos.
                         <?php endif; ?>
                     </p>
+                    <?php if ( $seo_percentage < 100 ) : ?>
+                        <button id="btn-optimize-seo" class="button button-primary" style="width: 100%; text-align: center; justify-content: center; display: flex; align-items: center; gap: 5px;">
+                            <span class="dashicons dashicons-update-alt" id="optimize-spinner" style="display:none; animation: rotation 2s infinite linear;"></span>
+                            Mejorar Salud SEO
+                        </button>
+                    <?php endif; ?>
                 </div>
 
                 <!-- Widget: Publicaciones -->
@@ -153,6 +195,49 @@ class AdminPage {
                 <?php submit_button( 'Guardar Cambios SEO', 'primary', 'submit', false ); ?>
             </form>
         </div>
+
+        <style>
+            @keyframes rotation { from { transform: rotate(0deg); } to { transform: rotate(359deg); } }
+        </style>
+        <script>
+        jQuery(document).ready(function($) {
+            $('#btn-optimize-seo').on('click', function(e) {
+                e.preventDefault();
+                var btn = $(this);
+                var spinner = $('#optimize-spinner');
+                
+                if (btn.prop('disabled')) return;
+                
+                btn.prop('disabled', true);
+                spinner.show();
+                btn.html(spinner.prop('outerHTML') + ' Procesando lote...');
+                
+                function processBatch() {
+                    $.post(ajaxurl, { action: 'ssivo_seo_optimize' }, function(response) {
+                        if (response.success && response.data.done) {
+                            $('#seo-score-display').text('100%').css('color', '#10b981');
+                            btn.html('¡Salud al 100%!');
+                            btn.removeClass('button-primary').css({'background':'#10b981', 'color':'#fff', 'border-color':'#10b981'});
+                            setTimeout(function(){ location.reload(); }, 1500);
+                        } else if (response.success && !response.data.done) {
+                            btn.html(spinner.prop('outerHTML') + ' Optimizando siguientes 500...');
+                            processBatch();
+                        } else {
+                            btn.html('Error. Reintentar');
+                            btn.prop('disabled', false);
+                            spinner.hide();
+                        }
+                    }).fail(function() {
+                        btn.html('Error de conexión. Reintentar');
+                        btn.prop('disabled', false);
+                        spinner.hide();
+                    });
+                }
+                
+                processBatch();
+            });
+        });
+        </script>
         <?php
     }
 }
