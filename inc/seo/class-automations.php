@@ -6,13 +6,17 @@ class Automations {
 
     public function __construct( Database $database ) {
         $this->database = $database;
-        add_action( 'transition_post_status', [ $this, 'handle_publish' ], 10, 3 );
+        add_action( 'save_post', [ $this, 'handle_save' ], 10, 2 );
     }
 
-    public function handle_publish( $new_status, $old_status, $post ) {
-        if ( 'publish' !== $new_status || $new_status === $old_status || wp_is_post_revision( $post->ID ) ) {
+    public function handle_save( $post_id, $post ) {
+        if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
             return;
         }
+        if ( wp_is_post_revision( $post_id ) ) {
+            return;
+        }
+
 
         $raw_content = apply_filters( 'ssivo_seo_before_meta_extraction', $post->post_content, $post );
         
