@@ -33,29 +33,29 @@ add_filter( 'pre_option_gmt_offset', function() {
 } );
 
 /**
- * Configuración inicial del tema.
+ * ConfiguraciÃƒÂ³n inicial del tema.
  */
 function pro_setup() {
     // Traducciones
     load_theme_textdomain( 'pro', get_template_directory() . '/languages' );
 
-    // Título dinámico
+    // TÃƒÂ­tulo dinÃƒÂ¡mico
     add_theme_support( 'title-tag' );
 
-    // Soporte para imágenes destacadas
+    // Soporte para imÃƒÂ¡genes destacadas
     add_theme_support( 'post-thumbnails' );
 
-    // Tamaños de imágenes personalizados para mejor rendimiento
-    // Héroe: Noticia principal (LCP)
+    // TamaÃƒÂ±os de imÃƒÂ¡genes personalizados para mejor rendimiento
+    // HÃƒÂ©roe: Noticia principal (LCP)
     add_image_size( 'hero-thumbnail', 1200, 675, true ); 
     // Card: Noticias secundarias
     add_image_size( 'card-thumbnail', 600, 400, true ); 
     
-    // Registrar menús de navegación
+    // Registrar menÃƒÂºs de navegaciÃƒÂ³n
     register_nav_menus( array(
-        'primary' => esc_html__( 'Menú Principal', 'pro' ),
-        'footer'  => esc_html__( 'Menú del Pie de Página', 'pro' ),
-        'topbar'  => esc_html__( 'Menú Superior', 'pro' ),
+        'primary' => esc_html__( 'MenÃƒÂº Principal', 'pro' ),
+        'footer'  => esc_html__( 'MenÃƒÂº del Pie de PÃƒÂ¡gina', 'pro' ),
+        'topbar'  => esc_html__( 'MenÃƒÂº Superior', 'pro' ),
     ) );
 
     // Soporte HTML5
@@ -114,7 +114,7 @@ function pro_scripts() {
     // Script para buscador Ajax
     wp_enqueue_script( 'pro-ajax-search', get_template_directory_uri() . '/assets/js/ajax-search.js', array(), '1.0.0', true );
     
-    // Generar Nonce seguro una sola vez por petición
+    // Generar Nonce seguro una sola vez por peticiÃƒÂ³n
     $ajax_nonce = wp_create_nonce( 'pro_ajax_nonce' );
 
     // Pasar URL de admin-ajax al script
@@ -124,7 +124,7 @@ function pro_scripts() {
     ));
 
     global $wp_query;
-    // Usar transient para evitar query extra en cada carga de página
+    // Usar transient para evitar query extra en cada carga de pÃƒÂ¡gina
     $latest_date = get_transient( 'pro_latest_post_date' );
     if ( false === $latest_date ) {
         $latest_post = get_posts( array(
@@ -196,13 +196,13 @@ function pro_defer_scripts( $tag, $handle ) {
 add_filter( 'script_loader_tag', 'pro_defer_scripts', 10, 2 );
 
 /**
- * Registrar áreas de widgets (Para publicidad y pie de página)
+ * Registrar ÃƒÂ¡reas de widgets (Para publicidad y pie de pÃƒÂ¡gina)
  */
 function pro_widgets_init() {
     register_sidebar( array(
         'name'          => esc_html__( 'Sidebar Principal', 'pro' ),
         'id'            => 'sidebar-1',
-        'description'   => esc_html__( 'Añade widgets aquí.', 'pro' ),
+        'description'   => esc_html__( 'AÃƒÂ±ade widgets aquÃƒÂ­.', 'pro' ),
         'before_widget' => '<section id="%1$s" class="widget %2$s">',
         'after_widget'  => '</section>',
         'before_title'  => '<h2 class="widget-title">',
@@ -213,7 +213,7 @@ function pro_widgets_init() {
     register_sidebar( array(
         'name'          => esc_html__( 'Anuncio Cabecera', 'pro' ),
         'id'            => 'ad-header',
-        'description'   => esc_html__( 'Añade un banner publicitario de 728x90 aquí.', 'pro' ),
+        'description'   => esc_html__( 'AÃƒÂ±ade un banner publicitario de 728x90 aquÃƒÂ­.', 'pro' ),
         'before_widget' => '<div class="ad-container ad-header">',
         'after_widget'  => '</div>',
     ) );
@@ -222,7 +222,7 @@ function pro_widgets_init() {
     register_sidebar( array(
         'name'          => esc_html__( 'Anuncio In-Feed', 'pro' ),
         'id'            => 'ad-in-feed',
-        'description'   => esc_html__( 'Añade banners que aparecerán entre las noticias.', 'pro' ),
+        'description'   => esc_html__( 'AÃƒÂ±ade banners que aparecerÃƒÂ¡n entre las noticias.', 'pro' ),
         'before_widget' => '<div class="ad-container ad-in-feed">',
         'after_widget'  => '</div>',
     ) );
@@ -230,7 +230,7 @@ function pro_widgets_init() {
 add_action( 'widgets_init', 'pro_widgets_init' );
 
 /**
- * Seguridad: Remover versión de WordPress de la cabecera
+ * Seguridad: Remover versiÃƒÂ³n de WordPress de la cabecera
  */
 remove_action('wp_head', 'wp_generator');
 
@@ -269,7 +269,7 @@ add_action('wp_ajax_nopriv_pro_ajax_search', 'pro_ajax_search');
 add_action('wp_ajax_pro_ajax_search', 'pro_ajax_search');
 
 /**
- * Registro de Custom Post Types y Taxonomías
+ * Registro de Custom Post Types y TaxonomÃƒÂ­as
  */
 function pro_register_cpts() {
     // Clasificado
@@ -281,7 +281,7 @@ function pro_register_cpts() {
         'supports'    => array('title', 'editor', 'thumbnail'),
         'menu_icon'   => 'dashicons-megaphone'
     ));
-    // Taxonomía: Municipio (solo para clasificados ahora)
+    // TaxonomÃƒÂ­a: Municipio (solo para clasificados ahora)
     register_taxonomy('municipio', array('clasificado'), array(
         'labels'       => array('name' => 'Municipios', 'singular_name' => 'Municipio'),
         'hierarchical' => false,
@@ -295,13 +295,13 @@ function pro_register_cpts() {
 }
 
 /**
- * Añadir Rol Dirección y restringir menús
+ * AÃƒÂ±adir Rol DirecciÃƒÂ³n y restringir menÃƒÂºs
  */
 function pro_add_direccion_role() {
     if ( ! get_role( 'direccion' ) ) {
         $admin_role = get_role( 'administrator' );
         if ( $admin_role ) {
-            add_role( 'direccion', 'Dirección', $admin_role->capabilities );
+            add_role( 'direccion', 'DirecciÃƒÂ³n', $admin_role->capabilities );
         }
     }
 }
@@ -315,7 +315,7 @@ function pro_restrict_direccion_menus() {
         remove_menu_page( 'hostinger-reach' );
         remove_menu_page( 'toplevel_page_hostinger' ); // Por si acaso usa toplevel
         
-        // Quitar menús nativos de WP solicitados
+        // Quitar menÃƒÂºs nativos de WP solicitados
         remove_menu_page( 'edit-comments.php' ); // Comentarios
         remove_menu_page( 'themes.php' );        // Apariencia
         remove_menu_page( 'plugins.php' );       // Plugins
@@ -327,12 +327,12 @@ add_action( 'admin_menu', 'pro_restrict_direccion_menus', 999 );
 add_action('init', 'pro_register_cpts');
 
 /**
- * Paginación AJAX (Cargar más)
+ * PaginaciÃƒÂ³n AJAX (Cargar mÃƒÂ¡s)
  */
 function pro_load_more_posts() {
     check_ajax_referer('pro_ajax_nonce', 'nonce');
 
-    // Seguridad Crítica: Reconstruir argumentos en el servidor
+    // Seguridad CrÃƒÂ­tica: Reconstruir argumentos en el servidor
     $paged = isset($_POST['page']) ? intval($_POST['page']) + 1 : 1;
     $cat_id = isset($_POST['category_id']) ? intval($_POST['category_id']) : 0;
     
@@ -382,7 +382,7 @@ function pro_check_new_posts() {
 
     $latest_date = isset( $_POST['latest_date'] ) ? sanitize_text_field( wp_unslash( $_POST['latest_date'] ) ) : '';
 
-    // Validar que sea una fecha con formato MySQL válido antes de usarla en la query
+    // Validar que sea una fecha con formato MySQL vÃƒÂ¡lido antes de usarla en la query
     if ( ! empty( $latest_date ) && preg_match( '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $latest_date ) ) {
         $args = array(
             'post_type'      => 'post',
@@ -409,7 +409,7 @@ add_action('wp_ajax_nopriv_pro_check_new_posts', 'pro_check_new_posts');
 add_action('wp_ajax_pro_check_new_posts', 'pro_check_new_posts');
 
 /**
- * Función Helper: Renderizar categorías del post
+ * FunciÃƒÂ³n Helper: Renderizar categorÃƒÂ­as del post
  */
 function pro_post_categories( $post_id = null, $force_category_slug = null ) {
     $categories = get_the_category( $post_id );
@@ -417,7 +417,7 @@ function pro_post_categories( $post_id = null, $force_category_slug = null ) {
         $primary_category = null;
         $current_cat_id = 0;
 
-        // Intentar detectar si estamos viendo una categoría específica
+        // Intentar detectar si estamos viendo una categorÃƒÂ­a especÃƒÂ­fica
         if ( wp_doing_ajax() && isset($_POST['category_id']) && intval($_POST['category_id']) > 0 ) {
             $current_cat_id = intval($_POST['category_id']);
         } elseif ( is_category() ) {
@@ -430,7 +430,7 @@ function pro_post_categories( $post_id = null, $force_category_slug = null ) {
             }
         }
 
-        // 0. Si se pide forzar una etiqueta mediante código (ej. Hero de Inicio)
+        // 0. Si se pide forzar una etiqueta mediante cÃƒÂ³digo (ej. Hero de Inicio)
         if ( $force_category_slug ) {
             foreach ( $categories as $category ) {
                 if ( $category->slug === $force_category_slug ) {
@@ -440,7 +440,7 @@ function pro_post_categories( $post_id = null, $force_category_slug = null ) {
             }
         }
 
-        // 1. Si estamos en una categoría, forzar que la etiqueta muestre esa misma categoría
+        // 1. Si estamos en una categorÃƒÂ­a, forzar que la etiqueta muestre esa misma categorÃƒÂ­a
         if ( ! $primary_category && $current_cat_id > 0 ) {
             foreach ( $categories as $category ) {
                 if ( $category->term_id === $current_cat_id ) {
@@ -472,7 +472,7 @@ function pro_post_categories( $post_id = null, $force_category_slug = null ) {
  * Personalizador (Customizer)
  */
 function pro_customize_register( $wp_customize ) {
-    // Sección de Redes Sociales
+    // SecciÃƒÂ³n de Redes Sociales
     $wp_customize->add_section( 'pro_social_settings', array(
         'title'    => esc_html__( 'Redes Sociales', 'pro' ),
         'priority' => 30,
@@ -507,15 +507,15 @@ function pro_customize_register( $wp_customize ) {
         'type'     => 'url',
     ) );
 
-    // Sección de Publicidad
+    // SecciÃƒÂ³n de Publicidad
     $wp_customize->add_section( 'pro_ad_settings', array(
         'title'    => esc_html__( 'Publicidad', 'pro' ),
         'priority' => 35,
     ) );
     $wp_customize->add_setting( 'pro_show_ad_placeholders', array( 'default' => true, 'sanitize_callback' => 'rest_sanitize_boolean' ) );
     $wp_customize->add_control( 'pro_show_ad_placeholders', array(
-        'label'    => esc_html__( 'Mostrar Placeholders vacíos', 'pro' ),
-        'description'=> esc_html__( 'Desactívalo en producción si no tienes anuncios insertados en los widgets.', 'pro' ),
+        'label'    => esc_html__( 'Mostrar Placeholders vacÃƒÂ­os', 'pro' ),
+        'description'=> esc_html__( 'DesactÃƒÂ­valo en producciÃƒÂ³n si no tienes anuncios insertados en los widgets.', 'pro' ),
         'section'  => 'pro_ad_settings',
         'type'     => 'checkbox',
     ) );
@@ -531,7 +531,7 @@ require_once get_template_directory() . '/inc/ad-manager.php';
 function pro_add_firma_metabox() {
     add_meta_box(
         'pro_firma_autor_metabox',       // ID
-        'Firma',                         // Título
+        'Firma',                         // TÃƒÂ­tulo
         'pro_firma_autor_metabox_html',  // Callback
         'post',                          // Pantalla (Post Type)
         'side',                          // Contexto
@@ -545,8 +545,8 @@ function pro_firma_autor_metabox_html( $post ) {
     wp_nonce_field( 'pro_firma_autor_nonce_action', 'pro_firma_autor_nonce' );
     ?>
     <label for="pro_firma_autor_field" style="display:block; margin-bottom:5px;">Nombre del autor para la firma:</label>
-    <input type="text" id="pro_firma_autor_field" name="pro_firma_autor_field" value="<?php echo esc_attr( $value ); ?>" style="width:100%;" placeholder="Ej: Juan Pérez" />
-    <p style="font-size: 12px; color: #666; margin-top: 5px;">Aparecerá en cursiva debajo del título de la noticia.</p>
+    <input type="text" id="pro_firma_autor_field" name="pro_firma_autor_field" value="<?php echo esc_attr( $value ); ?>" style="width:100%;" placeholder="Ej: Juan PÃƒÂ©rez" />
+    <p style="font-size: 12px; color: #666; margin-top: 5px;">AparecerÃƒÂ¡ en cursiva debajo del tÃƒÂ­tulo de la noticia.</p>
     <?php
 }
 
@@ -567,7 +567,7 @@ function pro_save_firma_autor_meta( $post_id ) {
 add_action( 'save_post', 'pro_save_firma_autor_meta' );
 
 /**
- * Forzar etiqueta única EO-2026 y ocultar el panel de etiquetas
+ * Forzar etiqueta ÃƒÂºnica EO-2026 y ocultar el panel de etiquetas
  */
 function pro_enforce_single_tag( $post_id, $post, $update ) {
     if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
@@ -586,7 +586,7 @@ function pro_remove_tags_panel() {
 add_action( 'admin_menu', 'pro_remove_tags_panel' );
 
 function pro_hide_gutenberg_tags() {
-    // Ocultar del Block Editor (Gutenberg) vía CSS
+    // Ocultar del Block Editor (Gutenberg) vÃƒÂ­a CSS
     echo '<style>
         .components-panel__body.edit-post-meta-boxes-area #tagsdiv-post_tag,
         .edit-post-sidebar .components-panel__body:has(.editor-post-taxonomies__hierarchical-terms-list[aria-label="Etiquetas"]),
@@ -598,8 +598,8 @@ function pro_hide_gutenberg_tags() {
 add_action( 'admin_head', 'pro_hide_gutenberg_tags' );
 
 /**
- * Instalación "Nuclear" de páginas automáticas
- * Esto creará todas las páginas físicas al cargar el dashboard si no existen.
+ * InstalaciÃƒÂ³n "Nuclear" de pÃƒÂ¡ginas automÃƒÂ¡ticas
+ * Esto crearÃƒÂ¡ todas las pÃƒÂ¡ginas fÃƒÂ­sicas al cargar el dashboard si no existen.
  */
 function pro_nuclear_install_pages() {
     // Solo correr una vez para no saturar la base de datos
@@ -615,25 +615,25 @@ function pro_nuclear_install_pages() {
     $pages_to_create = array(
         'Contacto'               => 'page-contacto.php',
         'Carteles y Edictos'     => 'page-carteles.php',
-        'Términos y Condiciones'  => 'page-terminos-y-condiciones.php',
-        'Política de Cookies'    => 'page-politica-de-cookies.php',
+        'TÃƒÂ©rminos y Condiciones'  => 'page-terminos-y-condiciones.php',
+        'PolÃƒÂ­tica de Cookies'    => 'page-politica-de-cookies.php',
         'Belleza' => 'page-categoria.php',
         'Bienestar' => 'page-categoria.php',
         'Buen ciudadano' => 'page-categoria.php',
-        'Ciencia y Tecnología' => 'page-categoria.php',
+        'Ciencia y TecnologÃƒÂ­a' => 'page-categoria.php',
         'Deportes' => 'page-categoria.php',
-        'Economía' => 'page-categoria.php',
-        'Educación' => 'page-categoria.php',
+        'EconomÃƒÂ­a' => 'page-categoria.php',
+        'EducaciÃƒÂ³n' => 'page-categoria.php',
         'Entretenimiento' => 'page-categoria.php',
         'Entrevistas' => 'page-categoria.php',
-        'Gastronomía' => 'page-categoria.php',
+        'GastronomÃƒÂ­a' => 'page-categoria.php',
         'Internacional' => 'page-categoria.php',
         'Local' => 'page-categoria.php',
         'Monagas' => 'page-categoria.php',
         'Municipios' => 'page-categoria.php',
         'Nacional' => 'page-categoria.php',
-        'Opinión' => 'page-categoria.php',
-        'Política' => 'page-categoria.php',
+        'OpiniÃƒÂ³n' => 'page-categoria.php',
+        'PolÃƒÂ­tica' => 'page-categoria.php',
         'Regiones' => 'page-categoria.php',
         'Relevantes' => 'page-categoria.php',
         'Salud' => 'page-categoria.php',
@@ -670,7 +670,7 @@ function pro_nuclear_install_pages() {
         }
     }
 
-    // Configurar Inicio estático
+    // Configurar Inicio estÃƒÂ¡tico
     $home_query = new WP_Query( array(
         'post_type'              => 'page',
         'title'                  => 'Inicio',
@@ -693,23 +693,23 @@ function pro_nuclear_install_pages() {
         update_option( 'page_on_front', $home_page->ID );
     }
 
-    // Auto-Crear un menú estructurado y asignarlo
-    $menu_name = 'Menú Principal Nuclear';
+    // Auto-Crear un menÃƒÂº estructurado y asignarlo
+    $menu_name = 'MenÃƒÂº Principal Nuclear';
     $menu_exists = wp_get_nav_menu_object( $menu_name );
     $menu_id = 0;
 
     if ( ! $menu_exists ) {
         $menu_id = wp_create_nav_menu( $menu_name );
 
-        // Obtener IDs de las páginas
+        // Obtener IDs de las pÃƒÂ¡ginas
         $all_pages = get_posts( array( 'post_type' => 'page', 'numberposts' => -1 ) );
         $page_map = array();
         foreach ( $all_pages as $p ) {
             $page_map[ $p->post_title ] = $p->ID;
         }
 
-        // Definir estructura principal y submenú
-        $main_items = array( 'Inicio', 'Nacional', 'Internacional', 'Sucesos', 'Deportes', 'Economía', 'Política', 'Entretenimiento' );
+        // Definir estructura principal y submenÃƒÂº
+        $main_items = array( 'Inicio', 'Nacional', 'Internacional', 'Sucesos', 'Deportes', 'EconomÃƒÂ­a', 'PolÃƒÂ­tica', 'Entretenimiento' );
         $all_titles = array_keys( $pages_to_create );
         $submenu_items = array_diff( $all_titles, $main_items );
         // Remove Contacto from submenu to put it at the end of main
@@ -730,14 +730,14 @@ function pro_nuclear_install_pages() {
             }
         }
 
-        // Crear item "Más" (Custom Link)
+        // Crear item "MÃƒÂ¡s" (Custom Link)
         $mas_item_id = wp_update_nav_menu_item( $menu_id, 0, array(
-            'menu-item-title'  => 'Más',
+            'menu-item-title'  => 'MÃƒÂ¡s',
             'menu-item-url'    => '#',
             'menu-item-status' => 'publish',
         ) );
 
-        // Agregar items al submenú "Más"
+        // Agregar items al submenÃƒÂº "MÃƒÂ¡s"
         sort( $submenu_items );
         foreach ( $submenu_items as $sub_item ) {
             if ( isset( $page_map[ $sub_item ] ) ) {
@@ -766,7 +766,7 @@ function pro_nuclear_install_pages() {
         $menu_id = $menu_exists->term_id;
     }
 
-    // Asignar forzosamente el menú a la ubicación 'primary'
+    // Asignar forzosamente el menÃº a la ubicaciÃ³n 'primary'
     if ( $menu_id ) {
         $locations = get_theme_mod( 'nav_menu_locations' );
         if ( ! is_array( $locations ) ) {
@@ -781,12 +781,13 @@ function pro_nuclear_install_pages() {
 add_action( 'admin_init', 'pro_nuclear_install_pages' );
 
 /**
- * Modificaciones del Menú (Flechas y enlaces)
+ * Modificaciones del MenÃº (Flechas y enlaces)
  */
 add_filter('nav_menu_item_title', 'pro_add_dropdown_arrow', 10, 4);
 function pro_add_dropdown_arrow($title, $item, $args, $depth) {
     if (in_array('menu-item-has-children', $item->classes)) {
-        $title .= ' <span class="dropdown-arrow" style="font-size: 0.8em; margin-left: 4px;">&#9662;</span>'; 
+        $arrow = ($depth > 0) ? '&#9656;' : '&#9662;'; // Flecha a la derecha para submenús, hacia abajo para principales
+        $title .= ' <span class="dropdown-arrow" style="font-size: 0.8em; margin-left: 4px; display: inline-block;">' . $arrow . '</span>'; 
     }
     return $title;
 }
@@ -813,8 +814,8 @@ function pro_register_carteles_cpt() {
         'singular_name'         => 'Cartel',
         'menu_name'             => 'Carteles',
         'name_admin_bar'        => 'Cartel',
-        'add_new'               => 'Añadir Nuevo',
-        'add_new_item'          => 'Añadir Nuevo Cartel',
+        'add_new'               => 'AÃƒÂ±adir Nuevo',
+        'add_new_item'          => 'AÃƒÂ±adir Nuevo Cartel',
         'new_item'              => 'Nuevo Cartel',
         'edit_item'             => 'Editar Cartel',
         'view_item'             => 'Ver Cartel',
@@ -836,7 +837,7 @@ function pro_register_carteles_cpt() {
         'hierarchical'       => false,
         'menu_position'      => 5,
         'menu_icon'          => 'dashicons-media-document', // Icono de documento
-        'supports'           => array( 'title', 'thumbnail' ), // Solo título e imagen destacada
+        'supports'           => array( 'title', 'thumbnail' ), // Solo tÃƒÂ­tulo e imagen destacada
         'show_in_rest'       => true, // Soporte para Gutenberg si lo desean
     );
 
@@ -844,7 +845,7 @@ function pro_register_carteles_cpt() {
 }
 add_action( 'init', 'pro_register_carteles_cpt' );
 
-// 2. Añadir Meta Box para subir PDF
+// 2. AÃƒÂ±adir Meta Box para subir PDF
 function pro_add_cartel_pdf_metabox() {
     add_meta_box(
         'pro_cartel_pdf',
@@ -858,7 +859,7 @@ function pro_add_cartel_pdf_metabox() {
 add_action( 'add_meta_boxes', 'pro_add_cartel_pdf_metabox' );
 
 function pro_render_cartel_pdf_metabox( $post ) {
-    // Añadir wp_nonce para seguridad
+    // AÃƒÂ±adir wp_nonce para seguridad
     wp_nonce_field( 'pro_save_cartel_pdf_data', 'pro_cartel_pdf_meta_box_nonce' );
 
     // Obtener valor actual
@@ -866,7 +867,7 @@ function pro_render_cartel_pdf_metabox( $post ) {
 
     echo '<label for="pro_cartel_pdf_url">URL del archivo PDF: </label>';
     echo '<input type="url" id="pro_cartel_pdf_url" name="pro_cartel_pdf_url" value="' . esc_attr( $value ) . '" style="width:100%; margin-top:5px;" placeholder="https://..." />';
-    echo '<p class="description">Pega aquí el enlace directo al archivo PDF. (Puedes subir el PDF a "Medios" y copiar su enlace aquí).</p>';
+    echo '<p class="description">Pega aquÃƒÂ­ el enlace directo al archivo PDF. (Puedes subir el PDF a "Medios" y copiar su enlace aquÃƒÂ­).</p>';
 }
 
 // 3. Guardar el valor del Meta Box
@@ -895,7 +896,7 @@ add_action( 'save_post', 'pro_save_cartel_pdf_data' );
 
 /**
  * ==============================================================
- * SISTEMA DE FORMULARIO DE CONTACTO (CPT, AJAX, EXPORTACIÓN)
+ * SISTEMA DE FORMULARIO DE CONTACTO (CPT, AJAX, EXPORTACIÃƒâ€œN)
  * ==============================================================
  */
 
@@ -913,14 +914,14 @@ function pro_register_mensajes_cpt() {
 
     $args = array(
         'labels'             => $labels,
-        'public'             => false, // No público en front-end nativo
+        'public'             => false, // No pÃƒÂºblico en front-end nativo
         'show_ui'            => true,
         'show_in_menu'       => true,
         'menu_position'      => 6,
         'menu_icon'          => 'dashicons-email',
         'capability_type'    => 'post',
         'capabilities'       => array(
-            'create_posts' => 'do_not_allow', // Solo entra por AJAX (o admin manual, pero ocultamos botón default)
+            'create_posts' => 'do_not_allow', // Solo entra por AJAX (o admin manual, pero ocultamos botÃƒÂ³n default)
         ),
         'map_meta_cap'       => true,
         'supports'           => array( 'title', 'editor', 'custom-fields' ), // Titulo = Nombre, Editor = Mensaje
@@ -936,7 +937,7 @@ function pro_set_custom_mensaje_columns( $columns ) {
     unset( $columns['date'] );
     $columns['title'] = 'Remitente (Nombre)';
     $columns['email'] = 'Correo';
-    $columns['phone'] = 'Teléfono';
+    $columns['phone'] = 'TelÃƒÂ©fono';
     $columns['depto'] = 'Departamento';
     $columns['date']  = 'Fecha';
     return $columns;
@@ -980,10 +981,10 @@ function pro_submit_contact_form() {
     $message    = sanitize_textarea_field( $_POST['message'] );
 
     if ( ! is_email( $email ) ) {
-        wp_send_json_error( array( 'message' => 'El correo electrónico no es válido.' ) );
+        wp_send_json_error( array( 'message' => 'El correo electrÃƒÂ³nico no es vÃƒÂ¡lido.' ) );
     }
 
-    // Seguridad Extrema: Evitar Inyecciones, Enlaces y Código
+    // Seguridad Extrema: Evitar Inyecciones, Enlaces y CÃƒÂ³digo
     $security_check = $name . ' ' . $address . ' ' . $message;
     
     // Bloquear enlaces
@@ -991,7 +992,7 @@ function pro_submit_contact_form() {
         wp_send_json_error( array( 'message' => 'Por seguridad, no se permiten enlaces ni URLs en el formulario.' ) );
     }
 
-    // Bloquear HTML, scripts e inyecciones SQL básicas
+    // Bloquear HTML, scripts e inyecciones SQL bÃƒÂ¡sicas
     if ( preg_match( '/(<|>|\[url|\[link|script|union select|drop table|concat\(|-- )/i', $security_check ) ) {
         wp_send_json_error( array( 'message' => 'Se han detectado caracteres especiales o comandos no permitidos en el texto.' ) );
     }
@@ -1011,14 +1012,14 @@ function pro_submit_contact_form() {
         update_post_meta( $post_id, '_contacto_address', $address );
         update_post_meta( $post_id, '_contacto_depto', $department );
 
-        wp_send_json_success( array( 'message' => '¡Mensaje enviado con éxito!' ) );
+        wp_send_json_success( array( 'message' => 'Ã‚Â¡Mensaje enviado con ÃƒÂ©xito!' ) );
     } else {
         wp_send_json_error( array( 'message' => 'Hubo un error al guardar tu mensaje.' ) );
     }
-    // wp_send_json_success/error ya llama wp_die() — no es necesario aquí
+    // wp_send_json_success/error ya llama wp_die() Ã¢â‚¬â€ no es necesario aquÃƒÂ­
 }
 
-// 4. Botón de Exportar a CSV en la vista del CPT
+// 4. BotÃƒÂ³n de Exportar a CSV en la vista del CPT
 add_action('manage_posts_extra_tablenav', 'pro_export_mensajes_button', 20, 1);
 function pro_export_mensajes_button($which) {
     global $typenow;
@@ -1034,7 +1035,7 @@ function pro_export_mensajes_button($which) {
     }
 }
 
-// 5. Lógica de exportación CSV
+// 5. LÃƒÂ³gica de exportaciÃƒÂ³n CSV
 add_action('admin_post_pro_export_mensajes_csv', 'pro_export_mensajes_csv_handler');
 function pro_export_mensajes_csv_handler() {
     if (!current_user_can('edit_posts')) {
@@ -1057,7 +1058,7 @@ function pro_export_mensajes_csv_handler() {
     fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
     
     // Cabeceras
-    fputcsv($output, array('Fecha', 'Nombre', 'Correo', 'Teléfono', 'Dirección', 'Departamento', 'Mensaje'));
+    fputcsv($output, array('Fecha', 'Nombre', 'Correo', 'TelÃƒÂ©fono', 'DirecciÃƒÂ³n', 'Departamento', 'Mensaje'));
 
     if ($query->have_posts()) {
         while ($query->have_posts()) {
@@ -1079,29 +1080,29 @@ function pro_export_mensajes_csv_handler() {
 }
 
 /**
- * Cargar personalizaciones del panel de administración (White-label)
+ * Cargar personalizaciones del panel de administraciÃƒÂ³n (White-label)
  */
 require_once get_template_directory() . '/inc/admin-whitelabel.php';
 
 /**
- * Cargar configuraciones de seguridad (Login URL y prevención)
+ * Cargar configuraciones de seguridad (Login URL y prevenciÃƒÂ³n)
  */
 require_once get_template_directory() . '/inc/security.php';
 
 /**
- * Cargar gestor de Portada del Día (Programación de portadas a las 05:00 AM)
+ * Cargar gestor de Portada del DÃƒÂ­a (ProgramaciÃƒÂ³n de portadas a las 05:00 AM)
  */
 require_once get_template_directory() . '/inc/portada-dia.php';
 
 /**
- * Registrar temas de color personalizados para el panel de administración
- * y forzar su carga según el rol del usuario ('direccion' o 'autor').
+ * Registrar temas de color personalizados para el panel de administraciÃƒÂ³n
+ * y forzar su carga segÃƒÂºn el rol del usuario ('direccion' o 'autor').
  */
 function pro_register_and_force_admin_colors() {
-    // 1. Registrar esquema para Dirección (Guinda / Antracita)
+    // 1. Registrar esquema para DirecciÃƒÂ³n (Guinda / Antracita)
     wp_admin_css_color(
         'pro_direccion_scheme',
-        'Dirección (Editorial)',
+        'DirecciÃƒÂ³n (Editorial)',
         get_template_directory_uri() . '/assets/css/admin-direccion.css',
         array( '#111827', '#1f2937', '#7f1d1d', '#ef4444' ),
         array( 'base' => '#7f1d1d', 'focus' => '#ef4444', 'current' => '#ef4444' )
@@ -1110,7 +1111,7 @@ function pro_register_and_force_admin_colors() {
     // 2. Registrar esquema para Autor (Bosque / Esmeralda)
     wp_admin_css_color(
         'pro_autor_scheme',
-        'Autor (Redacción)',
+        'Autor (RedacciÃƒÂ³n)',
         get_template_directory_uri() . '/assets/css/admin-autor.css',
         array( '#0f172a', '#1e293b', '#065f46', '#10b981' ),
         array( 'base' => '#065f46', 'focus' => '#10b981', 'current' => '#10b981' )
@@ -1119,7 +1120,7 @@ function pro_register_and_force_admin_colors() {
 add_action( 'admin_init', 'pro_register_and_force_admin_colors' );
 
 /**
- * Forzar el esquema de color de administración según el rol de usuario
+ * Forzar el esquema de color de administraciÃƒÂ³n segÃƒÂºn el rol de usuario
  */
 function pro_force_admin_color_by_role( $result, $option, $user ) {
     if ( 'admin_color' === $option && is_a( $user, 'WP_User' ) ) {
@@ -1135,7 +1136,7 @@ add_filter( 'get_user_option_admin_color', 'pro_force_admin_color_by_role', 10, 
 
 /**
  * ==============================================================
- * REGLA NUCLEAR Y SISTEMA DE SUSPENSIÓN TEMPORAL DE USUARIOS
+ * REGLA NUCLEAR Y SISTEMA DE SUSPENSIÃƒâ€œN TEMPORAL DE USUARIOS
  * ==============================================================
  */
 
@@ -1180,7 +1181,7 @@ function pro_render_user_status_column_value( $val, $column_name, $user_id ) {
 add_filter( 'manage_users_custom_column', 'pro_render_user_status_column_value', 10, 3 );
 
 /**
- * 3. Agregar los enlaces rápidos de "Suspender" y "Reactivar" bajo el nombre del usuario.
+ * 3. Agregar los enlaces rÃƒÂ¡pidos de "Suspender" y "Reactivar" bajo el nombre del usuario.
  */
 function pro_user_suspension_row_actions( $actions, $user_object ) {
     $current_user = wp_get_current_user();
@@ -1192,7 +1193,7 @@ function pro_user_suspension_row_actions( $actions, $user_object ) {
         return $actions;
     }
 
-    // No permitir que un usuario se suspenda a sí mismo.
+    // No permitir que un usuario se suspenda a sÃƒÂ­ mismo.
     if ( $current_user->ID === $user_object->ID ) {
         return $actions;
     }
@@ -1246,7 +1247,7 @@ function pro_user_suspension_row_actions( $actions, $user_object ) {
             admin_url( 'users.php' )
         );
         $actions['pro_suspend'] = sprintf(
-            '<a href="%s" class="pro-action-suspend" style="color: #ef4444; font-weight: 600;" onclick="return confirm(\'¿Estás seguro de que deseas SUSPENDER temporalmente este perfil de usuario? Se cerrarán todas sus sesiones activas de inmediato.\');">Suspender</a>',
+            '<a href="%s" class="pro-action-suspend" style="color: #ef4444; font-weight: 600;" onclick="return confirm(\'Ã‚Â¿EstÃƒÂ¡s seguro de que deseas SUSPENDER temporalmente este perfil de usuario? Se cerrarÃƒÂ¡n todas sus sesiones activas de inmediato.\');">Suspender</a>',
             esc_url( $url )
         );
     }
@@ -1256,7 +1257,7 @@ function pro_user_suspension_row_actions( $actions, $user_object ) {
 add_filter( 'user_row_actions', 'pro_user_suspension_row_actions', 10, 2 );
 
 /**
- * 4. Procesar las acciones de suspensión y reactivación en el panel de administración.
+ * 4. Procesar las acciones de suspensiÃƒÂ³n y reactivaciÃƒÂ³n en el panel de administraciÃƒÂ³n.
  */
 function pro_handle_user_status_actions() {
     if ( ! is_admin() ) {
@@ -1275,7 +1276,7 @@ function pro_handle_user_status_actions() {
 
     $nonce_action = $action . '_' . $target_user_id;
     if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], $nonce_action ) ) {
-        wp_die( 'Error de seguridad: Solicitud no verificada (Nonce inválido).' );
+        wp_die( 'Error de seguridad: Solicitud no verificada (Nonce invÃƒÂ¡lido).' );
     }
 
     $current_user = wp_get_current_user();
@@ -1284,10 +1285,10 @@ function pro_handle_user_status_actions() {
 
     // Validar permisos del ejecutor
     if ( ! $is_admin && ! $is_director ) {
-        wp_die( 'No tienes privilegios suficientes para realizar esta acción.' );
+        wp_die( 'No tienes privilegios suficientes para realizar esta acciÃƒÂ³n.' );
     }
 
-    // No permitir auto-suspensión
+    // No permitir auto-suspensiÃƒÂ³n
     if ( $current_user->ID === $target_user_id ) {
         wp_die( 'No puedes suspender o reactivar tu propia cuenta.' );
     }
@@ -1318,7 +1319,7 @@ function pro_handle_user_status_actions() {
         }
     }
 
-    // Procesar acción
+    // Procesar acciÃƒÂ³n
     if ( 'pro_suspend_user' === $action ) {
         update_user_meta( $target_user_id, '_pro_user_status', 'suspended' );
         
@@ -1339,7 +1340,7 @@ function pro_handle_user_status_actions() {
 add_action( 'admin_init', 'pro_handle_user_status_actions' );
 
 /**
- * 5. Mostrar notificaciones administrativas sobre la suspensión/reactivación.
+ * 5. Mostrar notificaciones administrativas sobre la suspensiÃƒÂ³n/reactivaciÃƒÂ³n.
  */
 function pro_user_status_admin_notices() {
     global $pagenow;
@@ -1349,18 +1350,18 @@ function pro_user_status_admin_notices() {
 
     $msg = isset( $_GET['pro_msg'] ) ? sanitize_text_field( $_GET['pro_msg'] ) : '';
     if ( 'suspended' === $msg ) {
-        echo '<div class="notice notice-success is-dismissible"><p><strong>Éxito:</strong> El perfil de usuario ha sido suspendido temporalmente y todas sus sesiones activas han sido cerradas de inmediato.</p></div>';
+        echo '<div class="notice notice-success is-dismissible"><p><strong>Ãƒâ€°xito:</strong> El perfil de usuario ha sido suspendido temporalmente y todas sus sesiones activas han sido cerradas de inmediato.</p></div>';
     } elseif ( 'reactivated' === $msg ) {
-        echo '<div class="notice notice-success is-dismissible"><p><strong>Éxito:</strong> El perfil de usuario ha sido reactivado exitosamente y ya puede iniciar sesión en la plataforma.</p></div>';
+        echo '<div class="notice notice-success is-dismissible"><p><strong>Ãƒâ€°xito:</strong> El perfil de usuario ha sido reactivado exitosamente y ya puede iniciar sesiÃƒÂ³n en la plataforma.</p></div>';
     }
 }
 add_action( 'admin_notices', 'pro_user_status_admin_notices' );
 
 /**
- * 6. Interceptar el intento de inicio de sesión de los usuarios suspendidos.
+ * 6. Interceptar el intento de inicio de sesiÃƒÂ³n de los usuarios suspendidos.
  */
 function pro_block_suspended_user_login( $user, $username ) {
-    // Si ya hay un error previo en la autenticación, seguir de largo
+    // Si ya hay un error previo en la autenticaciÃƒÂ³n, seguir de largo
     if ( is_wp_error( $user ) ) {
         return $user;
     }
@@ -1369,9 +1370,9 @@ function pro_block_suspended_user_login( $user, $username ) {
         $status = get_user_meta( $user->ID, '_pro_user_status', true );
         if ( 'suspended' === $status ) {
             $error_msg = '<div class="pro-login-blocked-notice" style="text-align: left; line-height: 1.6;">';
-            $error_msg .= '<strong style="color: #ef4444; font-size: 15px; display: block; margin-bottom: 8px;">⚠️ Acceso Restringido</strong>';
-            $error_msg .= 'Tu cuenta de usuario ha sido <strong>suspendida temporalmente</strong> por decisión de la Dirección Editorial o la Administración.';
-            $error_msg .= '<br/><br/>Si consideras que esto es un error o necesitas solicitar la reactivación de tu perfil, ponte en contacto con los Administradores de la plataforma.';
+            $error_msg .= '<strong style="color: #ef4444; font-size: 15px; display: block; margin-bottom: 8px;">Ã¢Å¡Â Ã¯Â¸Â Acceso Restringido</strong>';
+            $error_msg .= 'Tu cuenta de usuario ha sido <strong>suspendida temporalmente</strong> por decisiÃƒÂ³n de la DirecciÃƒÂ³n Editorial o la AdministraciÃƒÂ³n.';
+            $error_msg .= '<br/><br/>Si consideras que esto es un error o necesitas solicitar la reactivaciÃƒÂ³n de tu perfil, ponte en contacto con los Administradores de la plataforma.';
             $error_msg .= '</div>';
 
             return new WP_Error( 'pro_user_suspended', $error_msg );
@@ -1383,7 +1384,7 @@ function pro_block_suspended_user_login( $user, $username ) {
 add_filter( 'wp_authenticate_user', 'pro_block_suspended_user_login', 99, 2 );
 
 /**
- * 7. Estilos premium y scripts visuales complementarios en el panel de administración.
+ * 7. Estilos premium y scripts visuales complementarios en el panel de administraciÃƒÂ³n.
  */
 function pro_user_status_admin_styles() {
     global $pagenow;
@@ -1452,17 +1453,17 @@ add_action( 'admin_footer', 'pro_user_status_admin_footer_scripts' );
  */
 
 /**
- * 1. RASTREADOR DE CONEXIÓN Y SESIONES
- * Guarda la última sesión absoluta y el primer ingreso diario de cada usuario.
+ * 1. RASTREADOR DE CONEXIÃƒâ€œN Y SESIONES
+ * Guarda la ÃƒÂºltima sesiÃƒÂ³n absoluta y el primer ingreso diario de cada usuario.
  */
 function pro_track_user_login_activity( $user_login, $user ) {
     $now = current_time( 'mysql' ); // Timestamp en la hora local del sitio
     $today = current_time( 'Y-m-d' );
     
-    // Guardar fecha/hora de la última sesión
+    // Guardar fecha/hora de la ÃƒÂºltima sesiÃƒÂ³n
     update_user_meta( $user->ID, '_pro_last_login_time', $now );
     
-    // Guardar primer inicio de sesión de hoy (si no existe registro previo hoy)
+    // Guardar primer inicio de sesiÃƒÂ³n de hoy (si no existe registro previo hoy)
     $first_login = get_user_meta( $user->ID, '_pro_first_login_today', true );
     if ( empty( $first_login ) || substr( $first_login, 0, 10 ) !== $today ) {
         update_user_meta( $user->ID, '_pro_first_login_today', $now );
@@ -1471,7 +1472,7 @@ function pro_track_user_login_activity( $user_login, $user ) {
 add_action( 'wp_login', 'pro_track_user_login_activity', 10, 2 );
 
 /**
- * Función auxiliar para dar formato legible de tiempo transcurrido (Español Premium)
+ * FunciÃƒÂ³n auxiliar para dar formato legible de tiempo transcurrido (EspaÃƒÂ±ol Premium)
  */
 function pro_get_human_time_diff( $mysql_date_string ) {
     if ( empty( $mysql_date_string ) ) {
@@ -1508,42 +1509,42 @@ function pro_register_dashboard_widgets() {
     $is_admin = in_array( 'administrator', $current_user->roles );
     $is_director = in_array( 'direccion', $current_user->roles );
     
-    // 1. Portada del Día - Todos los roles lo ven
+    // 1. Portada del DÃƒÂ­a - Todos los roles lo ven
     wp_add_dashboard_widget( 
         'pro_dashboard_portada', 
-        '📰 Portada del Día', 
+        'Ã°Å¸â€œÂ° Portada del DÃƒÂ­a', 
         'pro_render_dashboard_portada_widget' 
     );
     
-    // 2. Clientes y Fechas de Corte - Solo Admin y Dirección
+    // 2. Clientes y Fechas de Corte - Solo Admin y DirecciÃƒÂ³n
     if ( $is_admin || $is_director ) {
         wp_add_dashboard_widget( 
             'pro_dashboard_clientes', 
-            '👥 Gestión de Clientes Activos', 
+            'Ã°Å¸â€˜Â¥ GestiÃƒÂ³n de Clientes Activos', 
             'pro_render_dashboard_clientes_widget' 
         );
     }
     
-    // 3. Leads (CPT Mensajes) - Solo Admin y Dirección
+    // 3. Leads (CPT Mensajes) - Solo Admin y DirecciÃƒÂ³n
     if ( $is_admin || $is_director ) {
         wp_add_dashboard_widget( 
             'pro_dashboard_leads', 
-            '📨 Leads de Contacto Recientes', 
+            'Ã°Å¸â€œÂ¨ Leads de Contacto Recientes', 
             'pro_render_dashboard_leads_widget' 
         );
     }
     
-    // 4. Últimas Publicaciones - Todos lo ven (filtrado por rol en el renderizado)
+    // 4. ÃƒÅ¡ltimas Publicaciones - Todos lo ven (filtrado por rol en el renderizado)
     wp_add_dashboard_widget( 
         'pro_dashboard_publicaciones', 
-        '✍️ Últimas Publicaciones', 
+        'Ã¢Å“ÂÃ¯Â¸Â ÃƒÅ¡ltimas Publicaciones', 
         'pro_render_dashboard_publicaciones_widget' 
     );
     
     // 5. Actividad y Sesiones de Autores - Todos lo ven (filtrado por rol en el renderizado)
     wp_add_dashboard_widget( 
         'pro_dashboard_actividad_autores', 
-        '⏱️ Registro Diario de Actividad', 
+        'Ã¢ÂÂ±Ã¯Â¸Â Registro Diario de Actividad', 
         'pro_render_dashboard_actividad_autores_widget' 
     );
 }
@@ -1553,7 +1554,7 @@ add_action( 'wp_dashboard_setup', 'pro_register_dashboard_widgets' );
  * 3. RENDERIZADO DE LOS WIDGETS
  */
 
-// WIDGET 1: Portada del Día
+// WIDGET 1: Portada del DÃƒÂ­a
 function pro_render_dashboard_portada_widget() {
     $portada_actual = get_option( 'pro_portada_actual', '' );
     $portada_reemplazo = get_option( 'pro_portada_reemplazo', '' );
@@ -1574,8 +1575,8 @@ function pro_render_dashboard_portada_widget() {
         echo '<div class="pro-portada-scheduled-banner">';
         echo '<span class="dashicons dashicons-calendar-alt"></span>';
         echo '<div>';
-        echo '<strong>Edición Programada:</strong>';
-        echo '<p>Reemplazo automático para el ' . esc_html( $scheduled_time ) . '</p>';
+        echo '<strong>EdiciÃƒÂ³n Programada:</strong>';
+        echo '<p>Reemplazo automÃƒÂ¡tico para el ' . esc_html( $scheduled_time ) . '</p>';
         echo '</div>';
         echo '</div>';
     }
@@ -1593,7 +1594,7 @@ function pro_render_dashboard_portada_widget() {
 function pro_render_dashboard_clientes_widget() {
     $clients = get_option( 'pro_active_clients', array() );
     
-    // Sembrar datos de demostración premium para la primera carga si está vacío
+    // Sembrar datos de demostraciÃƒÂ³n premium para la primera carga si estÃƒÂ¡ vacÃƒÂ­o
     if ( empty( $clients ) ) {
         $clients = array(
             array(
@@ -1606,8 +1607,8 @@ function pro_render_dashboard_clientes_widget() {
             ),
             array(
                 'id' => 2,
-                'name' => 'El Imparcial de Redacción',
-                'plan' => 'Básico',
+                'name' => 'El Imparcial de RedacciÃƒÂ³n',
+                'plan' => 'BÃƒÂ¡sico',
                 'cost' => '$80/mes',
                 'status' => 'pending',
                 'cut_off' => date( 'Y-m-d', strtotime( '+4 days' ) )
@@ -1665,16 +1666,16 @@ function pro_render_dashboard_clientes_widget() {
         echo '<div><label style="display:block; font-size:11px; font-weight:600; color:#475569; margin-bottom:4px;">Plan Contratado</label>';
         echo '<select id="pro-new-client-plan" style="width:100%;">';
         echo '<option value="SaaS Premium">SaaS Premium</option>';
-        echo '<option value="Básico">Básico</option>';
+        echo '<option value="BÃƒÂ¡sico">BÃƒÂ¡sico</option>';
         echo '<option value="Enterprise">Enterprise</option>';
         echo '</select></div>';
         echo '</div>';
         echo '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:12px;">';
         echo '<div><label style="display:block; font-size:11px; font-weight:600; color:#475569; margin-bottom:4px;">Costo Mensual</label><input type="text" id="pro-new-client-cost" style="width:100%;" value="$150/mes"></div>';
-        echo '<div><label style="display:block; font-size:11px; font-weight:600; color:#475569; margin-bottom:4px;">Próxima Fecha de Corte</label><input type="date" id="pro-new-client-cutoff" style="width:100%;" value="' . date( 'Y-m-d', strtotime( '+30 days' ) ) . '"></div>';
+        echo '<div><label style="display:block; font-size:11px; font-weight:600; color:#475569; margin-bottom:4px;">PrÃƒÂ³xima Fecha de Corte</label><input type="date" id="pro-new-client-cutoff" style="width:100%;" value="' . date( 'Y-m-d', strtotime( '+30 days' ) ) . '"></div>';
         echo '</div>';
         echo '<div style="display:flex; justify-content:space-between; align-items:center;">';
-        echo '<div><label style="font-size:11px; font-weight:600; color:#475569;"><input type="checkbox" id="pro-new-client-paid" checked> ¿Cliente Solventado?</label></div>';
+        echo '<div><label style="font-size:11px; font-weight:600; color:#475569;"><input type="checkbox" id="pro-new-client-paid" checked> Ã‚Â¿Cliente Solventado?</label></div>';
         echo '<div><button type="button" class="button" id="pro-cancel-client-btn" style="margin-right:5px;">Cancelar</button><button type="button" class="button button-primary" id="pro-submit-client-btn">Guardar</button></div>';
         echo '</div>';
         echo '</div>';
@@ -1725,7 +1726,7 @@ function pro_render_dashboard_leads_widget() {
     echo '</div>';
 }
 
-// WIDGET 4: Últimas Publicaciones
+// WIDGET 4: ÃƒÅ¡ltimas Publicaciones
 function pro_render_dashboard_publicaciones_widget() {
     $current_user = wp_get_current_user();
     $is_admin = in_array( 'administrator', $current_user->roles );
@@ -1798,7 +1799,7 @@ function pro_render_dashboard_actividad_autores_widget() {
     echo '<div class="pro-widget-container activity">';
     
     if ( $is_admin || $is_director ) {
-        // Vista para Dirección y Administración: Tabla General de todos los redactores y directores
+        // Vista para DirecciÃƒÂ³n y AdministraciÃƒÂ³n: Tabla General de todos los redactores y directores
         $users_query = new WP_User_Query( array(
             'role__in' => array( 'autor', 'author', 'direccion' ),
             'number'   => -1,
@@ -1811,7 +1812,7 @@ function pro_render_dashboard_actividad_autores_widget() {
         if ( ! empty( $authors ) ) {
             echo '<p style="color:#64748b; font-size:11px; margin-top:0; margin-bottom:15px;"><span class="dashicons dashicons-info" style="font-size:14px; width:14px; height:14px; margin-top:-2px;"></span> Actividad de los redactores y directores durante la fecha de hoy.</p>';
             echo '<table class="wp-list-table widefat fixed striped pro-activity-table">';
-            echo '<thead><tr><th>Autor / Cargo</th><th>Ingreso de Hoy</th><th>Última Sesión</th><th>Último Post</th></tr></thead>';
+            echo '<thead><tr><th>Autor / Cargo</th><th>Ingreso de Hoy</th><th>ÃƒÅ¡ltima SesiÃƒÂ³n</th><th>ÃƒÅ¡ltimo Post</th></tr></thead>';
             echo '<tbody>';
             
             $today = current_time( 'Y-m-d' );
@@ -1820,7 +1821,7 @@ function pro_render_dashboard_actividad_autores_widget() {
                 $last_login = get_user_meta( $author->ID, '_pro_last_login_time', true );
                 $first_login = get_user_meta( $author->ID, '_pro_first_login_today', true );
                 
-                // Determinar si ingresó hoy
+                // Determinar si ingresÃƒÂ³ hoy
                 $is_active_today = false;
                 if ( ! empty( $first_login ) && substr( $first_login, 0, 10 ) === $today ) {
                     $is_active_today = true;
@@ -1828,9 +1829,9 @@ function pro_render_dashboard_actividad_autores_widget() {
                 
                 $status_dot = $is_active_today 
                     ? '<span class="pro-status-dot active" title="Conectado hoy"></span>' 
-                    : '<span class="pro-status-dot offline" title="Sin conexión hoy"></span>';
+                    : '<span class="pro-status-dot offline" title="Sin conexiÃƒÂ³n hoy"></span>';
                 
-                // Obtener última publicación publicada del usuario
+                // Obtener ÃƒÂºltima publicaciÃƒÂ³n publicada del usuario
                 $last_post_query = new WP_Query( array(
                     'author'         => $author->ID,
                     'post_type'      => 'post',
@@ -1856,7 +1857,7 @@ function pro_render_dashboard_actividad_autores_widget() {
                 // Pill de Rol
                 $role_badge = '';
                 if ( in_array( 'direccion', $author->roles ) ) {
-                    $role_badge = '<span class="pro-role-pill director">Dirección</span>';
+                    $role_badge = '<span class="pro-role-pill director">DirecciÃƒÂ³n</span>';
                 } else {
                     $role_badge = '<span class="pro-role-pill autor">Autor</span>';
                 }
@@ -1885,7 +1886,7 @@ function pro_render_dashboard_actividad_autores_widget() {
             'posts_per_page' => 1,
         ) );
         
-        $last_post_text = 'Aún no has publicado ningún artículo.';
+        $last_post_text = 'AÃƒÂºn no has publicado ningÃƒÂºn artÃƒÂ­culo.';
         if ( $last_post_query->have_posts() ) {
             $last_post_query->the_post();
             $post_time = get_the_date( 'Y-m-d H:i:s' );
@@ -1905,8 +1906,8 @@ function pro_render_dashboard_actividad_autores_widget() {
         echo '<div class="pro-author-card-header">';
         echo get_avatar( $current_user->ID, 48 );
         echo '<div>';
-        echo '<h3 style="margin:0; font-weight:700; color:#0f172a; font-size:16px;">¡Hola, ' . esc_html( $current_user->display_name ) . '!</h3>';
-        echo '<span class="pro-role-pill autor" style="margin-top:4px; display:inline-block;">Autor (Redacción)</span>';
+        echo '<h3 style="margin:0; font-weight:700; color:#0f172a; font-size:16px;">Ã‚Â¡Hola, ' . esc_html( $current_user->display_name ) . '!</h3>';
+        echo '<span class="pro-role-pill autor" style="margin-top:4px; display:inline-block;">Autor (RedacciÃƒÂ³n)</span>';
         echo '</div>';
         echo '</div>';
         
@@ -1917,12 +1918,12 @@ function pro_render_dashboard_actividad_autores_widget() {
         echo '</div>';
         echo '<div class="pro-author-stat-item">';
         echo '<div class="pro-stat-icon" style="background:rgba(16, 185, 129, 0.1); color:#10b981;"><span class="dashicons dashicons-migrate"></span></div>';
-        echo '<div><span class="pro-stat-label">Última Sesión</span><span class="pro-stat-value">' . esc_html( $last_login_formatted ) . '</span></div>';
+        echo '<div><span class="pro-stat-label">ÃƒÅ¡ltima SesiÃƒÂ³n</span><span class="pro-stat-value">' . esc_html( $last_login_formatted ) . '</span></div>';
         echo '</div>';
         echo '</div>';
         
         echo '<div class="pro-author-last-publication">';
-        echo '<h4 style="margin-top:0; margin-bottom:8px; font-weight:700; color:#1e293b; font-size:13px; display:flex; align-items:center; gap:6px;"><span class="dashicons dashicons-admin-post" style="color:#64748b;"></span> Tu Última Publicación:</h4>';
+        echo '<h4 style="margin-top:0; margin-bottom:8px; font-weight:700; color:#1e293b; font-size:13px; display:flex; align-items:center; gap:6px;"><span class="dashicons dashicons-admin-post" style="color:#64748b;"></span> Tu ÃƒÅ¡ltima PublicaciÃƒÂ³n:</h4>';
         echo '<p style="margin:0; line-height:1.5;">' . $last_post_text . '</p>';
         echo '</div>';
         echo '</div>';
@@ -1931,7 +1932,7 @@ function pro_render_dashboard_actividad_autores_widget() {
 }
 
 /**
- * 4. ENDPOINTS AJAX PARA LA GESTIÓN DE CLIENTES ACTIVER (ADMINISTRACIÓN)
+ * 4. ENDPOINTS AJAX PARA LA GESTIÃƒâ€œN DE CLIENTES ACTIVER (ADMINISTRACIÃƒâ€œN)
  */
 function pro_ajax_add_client() {
     check_ajax_referer( 'pro_client_manager_nonce', 'nonce' );
@@ -1952,7 +1953,7 @@ function pro_ajax_add_client() {
     
     $clients = get_option( 'pro_active_clients', array() );
     
-    // Obtener ID correlativo más alto
+    // Obtener ID correlativo mÃƒÂ¡s alto
     $max_id = 0;
     foreach ( $clients as $c ) {
         if ( isset( $c['id'] ) && $c['id'] > $max_id ) {
@@ -1993,7 +1994,7 @@ function pro_ajax_delete_client() {
     
     $client_id = isset( $_POST['id'] ) ? absint( $_POST['id'] ) : 0;
     if ( ! $client_id ) {
-        wp_send_json_error( array( 'message' => 'Identificador de cliente no válido.' ) );
+        wp_send_json_error( array( 'message' => 'Identificador de cliente no vÃƒÂ¡lido.' ) );
     }
     
     $clients = get_option( 'pro_active_clients', array() );
@@ -2011,7 +2012,7 @@ function pro_ajax_delete_client() {
 add_action( 'wp_ajax_pro_delete_client', 'pro_ajax_delete_client' );
 
 /**
- * 5. INYECCIÓN DE ESTILOS CSS Y SCRIPTS JQUERY/AJAX PARA LOS WIDGETS
+ * 5. INYECCIÃƒâ€œN DE ESTILOS CSS Y SCRIPTS JQUERY/AJAX PARA LOS WIDGETS
  */
 function pro_dashboard_widgets_styles() {
     global $pagenow;
@@ -2431,7 +2432,7 @@ function pro_dashboard_widgets_scripts() {
                     },
                     error: function() {
                         btn.prop('disabled', false).text('Guardar');
-                        alert('Hubo un error de comunicación.');
+                        alert('Hubo un error de comunicaciÃƒÂ³n.');
                     }
                 });
             });
@@ -2441,7 +2442,7 @@ function pro_dashboard_widgets_scripts() {
                 var btn = $(this);
                 var clientId = btn.data('id');
                 
-                if (!confirm('¿Estás seguro de que deseas eliminar este cliente?')) {
+                if (!confirm('Ã‚Â¿EstÃƒÂ¡s seguro de que deseas eliminar este cliente?')) {
                     return;
                 }
                 
@@ -2485,14 +2486,14 @@ add_action( 'admin_footer', 'pro_dashboard_widgets_scripts' );
 
 /**
  * ==============================================================
- * VALIDACIÓN Y OBLIGATORIEDAD DE FIRMA EN PUBLICACIONES
+ * VALIDACIÃƒâ€œN Y OBLIGATORIEDAD DE FIRMA EN PUBLICACIONES
  * ==============================================================
  */
 
 /**
  * 1. VALIDADOR FRONT-END (JavaScript):
- * Intercepta los intentos de hacer click en "Publicar" tanto en Gutenberg como en el Editor Clásico.
- * Si el campo de firma está vacío, bloquea la acción, muestra una alerta premium y enfoca el campo de firma.
+ * Intercepta los intentos de hacer click en "Publicar" tanto en Gutenberg como en el Editor ClÃƒÂ¡sico.
+ * Si el campo de firma estÃƒÂ¡ vacÃƒÂ­o, bloquea la acciÃƒÂ³n, muestra una alerta premium y enfoca el campo de firma.
  */
 function pro_firma_validation_admin_footer_scripts() {
     global $pagenow;
@@ -2505,13 +2506,13 @@ function pro_firma_validation_admin_footer_scripts() {
     ?>
     <script type="text/javascript">
         jQuery(document).ready(function($) {
-            // A. Validación para Editor Clásico (Submit clásico)
+            // A. ValidaciÃƒÂ³n para Editor ClÃƒÂ¡sico (Submit clÃƒÂ¡sico)
             $('#post').on('submit', function(e) {
                 if (document.activeElement && document.activeElement.id === 'publish') {
                     var signature = $('#pro_firma_autor_field').val();
                     if (!signature || signature.trim() === '') {
                         e.preventDefault();
-                        alert('⚠️ ERROR DE PUBLICACIÓN:\n\nEs obligatorio firmar la publicación para poder hacerla pública.\n\nPor favor, escribe tu nombre en la caja "Firma" antes de continuar.');
+                        alert('Ã¢Å¡Â Ã¯Â¸Â ERROR DE PUBLICACIÃƒâ€œN:\n\nEs obligatorio firmar la publicaciÃƒÂ³n para poder hacerla pÃƒÂºblica.\n\nPor favor, escribe tu nombre en la caja "Firma" antes de continuar.');
                         $('#pro_firma_autor_field').focus().css({
                             'border': '2px solid #ef4444',
                             'background-color': '#fff5f5'
@@ -2521,17 +2522,17 @@ function pro_firma_validation_admin_footer_scripts() {
                 }
             });
 
-            // B. Validación para Editor Gutenberg (Block Editor)
-            // Escuchar clics en el botón de abrir panel y en el de publicar definitivo
+            // B. ValidaciÃƒÂ³n para Editor Gutenberg (Block Editor)
+            // Escuchar clics en el botÃƒÂ³n de abrir panel y en el de publicar definitivo
             $(document).on('click', '.editor-post-publish-panel__toggle, .editor-post-publish-button, button.editor-post-publish-button__button', function(e) {
                 var signature = $('#pro_firma_autor_field').val();
                 if (!signature || signature.trim() === '') {
                     e.preventDefault();
                     e.stopPropagation();
                     
-                    alert('⚠️ ERROR DE PUBLICACIÓN:\n\nEs obligatorio firmar la publicación para poder hacerla pública.\n\nPor favor, escribe tu nombre en la caja "Firma" antes de continuar.');
+                    alert('Ã¢Å¡Â Ã¯Â¸Â ERROR DE PUBLICACIÃƒâ€œN:\n\nEs obligatorio firmar la publicaciÃƒÂ³n para poder hacerla pÃƒÂºblica.\n\nPor favor, escribe tu nombre en la caja "Firma" antes de continuar.');
                     
-                    // Resaltar visualmente el campo de firma vacío
+                    // Resaltar visualmente el campo de firma vacÃƒÂ­o
                     $('#pro_firma_autor_field').focus().css({
                         'border': '2px solid #ef4444',
                         'background-color': '#fff5f5',
@@ -2558,20 +2559,20 @@ add_action( 'admin_footer', 'pro_firma_validation_admin_footer_scripts' );
 /**
  * 2. VALIDADOR BACK-END (PHP - Red de Seguridad Nuclear):
  * Intercepta el guardado en la base de datos. Si se intenta publicar/programar un post
- * sin firma, revierte su estado automáticamente a Borrador y crea un transitorio de error.
+ * sin firma, revierte su estado automÃƒÂ¡ticamente a Borrador y crea un transitorio de error.
  */
 function pro_enforce_firma_on_publish( $data, $postarr ) {
-    // Aplicar únicamente al post_type 'post'
+    // Aplicar ÃƒÂºnicamente al post_type 'post'
     if ( $data['post_type'] !== 'post' ) {
         return $data;
     }
 
-    // Comprobar si el estado destino es público ('publish') o programado ('future')
+    // Comprobar si el estado destino es pÃƒÂºblico ('publish') o programado ('future')
     if ( in_array( $data['post_status'], array( 'publish', 'future' ), true ) ) {
         $post_id = isset( $postarr['ID'] ) ? $postarr['ID'] : 0;
         $firma = '';
 
-        // 1. Buscar firma en la petición POST clásica
+        // 1. Buscar firma en la peticiÃƒÂ³n POST clÃƒÂ¡sica
         if ( isset( $_POST['pro_firma_autor_field'] ) ) {
             $firma = sanitize_text_field( $_POST['pro_firma_autor_field'] );
         }
@@ -2585,7 +2586,7 @@ function pro_enforce_firma_on_publish( $data, $postarr ) {
             $firma = sanitize_text_field( $_POST['meta']['_pro_firma_autor'] );
         }
 
-        // Si la firma está completamente vacía
+        // Si la firma estÃƒÂ¡ completamente vacÃƒÂ­a
         if ( empty( trim( $firma ) ) ) {
             // Revertir el estado destino al estado previo (borrador o pendiente)
             $original_status = isset( $postarr['original_post_status'] ) ? $postarr['original_post_status'] : 'draft';
@@ -2603,7 +2604,7 @@ add_filter( 'wp_insert_post_data', 'pro_enforce_firma_on_publish', 10, 2 );
 
 /**
  * 3. AVISO ADMINISTRATIVO DE ERROR (PHP):
- * Si se activó la red de seguridad del back-end, despliega una alerta roja premium y explicativa en la pantalla de edición.
+ * Si se activÃƒÂ³ la red de seguridad del back-end, despliega una alerta roja premium y explicativa en la pantalla de ediciÃƒÂ³n.
  */
 function pro_firma_error_admin_notices() {
     global $pagenow;
@@ -2621,11 +2622,11 @@ function pro_firma_error_admin_notices() {
         ?>
         <div class="notice notice-error is-dismissible" style="border-left-color: #ef4444; border-left-width: 4px; background-color: #fffbfa; padding: 12px 18px; margin: 20px 0 10px 0; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
             <p style="font-size: 13px; line-height: 1.6; color: #1e293b; margin: 0; padding: 0;">
-                <strong style="color: #ef4444; font-size: 15px; display: block; margin-bottom: 5px; font-weight: 700;">⚠️ Entrada no Publicada - Falta Firma Obligatoria</strong>
-                Es **estrictamente obligatorio** firmar la publicación con tu nombre de autor para poder hacerla pública en el portal. 
-                El estado de esta entrada ha sido **revertido automáticamente a Borrador**.
+                <strong style="color: #ef4444; font-size: 15px; display: block; margin-bottom: 5px; font-weight: 700;">Ã¢Å¡Â Ã¯Â¸Â Entrada no Publicada - Falta Firma Obligatoria</strong>
+                Es **estrictamente obligatorio** firmar la publicaciÃƒÂ³n con tu nombre de autor para poder hacerla pÃƒÂºblica en el portal. 
+                El estado de esta entrada ha sido **revertido automÃƒÂ¡ticamente a Borrador**.
                 <br/><br/>
-                Por favor, escribe tu nombre en el casillero **Firma** (ubicado en la barra lateral derecha o inferior) y vuelve a intentar la publicación.
+                Por favor, escribe tu nombre en el casillero **Firma** (ubicado en la barra lateral derecha o inferior) y vuelve a intentar la publicaciÃƒÂ³n.
             </p>
         </div>
         <?php
@@ -2679,12 +2680,12 @@ function pro_apply_user_updates() {
         return;
     }
 
-    // 1. Crear o asegurar Categoría "Seguridad"
+    // 1. Crear o asegurar CategorÃƒÂ­a "Seguridad"
     if ( ! term_exists( 'Seguridad', 'category' ) ) {
         wp_insert_term( 'Seguridad', 'category' );
     }
 
-    // 2. Crear o asegurar Página "Seguridad"
+    // 2. Crear o asegurar PÃƒÂ¡gina "Seguridad"
     $seguridad_page = get_page_by_title( 'Seguridad' );
     if ( ! $seguridad_page ) {
         $seguridad_page_id = wp_insert_post( array(
@@ -2701,14 +2702,14 @@ function pro_apply_user_updates() {
         update_post_meta( $seguridad_page->ID, '_wp_page_template', 'page-categoria.php' );
     }
 
-    // 3. Crear Categoría "Zona deportiva"
+    // 3. Crear CategorÃƒÂ­a "Zona deportiva"
     $zona_deportiva_term = term_exists( 'Zona deportiva', 'category' );
     if ( ! $zona_deportiva_term ) {
         $zona_deportiva_term = wp_insert_term( 'Zona deportiva', 'category' );
     }
 
-    // 4. Actualizar el menú "Menú Principal Nuclear"
-    $menu_name = 'Menú Principal Nuclear';
+    // 4. Actualizar el menÃƒÂº "MenÃƒÂº Principal Nuclear"
+    $menu_name = 'MenÃƒÂº Principal Nuclear';
     $menu_exists = wp_get_nav_menu_object( $menu_name );
     
     if ( $menu_exists && $seguridad_page ) {
@@ -2730,12 +2731,12 @@ function pro_apply_user_updates() {
             if ( $item->title === 'Zona deportiva' ) {
                 $has_zona_deportiva = true;
             }
-            if ( $item->title === 'Más' ) {
+            if ( $item->title === 'MÃƒÂ¡s' ) {
                 $mas_menu_item_id = $item->ID;
             }
         }
 
-        // Agregar página "Seguridad" si no está en el menú (dentro de "Más")
+        // Agregar pÃƒÂ¡gina "Seguridad" si no estÃƒÂ¡ en el menÃƒÂº (dentro de "MÃƒÂ¡s")
         if ( ! $has_seguridad ) {
             wp_update_nav_menu_item( $menu_id, 0, array(
                 'menu-item-title'     => 'Seguridad',
@@ -2747,7 +2748,7 @@ function pro_apply_user_updates() {
             ) );
         }
 
-        // Agregar categoría "Zona deportiva" bajo "Deportes" si no está
+        // Agregar categorÃƒÂ­a "Zona deportiva" bajo "Deportes" si no estÃƒÂ¡
         if ( ! $has_zona_deportiva && $deportes_menu_item_id && ! is_wp_error( $zona_deportiva_term ) ) {
             $term_id = is_array( $zona_deportiva_term ) ? $zona_deportiva_term['term_id'] : $zona_deportiva_term;
             wp_update_nav_menu_item( $menu_id, 0, array(
@@ -2764,3 +2765,114 @@ function pro_apply_user_updates() {
     update_option( 'pro_user_updates_applied_v2', true );
 }
 add_action( 'admin_init', 'pro_apply_user_updates' );
+
+
+
+// ==========================================
+
+
+function pro_setup_espressivo_categories_and_menu() {
+    if ( get_option( 'pro_espressivo_structure_installed_v6' ) ) {
+        return;
+    }
+
+    $estructura = array(
+        'Monagas' => array('description' => '', 'children' => array('Locales', 'Política', 'Educación', 'Salud', 'Ciudad', 'Comunidad', 'Municipios')),
+        'Sucesos' => array('description' => '', 'children' => array('Sucesos', 'Seguridad', 'Crónica Policial')),
+        'Nacional' => array('description' => '', 'children' => array('Nacional', 'Política', 'Asamblea Nacional', 'Economía', 'Portafolio de Negocios')),
+        'Mundo' => array('description' => '', 'children' => array('Internacional', 'Análisis Internacional')),
+        'Deportes' => array('description' => '', 'children' => array('Fútbol', 'Béisbol', 'Básquet', 'Polideportivo', 'Zona deportiva', 'Pádel')),
+        'Artes y Espectáculos' => array('description' => '', 'children' => array('Farándula', 'Cine', 'Streaming', 'Cultura', 'Literatura')),
+        'Bienestar' => array('description' => '', 'children' => array('NuevaSalud', 'Psicología para todos', 'Gastronomía', 'Belleza', 'Viajes', 'Estilo de vida', 'Mascotas')),
+        'Tendencias' => array('description' => '', 'children' => array('Ciencia y Tecnología', 'Inteligencia Artificial')),
+        'Opinión' => array('description' => '', 'children' => array('Opinión', 'Buen Ciudadano')),
+        'Edictos y Carteles' => array('description' => '', 'children' => array())
+    );
+
+    $cat_ids = array();
+    foreach ( $estructura as $parent => $data ) {
+        if ( $parent === 'Edictos y Carteles' ) continue;
+        $term = term_exists( $parent, 'category' );
+        if ( ! $term ) { $term = wp_insert_term( $parent, 'category', array('description' => $data['description']) ); }
+        if ( ! is_wp_error( $term ) ) {
+            $parent_id = is_array( $term ) ? $term['term_id'] : $term;
+            $cat_ids[$parent] = array( 'id' => $parent_id, 'children' => array() );
+            foreach ( $data['children'] as $child ) {
+                $child_term = term_exists( $child, 'category' );
+                if ( ! $child_term ) { $child_term = wp_insert_term( $child, 'category', array('parent' => $parent_id) ); } 
+                else { wp_update_term( (int)(is_array($child_term)?$child_term['term_id']:$child_term), 'category', array('parent' => $parent_id) ); }
+                if ( ! is_wp_error( $child_term ) ) { $cat_ids[$parent]['children'][$child] = is_array( $child_term ) ? $child_term['term_id'] : $child_term; }
+            }
+        }
+    }
+
+    $carteles_page = get_page_by_path('edictos-y-carteles') ?: get_page_by_title('Carteles y Edictos');
+    if ( ! $carteles_page ) {
+        $page_id = wp_insert_post( array('post_title'=>'Carteles y Edictos','post_name'=>'edictos-y-carteles','post_status'=>'publish','post_type'=>'page','post_author'=>1) );
+        if ( $page_id && ! is_wp_error( $page_id ) ) { update_post_meta( $page_id, '_wp_page_template', 'page-carteles.php' ); }
+    }
+
+    $menu_name = 'Menú Espressivo';
+    $menu_exists = wp_get_nav_menu_object( $menu_name );
+    if ( ! $menu_exists ) { $menu_id = wp_create_nav_menu( $menu_name ); } 
+    else {
+        $menu_id = $menu_exists->term_id;
+        $menu_items = wp_get_nav_menu_items( $menu_id );
+        if($menu_items) { foreach($menu_items as $item) { wp_delete_post($item->ID, true); } }
+    }
+
+    if ( $menu_id ) {
+        wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>'Inicio','menu-item-url'=>home_url( '/' ),'menu-item-status'=>'publish','menu-item-type'=>'custom') );
+
+        $principales = array('Monagas', 'Sucesos', 'Nacional', 'Mundo', 'Deportes', 'Edictos y Carteles');
+        $secundarias = array('Artes y Espectáculos', 'Bienestar', 'Tendencias', 'Opinión');
+        
+        // 1. Agregar principales primero
+        foreach ( $principales as $parent ) {
+            if ( $parent === 'Edictos y Carteles' ) {
+                $carteles_page = get_page_by_path('edictos-y-carteles') ?: get_page_by_title('Carteles y Edictos');
+                if ( $carteles_page ) { wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>'Edictos y Carteles','menu-item-object-id'=>$carteles_page->ID,'menu-item-object'=>'page','menu-item-type'=>'post_type','menu-item-status'=>'publish') ); }
+            } elseif ( isset( $cat_ids[$parent] ) ) {
+                $parent_item_id = wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$parent,'menu-item-object-id'=>$cat_ids[$parent]['id'],'menu-item-object'=>'category','menu-item-type'=>'taxonomy','menu-item-status'=>'publish') );
+                foreach ( $estructura[$parent]['children'] as $child ) {
+                    if ( isset( $cat_ids[$parent]['children'][$child] ) ) {
+                        wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$child,'menu-item-object-id'=>$cat_ids[$parent]['children'][$child],'menu-item-object'=>'category','menu-item-type'=>'taxonomy','menu-item-status'=>'publish','menu-item-parent-id'=>$parent_item_id) );
+                    }
+                }
+            }
+        }
+
+        // 2. Agregar "Más" al final
+        $mas_item_id = wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>'Más','menu-item-url'=>'#','menu-item-status'=>'publish','menu-item-type'=>'custom','menu-item-classes'=>'desktop-only-menu-item') );
+
+        // 3. Agregar secundarias dentro de "Más" y como raíz móvil
+        foreach ( $secundarias as $parent ) {
+            if ( isset( $cat_ids[$parent] ) ) {
+                $parent_item_id_mas = wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$parent,'menu-item-object-id'=>$cat_ids[$parent]['id'],'menu-item-object'=>'category','menu-item-type'=>'taxonomy','menu-item-status'=>'publish','menu-item-parent-id'=>$mas_item_id) );
+                foreach ( $estructura[$parent]['children'] as $child ) {
+                    if ( isset( $cat_ids[$parent]['children'][$child] ) ) {
+                        wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$child,'menu-item-object-id'=>$cat_ids[$parent]['children'][$child],'menu-item-object'=>'category','menu-item-type'=>'taxonomy','menu-item-status'=>'publish','menu-item-parent-id'=>$parent_item_id_mas) );
+                    }
+                }
+
+                $parent_item_id_mob = wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$parent,'menu-item-object-id'=>$cat_ids[$parent]['id'],'menu-item-object'=>'category','menu-item-type'=>'taxonomy','menu-item-status'=>'publish','menu-item-classes'=>'mobile-only-menu-item') );
+                foreach ( $estructura[$parent]['children'] as $child ) {
+                    if ( isset( $cat_ids[$parent]['children'][$child] ) ) {
+                        wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$child,'menu-item-object-id'=>$cat_ids[$parent]['children'][$child],'menu-item-object'=>'category','menu-item-type'=>'taxonomy','menu-item-status'=>'publish','menu-item-parent-id'=>$parent_item_id_mob) );
+                    }
+                }
+            }
+        }
+
+        $locations = get_theme_mod( 'nav_menu_locations' );
+        if ( ! is_array( $locations ) ) { $locations = array(); }
+        $locations['primary'] = $menu_id;
+        set_theme_mod( 'nav_menu_locations', $locations );
+    }
+
+    update_option( 'pro_espressivo_structure_installed_v6', true );
+}
+add_action( 'init', 'pro_setup_espressivo_categories_and_menu' );
+
+// Incluir módulo SSIVO-SEO
+require_once get_template_directory() . '/inc/seo/init.php';

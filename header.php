@@ -238,10 +238,10 @@
                     <button class="menu-toggle" aria-controls="primary-menu" aria-expanded="false" aria-label="<?php esc_attr_e( 'Menú', 'pro' ); ?>"><span class="material-symbols-outlined" style="vertical-align: middle;">menu</span></button>
                     <?php
                     wp_nav_menu( array(
-                        'menu'           => 'Menú Principal Nuclear',
+                        'menu'           => 'Menú Espressivo',
                         'theme_location' => 'primary',
                         'menu_id'        => 'primary-menu',
-                        'fallback_cb'    => '__return_false', // Evitar que WP escupa todas las páginas si falla
+                        'fallback_cb'    => '__return_false',
                     ) );
                     ?>
                 </nav><!-- #site-navigation -->
