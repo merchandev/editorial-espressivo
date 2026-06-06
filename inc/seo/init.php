@@ -6,10 +6,14 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 require_once get_template_directory() . '/inc/seo/class-database.php';
 require_once get_template_directory() . '/inc/seo/class-automations.php';
 require_once get_template_directory() . '/inc/seo/class-frontend-meta.php';
+require_once get_template_directory() . '/inc/seo/class-admin-page.php';
+require_once get_template_directory() . '/inc/seo/class-metabox.php';
 
 use SSIVO_SEO\Includes\Database;
 use SSIVO_SEO\Includes\Automations;
 use SSIVO_SEO\Includes\FrontendMeta;
+use SSIVO_SEO\Includes\AdminPage;
+use SSIVO_SEO\Includes\Metabox;
 
 // 1. Crear tabla si no existe
 add_action( 'admin_init', function() {
@@ -36,6 +40,12 @@ add_action( 'init', function() {
     
     // Inicia la inyección de etiquetas en el frontend
     new FrontendMeta( $database );
+    
+    // Inicia la página de opciones del admin
+    if ( is_admin() ) {
+        new AdminPage();
+        new Metabox();
+    }
 });
 
 // 3. Encolar los scripts de React en el editor
