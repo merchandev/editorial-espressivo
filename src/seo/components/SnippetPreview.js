@@ -2,6 +2,13 @@ import { useState, useEffect } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
 import { calculateReadability } from '../utils/readability';
 
+const stripHtml = (html) => {
+    if (!html) return '';
+    let tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    return (tmp.textContent || tmp.innerText || '').replace(/\s+/g, ' ').trim();
+};
+
 const SnippetPreview = () => {
     const rootElement = document.getElementById('ssivo-seo-metabox-root');
     const initialCustomTitle = rootElement?.dataset?.customTitle || '';
@@ -30,8 +37,9 @@ const SnippetPreview = () => {
         };
     }, []);
 
+    const autoDesc = excerpt ? excerpt : stripHtml(content).substring(0, 155);
     const finalTitle = customTitle.trim() !== '' ? customTitle : (postTitle || 'Título del Artículo');
-    const finalDesc = customDesc.trim() !== '' ? customDesc : (excerpt || 'Esta es una descripción generada automáticamente basada en el extracto del artículo para mostrar en los resultados de búsqueda.');
+    const finalDesc = customDesc.trim() !== '' ? customDesc : (autoDesc || 'Esta es una descripción generada automáticamente basada en el extracto del artículo para mostrar en los resultados de búsqueda.');
 
     const score = calculateReadability(content || '');
     const barColor = score > 80 ? '#4caf50' : score > 50 ? '#ff9800' : '#f44336';
@@ -53,10 +61,10 @@ const SnippetPreview = () => {
                         value={customTitle} 
                         onChange={(e) => setCustomTitle(e.target.value)} 
                         style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px' }}
-                        placeholder="Escribe un título atractivo (Opcional)"
+                        placeholder={postTitle || "Escribe un título atractivo (Opcional)"}
                     />
                     <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#64748b' }}>
-                        Si lo dejas en blanco, se usará el título del artículo.
+                        Si lo dejas en blanco, se usará el título automático mostrado arriba.
                     </p>
                 </div>
 
@@ -69,10 +77,10 @@ const SnippetPreview = () => {
                         value={customDesc} 
                         onChange={(e) => setCustomDesc(e.target.value)} 
                         style={{ width: '100%', height: '100px', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px' }}
-                        placeholder="Escribe una descripción cautivadora (Opcional)"
+                        placeholder={autoDesc || "Escribe una descripción cautivadora (Opcional)"}
                     />
                     <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#64748b' }}>
-                        Si lo dejas en blanco, se usará el Resumen (Extracto) del artículo o los primeros párrafos.
+                        Si lo dejas en blanco, se usará el resumen automático mostrado arriba.
                     </p>
                 </div>
             </div>
