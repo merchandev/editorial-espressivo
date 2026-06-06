@@ -93,7 +93,7 @@ class AdminPage {
         }
         
         // Color de la salud SEO
-        $health_color = $seo_percentage >= 97 ? '#10b981' : ( $seo_percentage >= 80 ? '#f59e0b' : '#ef4444' );
+        $health_color = $seo_percentage >= 81 ? '#10b981' : ( $seo_percentage >= 50 ? '#f59e0b' : '#ef4444' );
 
         // 3. Actividad de Autores
         $authors = $wpdb->get_results( "
@@ -127,10 +127,10 @@ class AdminPage {
                         <span id="seo-score-display" style="font-size: 36px; font-weight: 800; color: <?php echo $health_color; ?>; line-height: 1;"><?php echo $seo_percentage; ?>%</span>
                     </div>
                     <p style="margin: 10px 0 15px 0; font-size: 13px; color: #64748b; min-height: 38px;">
-                        <?php if ( $seo_percentage >= 97 ) : ?>
-                            ¡Excelente! Tu sitio mantiene el estándar requerido por encima del 97%.
+                        <?php if ( $seo_percentage >= 81 ) : ?>
+                            ¡Excelente! Tu sitio mantiene el estándar requerido por encima del 81%.
                         <?php else : ?>
-                            Atención: La salud SEO está por debajo del 97%. Optimiza artículos antiguos.
+                            Atención: La salud SEO está por debajo del 81%. Optimiza artículos antiguos.
                         <?php endif; ?>
                     </p>
                     <?php if ( $seo_percentage < 100 ) : ?>
