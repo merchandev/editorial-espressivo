@@ -873,32 +873,7 @@ function pro_handle_manual_reinstall() {
 }
 add_action( 'admin_init', 'pro_handle_manual_reinstall' );
 
-/**
- * Mostrar aviso y botón de re-instalación en el admin
- */
-function pro_reinstall_admin_notice() {
-    if ( ! current_user_can( 'manage_options' ) ) return;
-    
-    // Mostrar mensaje de éxito si se acaba de reinstalar
-    if ( isset( $_GET['pro_reinstall_done'] ) ) {
-        echo '<div class="notice notice-success is-dismissible"><p><strong>✅ Páginas re-instaladas correctamente.</strong> Las páginas del tema han sido creadas.</p></div>';
-        return;
-    }
-    
-    // Mostrar botón solo en la página de listado de páginas
-    $screen = get_current_screen();
-    if ( $screen && $screen->id === 'edit-page' ) {
-        $reinstall_url = wp_nonce_url(
-            admin_url( '?pro_reinstall_pages=1' ),
-            'pro_reinstall_pages'
-        );
-        echo '<div class="notice notice-info" style="display:flex; align-items:center; gap:15px; padding:12px 15px;">';
-        echo '<p style="margin:0;"><strong>🔧 Tema Pro:</strong> Si faltan páginas, usa este botón para instalarlas.</p>';
-        echo '<a href="' . esc_url( $reinstall_url ) . '" class="button button-primary" onclick="return confirm(\u0027¿Reinstalar todas las páginas del tema? Se crearán las que no existan.\u0027)">Instalar Páginas del Tema</a>';
-        echo '</div>';
-    }
-}
-add_action( 'admin_notices', 'pro_reinstall_admin_notice' );
+
 
 /**
  * Modificaciones del Menú (Flechas y enlaces)
