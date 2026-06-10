@@ -25,12 +25,23 @@ get_header();
         $portada_img = get_template_directory_uri() . '/screenshot.png';
     }
 
+    // Primero intentamos la categoría "relevantes"; si no hay, usamos los últimos posts
     $relevant_query = new WP_Query( array(
         'category_name'       => 'relevantes',
         'posts_per_page'      => 3,
         'post_status'         => 'publish',
         'ignore_sticky_posts' => 1
     ) );
+
+    // Fallback: si no hay posts en "relevantes", tomar los 3 más recientes
+    if ( ! $relevant_query->have_posts() ) {
+        wp_reset_postdata();
+        $relevant_query = new WP_Query( array(
+            'posts_per_page'      => 3,
+            'post_status'         => 'publish',
+            'ignore_sticky_posts' => 1,
+        ) );
+    }
     ?>
 
     <?php if ( $relevant_query->have_posts() ) : ?>
@@ -52,11 +63,7 @@ get_header();
                 </a>
                 <div class="hero-content">
                     <?php if ( function_exists('pro_post_categories') ) : ?>
-                        <?php pro_post_categories(null, 'relevantes'); ?>
-                    <?php else : ?>
-                        <span class="cat-label cat-relevantes">
-                            <a href="<?php echo esc_url( get_category_link( get_cat_ID('Relevantes') ) ); ?>">Relevantes</a>
-                        </span>
+                        <?php pro_post_categories(); ?>
                     <?php endif; ?>
                     <h2 class="entry-title">
                         <a href="<?php the_permalink(); ?>" rel="bookmark"><?php the_title(); ?></a>
@@ -81,11 +88,7 @@ get_header();
                     <article id="post-<?php the_ID(); ?>" <?php post_class('hero-sub-post'); ?>>
                         <div class="hero-content">
                             <?php if ( function_exists('pro_post_categories') ) : ?>
-                                <?php pro_post_categories(null, 'relevantes'); ?>
-                            <?php else : ?>
-                                <span class="cat-label cat-relevantes">
-                                    <a href="<?php echo esc_url( get_category_link( get_cat_ID('Relevantes') ) ); ?>">Relevantes</a>
-                                </span>
+                                <?php pro_post_categories(); ?>
                             <?php endif; ?>
                             <h3 class="entry-title">
                                 <a href="<?php the_permalink(); ?>" rel="bookmark"><?php the_title(); ?></a>
@@ -124,6 +127,7 @@ get_header();
         wp_reset_postdata();
     endif; 
     ?>
+
 
     <!-- PUBLICIDAD BELOW HERO -->
     <?php get_template_part('template-parts/ads/in-feed', null, array('location' => 'below-hero')); ?>

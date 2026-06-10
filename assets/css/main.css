@@ -205,27 +205,50 @@ img {
 .header-navigation-wrapper {
     background-color: var(--color-primary);
     color: #fff;
-    padding: 10px 0;
+    padding: 0;
     box-shadow: var(--shadow-sm);
+    position: relative; /* context for dropdowns */
 }
 .navigation-inner {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    min-height: 48px;
+}
+/* El nav ocupa todo el espacio disponible antes del buscador */
+#site-navigation {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: visible;
 }
 .main-navigation ul {
     list-style: none;
     display: flex;
-    gap: 20px;
+    flex-wrap: nowrap;
+    gap: 2px;
     margin: 0;
+    padding: 0;
+    overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE / Edge */
+    align-items: center;
+}
+.main-navigation ul::-webkit-scrollbar {
+    display: none; /* Chrome / Safari */
+}
+.main-navigation > ul > li > a {
+    display: block;
+    padding: 13px 10px;
+    white-space: nowrap;
 }
 .main-navigation a {
     color: #fff;
     font-family: var(--font-ui);
     font-weight: 600;
     text-transform: uppercase;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     text-decoration: none;
+    letter-spacing: 0.3px;
 }
 .main-navigation a:hover {
     color: var(--color-bg-secondary);
@@ -1569,12 +1592,13 @@ img {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Separación obligatoria entre el menú principal y el buscador */
+/* Separación entre el menú principal y el buscador */
 .navigation-inner {
-    gap: 30px;
+    gap: 10px;
 }
 .header-actions {
-    margin-left: auto; /* Empujar el buscador hacia la derecha si sobra espacio */
+    flex: 0 0 auto; /* No se encoge, siempre visible */
+    margin-left: 10px;
 }
 
 /* ==========================================================================
@@ -3386,7 +3410,7 @@ a:hover, button:hover, .button:hover, input[type='submit']:hover { text-decorati
 
 .main-navigation ul li a {
     font-weight: 600;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
     position: relative;
     transition: color 0.3s ease;
 }
@@ -3396,7 +3420,7 @@ a:hover, button:hover, .button:hover, input[type='submit']:hover { text-decorati
     .main-navigation > ul > li > a::after {
         content: '';
         position: absolute;
-        bottom: 8px;
+        bottom: 6px;
         left: 50%;
         transform: translateX(-50%);
         width: 0;
