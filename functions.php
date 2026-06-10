@@ -603,7 +603,7 @@ add_action( 'admin_head', 'pro_hide_gutenberg_tags' );
  */
 function pro_nuclear_install_pages() {
     // Solo correr una vez para no saturar la base de datos
-    if ( get_option( 'pro_pages_installed_nuclear_v5' ) ) {
+    if ( get_option( 'pro_pages_installed_nuclear_v7' ) ) {
         return;
     }
 
@@ -617,27 +617,47 @@ function pro_nuclear_install_pages() {
         'Carteles y Edictos'     => 'page-carteles.php',
         'Términos y Condiciones'  => 'page-terminos-y-condiciones.php',
         'Política de Cookies'    => 'page-politica-de-cookies.php',
+        'Análisis Internacional' => 'page-categoria.php',
+        'Artes y Espectáculos' => 'page-categoria.php',
+        'Asamblea Nacional' => 'page-categoria.php',
         'Belleza' => 'page-categoria.php',
         'Bienestar' => 'page-categoria.php',
+        'Bitácora Mundial' => 'page-categoria.php',
         'Buen ciudadano' => 'page-categoria.php',
         'Ciencia y Tecnología' => 'page-categoria.php',
+        'Cine' => 'page-categoria.php',
+        'Ciudad' => 'page-categoria.php',
+        'Comunidad' => 'page-categoria.php',
+        'Crónica Policial' => 'page-categoria.php',
+        'Cultura' => 'page-categoria.php',
         'Deportes' => 'page-categoria.php',
         'Economía' => 'page-categoria.php',
         'Educación' => 'page-categoria.php',
         'Entretenimiento' => 'page-categoria.php',
         'Entrevistas' => 'page-categoria.php',
+        'Estilo de vida' => 'page-categoria.php',
+        'Farándula' => 'page-categoria.php',
         'Gastronomía' => 'page-categoria.php',
+        'Inteligencia Artificial' => 'page-categoria.php',
         'Internacional' => 'page-categoria.php',
+        'Literatura' => 'page-categoria.php',
         'Local' => 'page-categoria.php',
+        'Mascotas' => 'page-categoria.php',
         'Monagas' => 'page-categoria.php',
+        'Mundo' => 'page-categoria.php',
         'Municipios' => 'page-categoria.php',
         'Nacional' => 'page-categoria.php',
+        'Nueva Salud' => 'page-categoria.php',
         'Opinión' => 'page-categoria.php',
         'Política' => 'page-categoria.php',
         'Regiones' => 'page-categoria.php',
         'Relevantes' => 'page-categoria.php',
+        'Robótica' => 'page-categoria.php',
         'Salud' => 'page-categoria.php',
+        'Seguridad' => 'page-categoria.php',
+        'Streaming' => 'page-categoria.php',
         'Sucesos' => 'page-categoria.php',
+        'Viajes' => 'page-categoria.php',
     );
 
     foreach ( $pages_to_create as $title => $template ) {
@@ -694,7 +714,7 @@ function pro_nuclear_install_pages() {
     }
 
     // Auto-Crear un menú estructurado y asignarlo
-    $menu_name = 'Menú Principal Nuclear';
+    $menu_name = 'Menú Principal Nuclear v6';
     $menu_exists = wp_get_nav_menu_object( $menu_name );
     $menu_id = 0;
 
@@ -738,7 +758,56 @@ function pro_nuclear_install_pages() {
         ) );
 
         // Agregar items al submenú "Más"
-        sort( $submenu_items );
+        // Orden personalizado definido por el usuario
+        $custom_order = array(
+            'Monagas',
+            'Ciudad',
+            'Comunidad',
+            'Política',
+            'Educación',
+            'Salud',
+            'Municipios',
+            'Sucesos',
+            'Seguridad',
+            'Crónica Policial',
+            'Nacional',
+            'Regiones',
+            'Asamblea Nacional',
+            'Economía',
+            'Mundo',
+            'Análisis Internacional',
+            'Bitácora Mundial',
+            'Deportes',
+            'Artes y Espectáculos',
+            'Farándula',
+            'Cine',
+            'Streaming',
+            'Cultura',
+            'Literatura',
+            'Bienestar',
+            'Nueva Salud',
+            'Gastronomía',
+            'Belleza',
+            'Viajes',
+            'Estilo de vida',
+            'Mascotas',
+            'Ciencia y Tecnología',
+            'Inteligencia Artificial',
+            'Robótica',
+            'Opinión',
+            'Buen ciudadano'
+        );
+
+        $ordered_submenu = array();
+        foreach ( $custom_order as $co_item ) {
+            if ( in_array( $co_item, $submenu_items ) ) {
+                $ordered_submenu[] = $co_item;
+            }
+        }
+        $remaining = array_diff( $submenu_items, $ordered_submenu );
+        sort( $remaining );
+        $submenu_items = array_merge( $ordered_submenu, $remaining );
+
         foreach ( $submenu_items as $sub_item ) {
             if ( isset( $page_map[ $sub_item ] ) ) {
                 wp_update_nav_menu_item( $menu_id, 0, array(
@@ -776,9 +845,60 @@ function pro_nuclear_install_pages() {
         set_theme_mod( 'nav_menu_locations', $locations );
     }
 
-    update_option( 'pro_pages_installed_nuclear_v5', true );
+    update_option( 'pro_pages_installed_nuclear_v7', true );
 }
 add_action( 'admin_init', 'pro_nuclear_install_pages' );
+
+/**
+ * Acción manual para re-instalar páginas desde el admin
+ * Uso: ir a /wp-admin/?pro_reinstall_pages=1
+ */
+function pro_handle_manual_reinstall() {
+    if ( ! isset( $_GET['pro_reinstall_pages'] ) || $_GET['pro_reinstall_pages'] !== '1' ) {
+        return;
+    }
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+    // Verificar nonce
+    if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'pro_reinstall_pages' ) ) {
+        wp_die( 'Acción no autorizada.' );
+    }
+    // Borrar el flag para permitir re-instalación
+    delete_option( 'pro_pages_installed_nuclear_v7' );
+    delete_option( 'pro_pages_installed_nuclear_v6' ); // Limpiar flag anterior también
+    // Redirigir para que admin_init vuelva a correr
+    wp_redirect( admin_url( 'edit.php?post_type=page&pro_reinstall_done=1' ) );
+    exit;
+}
+add_action( 'admin_init', 'pro_handle_manual_reinstall' );
+
+/**
+ * Mostrar aviso y botón de re-instalación en el admin
+ */
+function pro_reinstall_admin_notice() {
+    if ( ! current_user_can( 'manage_options' ) ) return;
+    
+    // Mostrar mensaje de éxito si se acaba de reinstalar
+    if ( isset( $_GET['pro_reinstall_done'] ) ) {
+        echo '<div class="notice notice-success is-dismissible"><p><strong>✅ Páginas re-instaladas correctamente.</strong> Las páginas del tema han sido creadas.</p></div>';
+        return;
+    }
+    
+    // Mostrar botón solo en la página de listado de páginas
+    $screen = get_current_screen();
+    if ( $screen && $screen->id === 'edit-page' ) {
+        $reinstall_url = wp_nonce_url(
+            admin_url( '?pro_reinstall_pages=1' ),
+            'pro_reinstall_pages'
+        );
+        echo '<div class="notice notice-info" style="display:flex; align-items:center; gap:15px; padding:12px 15px;">';
+        echo '<p style="margin:0;"><strong>🔧 Tema Pro:</strong> Si faltan páginas, usa este botón para instalarlas.</p>';
+        echo '<a href="' . esc_url( $reinstall_url ) . '" class="button button-primary" onclick="return confirm(\u0027¿Reinstalar todas las páginas del tema? Se crearán las que no existan.\u0027)">Instalar Páginas del Tema</a>';
+        echo '</div>';
+    }
+}
+add_action( 'admin_notices', 'pro_reinstall_admin_notice' );
 
 /**
  * Modificaciones del Menú (Flechas y enlaces)
@@ -2770,9 +2890,51 @@ add_action( 'admin_init', 'pro_apply_user_updates' );
 
 // ==========================================
 
+function pro_fix_corrupted_terms() {
+    if ( get_option( 'pro_terms_encoding_fixed_v1' ) ) {
+        return;
+    }
+
+    $taxonomies = get_taxonomies();
+    foreach ( $taxonomies as $taxonomy ) {
+        $terms = get_terms( array(
+            'taxonomy'   => $taxonomy,
+            'hide_empty' => false,
+        ) );
+
+        if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
+            foreach ( $terms as $term ) {
+                if ( strpos( $term->name, 'Ã' ) !== false ) {
+                    $correct_name = mb_convert_encoding( $term->name, 'ISO-8859-1', 'UTF-8' );
+                    
+                    $existing_term = term_exists( $correct_name, $taxonomy, $term->parent );
+                    
+                    if ( $existing_term && $existing_term['term_id'] != $term->term_id ) {
+                        $posts = get_objects_in_term( $term->term_id, $taxonomy );
+                        if ( ! is_wp_error( $posts ) && ! empty( $posts ) ) {
+                            foreach ( $posts as $post_id ) {
+                                wp_set_object_terms( $post_id, (int) $existing_term['term_id'], $taxonomy, true );
+                            }
+                        }
+                        wp_delete_term( $term->term_id, $taxonomy );
+                    } else {
+                        wp_update_term( $term->term_id, $taxonomy, array(
+                            'name' => $correct_name,
+                            'slug' => sanitize_title( $correct_name )
+                        ) );
+                    }
+                }
+            }
+        }
+    }
+    
+    update_option( 'pro_terms_encoding_fixed_v1', true );
+}
+add_action( 'init', 'pro_fix_corrupted_terms' );
+
 
 function pro_setup_espressivo_categories_and_menu() {
-    if ( get_option( 'pro_espressivo_structure_installed_v6' ) ) {
+    if ( get_option( 'pro_espressivo_structure_installed_v9' ) ) {
         return;
     }
 
@@ -2806,6 +2968,25 @@ function pro_setup_espressivo_categories_and_menu() {
         }
     }
 
+    // Asegurarse de que exista una Página física para cada categoría y subcategoría
+    foreach ( $estructura as $parent => $data ) {
+        if ( $parent === 'Edictos y Carteles' ) continue;
+        
+        $page = get_page_by_title($parent) ?: get_page_by_path(sanitize_title($parent));
+        if ( ! $page ) {
+            $page_id = wp_insert_post( array('post_title'=>$parent,'post_name'=>sanitize_title($parent),'post_status'=>'publish','post_type'=>'page','post_author'=>1) );
+            if ( $page_id && ! is_wp_error( $page_id ) ) { update_post_meta( $page_id, '_wp_page_template', 'page-categoria.php' ); }
+        }
+        
+        foreach ( $data['children'] as $child ) {
+            $child_page = get_page_by_title($child) ?: get_page_by_path(sanitize_title($child));
+            if ( ! $child_page ) {
+                $child_page_id = wp_insert_post( array('post_title'=>$child,'post_name'=>sanitize_title($child),'post_status'=>'publish','post_type'=>'page','post_author'=>1) );
+                if ( $child_page_id && ! is_wp_error( $child_page_id ) ) { update_post_meta( $child_page_id, '_wp_page_template', 'page-categoria.php' ); }
+            }
+        }
+    }
+
     $carteles_page = get_page_by_path('edictos-y-carteles') ?: get_page_by_title('Carteles y Edictos');
     if ( ! $carteles_page ) {
         $page_id = wp_insert_post( array('post_title'=>'Carteles y Edictos','post_name'=>'edictos-y-carteles','post_status'=>'publish','post_type'=>'page','post_author'=>1) );
@@ -2824,19 +3005,26 @@ function pro_setup_espressivo_categories_and_menu() {
     if ( $menu_id ) {
         wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>'Inicio','menu-item-url'=>home_url( '/' ),'menu-item-status'=>'publish','menu-item-type'=>'custom') );
 
-        $principales = array('Monagas', 'Sucesos', 'Nacional', 'Mundo', 'Deportes', 'Edictos y Carteles');
-        $secundarias = array('Artes y Espectáculos', 'Bienestar', 'Tendencias', 'Opinión');
+        $principales = array('Monagas', 'Sucesos', 'Nacional', 'Mundo', 'Deportes', 'Tendencias');
+        $secundarias = array('Edictos y Carteles', 'Artes y Espectáculos', 'Bienestar', 'Opinión');
         
         // 1. Agregar principales primero
         foreach ( $principales as $parent ) {
-            if ( $parent === 'Edictos y Carteles' ) {
-                $carteles_page = get_page_by_path('edictos-y-carteles') ?: get_page_by_title('Carteles y Edictos');
-                if ( $carteles_page ) { wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>'Edictos y Carteles','menu-item-object-id'=>$carteles_page->ID,'menu-item-object'=>'page','menu-item-type'=>'post_type','menu-item-status'=>'publish') ); }
-            } elseif ( isset( $cat_ids[$parent] ) ) {
-                $parent_item_id = wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$parent,'menu-item-object-id'=>$cat_ids[$parent]['id'],'menu-item-object'=>'category','menu-item-type'=>'taxonomy','menu-item-status'=>'publish') );
+            if ( isset( $cat_ids[$parent] ) ) {
+                $page = get_page_by_title($parent) ?: get_page_by_path(sanitize_title($parent));
+                $obj_id = $page ? $page->ID : $cat_ids[$parent]['id'];
+                $obj = $page ? 'page' : 'category';
+                $type = $page ? 'post_type' : 'taxonomy';
+
+                $parent_item_id = wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$parent,'menu-item-object-id'=>$obj_id,'menu-item-object'=>$obj,'menu-item-type'=>$type,'menu-item-status'=>'publish') );
                 foreach ( $estructura[$parent]['children'] as $child ) {
                     if ( isset( $cat_ids[$parent]['children'][$child] ) ) {
-                        wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$child,'menu-item-object-id'=>$cat_ids[$parent]['children'][$child],'menu-item-object'=>'category','menu-item-type'=>'taxonomy','menu-item-status'=>'publish','menu-item-parent-id'=>$parent_item_id) );
+                        $child_page = get_page_by_title($child) ?: get_page_by_path(sanitize_title($child));
+                        $c_obj_id = $child_page ? $child_page->ID : $cat_ids[$parent]['children'][$child];
+                        $c_obj = $child_page ? 'page' : 'category';
+                        $c_type = $child_page ? 'post_type' : 'taxonomy';
+
+                        wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$child,'menu-item-object-id'=>$c_obj_id,'menu-item-object'=>$c_obj,'menu-item-type'=>$c_type,'menu-item-status'=>'publish','menu-item-parent-id'=>$parent_item_id) );
                     }
                 }
             }
@@ -2847,18 +3035,39 @@ function pro_setup_espressivo_categories_and_menu() {
 
         // 3. Agregar secundarias dentro de "Más" y como raíz móvil
         foreach ( $secundarias as $parent ) {
-            if ( isset( $cat_ids[$parent] ) ) {
-                $parent_item_id_mas = wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$parent,'menu-item-object-id'=>$cat_ids[$parent]['id'],'menu-item-object'=>'category','menu-item-type'=>'taxonomy','menu-item-status'=>'publish','menu-item-parent-id'=>$mas_item_id) );
+            if ( $parent === 'Edictos y Carteles' ) {
+                $carteles_page = get_page_by_path('edictos-y-carteles') ?: get_page_by_title('Carteles y Edictos');
+                if ( $carteles_page ) {
+                    wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>'Edictos y Carteles','menu-item-object-id'=>$carteles_page->ID,'menu-item-object'=>'page','menu-item-type'=>'post_type','menu-item-status'=>'publish','menu-item-parent-id'=>$mas_item_id) );
+                    wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>'Edictos y Carteles','menu-item-object-id'=>$carteles_page->ID,'menu-item-object'=>'page','menu-item-type'=>'post_type','menu-item-status'=>'publish','menu-item-classes'=>'mobile-only-menu-item') );
+                }
+            } elseif ( isset( $cat_ids[$parent] ) ) {
+                $page = get_page_by_title($parent) ?: get_page_by_path(sanitize_title($parent));
+                $obj_id = $page ? $page->ID : $cat_ids[$parent]['id'];
+                $obj = $page ? 'page' : 'category';
+                $type = $page ? 'post_type' : 'taxonomy';
+
+                $parent_item_id_mas = wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$parent,'menu-item-object-id'=>$obj_id,'menu-item-object'=>$obj,'menu-item-type'=>$type,'menu-item-status'=>'publish','menu-item-parent-id'=>$mas_item_id) );
                 foreach ( $estructura[$parent]['children'] as $child ) {
                     if ( isset( $cat_ids[$parent]['children'][$child] ) ) {
-                        wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$child,'menu-item-object-id'=>$cat_ids[$parent]['children'][$child],'menu-item-object'=>'category','menu-item-type'=>'taxonomy','menu-item-status'=>'publish','menu-item-parent-id'=>$parent_item_id_mas) );
+                        $child_page = get_page_by_title($child) ?: get_page_by_path(sanitize_title($child));
+                        $c_obj_id = $child_page ? $child_page->ID : $cat_ids[$parent]['children'][$child];
+                        $c_obj = $child_page ? 'page' : 'category';
+                        $c_type = $child_page ? 'post_type' : 'taxonomy';
+
+                        wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$child,'menu-item-object-id'=>$c_obj_id,'menu-item-object'=>$c_obj,'menu-item-type'=>$c_type,'menu-item-status'=>'publish','menu-item-parent-id'=>$parent_item_id_mas) );
                     }
                 }
 
-                $parent_item_id_mob = wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$parent,'menu-item-object-id'=>$cat_ids[$parent]['id'],'menu-item-object'=>'category','menu-item-type'=>'taxonomy','menu-item-status'=>'publish','menu-item-classes'=>'mobile-only-menu-item') );
+                $parent_item_id_mob = wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$parent,'menu-item-object-id'=>$obj_id,'menu-item-object'=>$obj,'menu-item-type'=>$type,'menu-item-status'=>'publish','menu-item-classes'=>'mobile-only-menu-item') );
                 foreach ( $estructura[$parent]['children'] as $child ) {
                     if ( isset( $cat_ids[$parent]['children'][$child] ) ) {
-                        wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$child,'menu-item-object-id'=>$cat_ids[$parent]['children'][$child],'menu-item-object'=>'category','menu-item-type'=>'taxonomy','menu-item-status'=>'publish','menu-item-parent-id'=>$parent_item_id_mob) );
+                        $child_page = get_page_by_title($child) ?: get_page_by_path(sanitize_title($child));
+                        $c_obj_id = $child_page ? $child_page->ID : $cat_ids[$parent]['children'][$child];
+                        $c_obj = $child_page ? 'page' : 'category';
+                        $c_type = $child_page ? 'post_type' : 'taxonomy';
+
+                        wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$child,'menu-item-object-id'=>$c_obj_id,'menu-item-object'=>$c_obj,'menu-item-type'=>$c_type,'menu-item-status'=>'publish','menu-item-parent-id'=>$parent_item_id_mob) );
                     }
                 }
             }
@@ -2870,7 +3079,7 @@ function pro_setup_espressivo_categories_and_menu() {
         set_theme_mod( 'nav_menu_locations', $locations );
     }
 
-    update_option( 'pro_espressivo_structure_installed_v6', true );
+    update_option( 'pro_espressivo_structure_installed_v9', true );
 }
 add_action( 'init', 'pro_setup_espressivo_categories_and_menu' );
 
