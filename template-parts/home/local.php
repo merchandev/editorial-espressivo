@@ -11,15 +11,22 @@ $local_cats = array('maturin' => 'Maturín', 'monagas' => 'Monagas');
 
 ob_start();
 foreach($local_cats as $slug => $name) :
-    $local_q = new WP_Query(array(
-        'category_name'       => $slug,
-        'posts_per_page'      => 1,
-        'post_status'         => 'publish',
-        'orderby'             => 'date',
-        'order'               => 'DESC',
-        'ignore_sticky_posts' => 1,
-    ));
-    if($local_q->have_posts()): while($local_q->have_posts()): $local_q->the_post(); ?>
+    $cat_obj = get_category_by_slug( $slug );
+    if ( ! $cat_obj ) continue;
+
+    $local_q = new WP_Query( array(
+        'cat'                    => $cat_obj->term_id,
+        'posts_per_page'         => 1,
+        'post_status'            => 'publish',
+        'orderby'                => 'date',
+        'order'                  => 'DESC',
+        'ignore_sticky_posts'    => 1,
+        'cache_results'          => false,
+        'update_post_meta_cache' => false,
+        'update_post_term_cache' => false,
+        'no_found_rows'          => true,
+    ) );
+    if( $local_q->have_posts() ): while( $local_q->have_posts() ): $local_q->the_post(); ?>
         <div class="local-news-card">
             <div class="cat-label" style="background:var(--color-primary); color:#fff; display:inline-block; padding:2px 10px; border-radius:20px; font-size:0.8rem; margin-bottom:10px; font-weight:bold;"><?php echo esc_html($name); ?></div>
             <h3 class="entry-title" style="font-size:1.5rem; margin-bottom:10px;"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>

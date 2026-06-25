@@ -13,24 +13,45 @@ $sec_cats = array(
     'salud' => 'Salud', 'educacion' => 'Educación', 
     'servicios-publicos' => 'Servicios', 'comunidad' => 'Comunidad',
     'sucesos' => 'Sucesos', 'nacional' => 'Nacional', 
-    'internacional' => 'Mundo', 'economia' => 'Economía', 
-    'politica' => 'Política'
+    'mundo' => 'Mundo', 'economia' => 'Economía', 
+    'politica,nacional,monagas' => 'Política'
 );
 
 ob_start();
 foreach($sec_cats as $slug => $name) :
-    $cat_obj = get_category_by_slug($slug);
-    $cat_link = $cat_obj ? esc_url(get_category_link($cat_obj->term_id)) : '#';
-    
-    $sec_q = new WP_Query(array(
-        'category_name'       => $slug,
-        'posts_per_page'      => 1,
-        'post_status'         => 'publish',
-        'orderby'             => 'date',
-        'order'               => 'DESC',
-        'ignore_sticky_posts' => 1,
-    ));
-    if($sec_q->have_posts()): ?>
+    // Soportar múltiples slugs separados por coma
+    $slugs = explode(',', $slug);
+    $term_ids = array();
+    $cat_link = '#';
+
+    foreach($slugs as $s) {
+        $cat_obj = get_category_by_slug( trim($s) );
+        if ( $cat_obj ) {
+            $term_ids[] = $cat_obj->term_id;
+            // El enlace de la tarjeta será el de la primera categoría válida (e.g. politica)
+            if ( $cat_link === '#' ) {
+                $cat_link = esc_url( get_category_link( $cat_obj->term_id ) );
+            }
+        }
+    }
+
+    // Saltar si ninguna de las categorías existe
+    if ( empty($term_ids) ) continue;
+
+    $sec_q = new WP_Query( array(
+        'category__in'           => $term_ids, // Busca en cualquiera de las categorías
+        'posts_per_page'         => 1,
+        'post_status'            => 'publish',
+        'orderby'                => 'date',
+        'order'                  => 'DESC',
+        'ignore_sticky_posts'    => 1,
+        'cache_results'          => false,   // No usar caché de objetos
+        'update_post_meta_cache' => false,
+        'update_post_term_cache' => false,
+        'suppress_filters'       => false,   // Permitir filtros normales de WP
+        'no_found_rows'          => true,    // Más rápido: no cuenta filas totales
+    ) );
+    if( $sec_q->have_posts() ) : ?>
         <div class="sec-card" style="background:var(--color-bg-secondary); border:1px solid var(--color-border); border-top:4px solid var(--color-primary); border-radius:var(--border-radius); overflow:hidden; display:flex; flex-direction:column; box-shadow:var(--shadow-sm); transition:transform 0.3s ease, box-shadow 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='var(--shadow-lg)';" onmouseout="this.style.transform='none'; this.style.boxShadow='var(--shadow-sm)';">
             
             <div style="padding: 15px 20px 10px; display:flex; align-items:center; justify-content:space-between;">

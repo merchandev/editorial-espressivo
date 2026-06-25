@@ -34,8 +34,8 @@ if ( empty($ads) ) {
             $url = !empty($ad['url']) ? esc_url($ad['url']) : '#';
         ?>
         <div class="ad-slide<?php echo $active_class; ?>">
-            <a href="<?php echo $url; ?>" target="_blank" rel="noopener noreferrer">
-                <img src="<?php echo esc_url($ad['image']); ?>" alt="<?php echo esc_attr($ad['title']); ?>" style="width: 100%; height: auto; border-radius: 4px; display: block;">
+            <a href="<?php echo $url; ?>" target="_blank" rel="noopener noreferrer" class="in-feed-ad-link">
+                <img src="<?php echo esc_url($ad['image']); ?>" alt="<?php echo esc_attr($ad['title']); ?>" class="in-feed-ad-img">
             </a>
         </div>
         <?php endforeach; ?>
