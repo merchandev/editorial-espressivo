@@ -1417,7 +1417,6 @@ img {
     border-top: 1px solid var(--color-border);
     border-bottom: 1px solid var(--color-border);
     padding-bottom: 0;
-    overflow: hidden;
 }
 .in-feed-ad-wrapper .ad-label-tag {
     position: absolute;
