@@ -1115,10 +1115,10 @@ img {
 .ad-slide img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain; /* Ajusta sin recortar la imagen */
     object-position: center;
     display: block;
-    border-radius: 0; /* Sin radio dentro del slider full-width */
+    border-radius: 0;
 }
 
 @media (max-width: 767px) {
