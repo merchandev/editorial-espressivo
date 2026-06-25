@@ -30,7 +30,9 @@ get_header();
         'category_name'       => 'relevantes',
         'posts_per_page'      => 3,
         'post_status'         => 'publish',
-        'ignore_sticky_posts' => 1
+        'orderby'             => 'date',
+        'order'               => 'DESC',
+        'ignore_sticky_posts' => 1,
     ) );
 
     // Fallback: si no hay posts en "relevantes", tomar los 3 más recientes
@@ -39,6 +41,8 @@ get_header();
         $relevant_query = new WP_Query( array(
             'posts_per_page'      => 3,
             'post_status'         => 'publish',
+            'orderby'             => 'date',
+            'order'               => 'DESC',
             'ignore_sticky_posts' => 1,
         ) );
     }

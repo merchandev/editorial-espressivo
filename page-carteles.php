@@ -45,12 +45,26 @@ get_header();
                 
                 // Obtener el PDF adjunto
                 $pdf_url = get_post_meta( get_the_ID(), '_cartel_pdf_url', true );
+                if ( $pdf_url && strpos( $pdf_url, 'http' ) !== 0 ) {
+                    global $wpdb;
+                    $attach_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wp_attached_file' AND meta_value LIKE %s LIMIT 1", '%' . $wpdb->esc_like( $pdf_url ) ) );
+                    if ( $attach_id ) {
+                        $pdf_url = wp_get_attachment_url( $attach_id );
+                    } else {
+                        $upload_dir = wp_upload_dir();
+                        $pdf_url = $upload_dir['baseurl'] . '/' . $pdf_url;
+                    }
+                }
                 ?>
                 <article id="post-<?php the_ID(); ?>" <?php post_class('card-cartel'); ?> data-pdf-url="<?php echo esc_url($pdf_url); ?>">
                     <div class="cartel-thumbnail">
                         <?php 
                         if ( has_post_thumbnail() ) {
                             the_post_thumbnail( 'medium', array( 'loading' => 'lazy' ) );
+                        } else if ( ! empty( $pdf_url ) ) {
+                            echo '<div class="pdf-preview-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; background: #fff;">';
+                            echo '<iframe src="' . esc_url($pdf_url) . '#toolbar=0&navpanes=0&scrollbar=0&view=FitH" frameborder="0" style="width: 100%; height: 100%; pointer-events: none; border: none;" scrolling="no"></iframe>';
+                            echo '</div>';
                         } else {
                             echo '<div class="placeholder-cartel"><span class="material-symbols-outlined">description</span></div>';
                         }

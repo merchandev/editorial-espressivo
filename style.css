@@ -4,7 +4,7 @@ Theme URI: https://merchan.dev/edit-pro
 Author: Arturo Merchan | Merchan.Dev
 Author URI: https://merchan.dev
 Description: Espressivo Editorial es un tema y framework de WordPress de alto rendimiento para diarios digitales y portales de noticias. Diseñado bajo un enfoque comercial de marca blanca (white-label) y SaaS, ofrece optimización SEO extrema, velocidad de carga premium, un potente gestor de publicidad integrado, modo oscuro fluido y control editorial avanzado. La solución definitiva para editoriales modernas y monetización de contenidos.
-Version: 1.2.0
+Version: 2.0.0
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: pro
@@ -20,30 +20,35 @@ Tags: custom-colors, custom-menu, featured-images, grid-layout, news, newspaper,
 
 :root {
     /* Paleta de colores - Modo Claro (Diurno) Premium */
-    --color-bg: #ffffff; /* Fondo blanco puro a petición del usuario */
-    --color-bg-secondary: #ffffff; /* Tarjetas y contenedores blancos */
-    --color-text: #0f172a; /* Texto principal casi negro pero más suave */
-    --color-text-muted: #64748b;
-    --color-primary: #1e293b;
-    --color-primary-hover: #334155;
-    --color-accent: #1d4ed8; /* Azul marino/real institucional */
-    
+    --color-bg: #ffffff;
+    --color-bg-secondary: #f8f9fa;
+    --color-text: #010101;
+    --color-text-muted: #444444;
+    --color-primary: #010101;
+    /* Negro para menú principal y footer */
+    --color-primary-hover: #222222;
+    --color-accent: #CC3332;
+    /* Rojo para acentos */
+    --color-accent-alt: #FFC407;
+    /* Amarillo para detalles */
+
     --color-border: #e2e8f0;
-    
+
     /* Sombras (Depth) */
-    --shadow-sm: 0 2px 4px rgba(0,0,0,0.02);
-    --shadow-md: 0 10px 25px rgba(0,0,0,0.05);
-    --shadow-lg: 0 20px 40px rgba(0,0,0,0.08);
-    
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.02);
+    --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.08);
+
     /* Tipografía */
     --font-heading: 'Playfair Display', serif;
     --font-body: 'Source Serif 4', serif;
     --font-ui: 'Inter', sans-serif;
-    
+
     /* Layout */
     --container-width: 1200px;
-    --border-radius: 8px; /* Bordes suaves modernos */
-    
+    --border-radius: 8px;
+    /* Bordes suaves modernos */
+
     /* Transiciones */
     --transition-speed: 0.3s;
 }
@@ -52,16 +57,17 @@ Tags: custom-colors, custom-menu, featured-images, grid-layout, news, newspaper,
    Modo Oscuro (Dark Mode)
    ========================================================================== */
 body.dark-mode {
-    --color-bg: #0f172a; /* Slate 900 */
-    --color-bg-secondary: #1e293b; /* Slate 800 */
-    --color-text: #f8fafc; /* Slate 50 */
-    --color-text-muted: #94a3b8; /* Slate 400 */
-    --color-primary: #0f172a;
-    --color-primary-hover: #1e293b;
-    --color-border: #334155; /* Slate 700 */
-    --shadow-sm: 0 2px 4px rgba(0,0,0,0.4);
-    --shadow-md: 0 10px 25px rgba(0,0,0,0.6);
-    --shadow-lg: 0 20px 40px rgba(0,0,0,0.8);
+    --color-bg: #010101;
+    --color-bg-secondary: #111111;
+    --color-text: #ffffff;
+    --color-text-muted: #aaaaaa;
+    --color-primary: #111111;
+    --color-primary-hover: #222222;
+    --color-accent: #FFC407;
+    /* El amarillo resalta mejor en fondos oscuros */
+    --color-accent-alt: #CC3332;
+    --color-border: #333333;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.6);
+    --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.8);
 }
-
-

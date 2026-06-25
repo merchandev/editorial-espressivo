@@ -13,7 +13,7 @@ $sec_cats = array(
     'salud' => 'Salud', 'educacion' => 'Educación', 
     'servicios-publicos' => 'Servicios', 'comunidad' => 'Comunidad',
     'sucesos' => 'Sucesos', 'nacional' => 'Nacional', 
-    'internacional' => 'Internacional', 'economia' => 'Economía', 
+    'internacional' => 'Mundo', 'economia' => 'Economía', 
     'politica' => 'Política'
 );
 
@@ -22,13 +22,20 @@ foreach($sec_cats as $slug => $name) :
     $cat_obj = get_category_by_slug($slug);
     $cat_link = $cat_obj ? esc_url(get_category_link($cat_obj->term_id)) : '#';
     
-    $sec_q = new WP_Query(array('category_name' => $slug, 'posts_per_page' => 1));
+    $sec_q = new WP_Query(array(
+        'category_name'       => $slug,
+        'posts_per_page'      => 1,
+        'post_status'         => 'publish',
+        'orderby'             => 'date',
+        'order'               => 'DESC',
+        'ignore_sticky_posts' => 1,
+    ));
     if($sec_q->have_posts()): ?>
         <div class="sec-card" style="background:var(--color-bg-secondary); border:1px solid var(--color-border); border-top:4px solid var(--color-primary); border-radius:var(--border-radius); overflow:hidden; display:flex; flex-direction:column; box-shadow:var(--shadow-sm); transition:transform 0.3s ease, box-shadow 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='var(--shadow-lg)';" onmouseout="this.style.transform='none'; this.style.boxShadow='var(--shadow-sm)';">
             
             <div style="padding: 15px 20px 10px; display:flex; align-items:center; justify-content:space-between;">
                 <a href="<?php echo $cat_link; ?>" style="color:var(--color-primary); text-decoration:none; font-family:var(--font-ui); font-size:0.85rem; font-weight:800; text-transform:uppercase; letter-spacing:1px;"><?php echo esc_html($name); ?></a>
-                <span style="font-family:'Material Symbols Outlined'; font-size:1.1rem; color:var(--color-text-muted);">arrow_forward</span>
+                <span class="material-symbols-outlined" style="font-size:1.1rem; color:var(--color-text-muted);">arrow_forward</span>
             </div>
 
             <div style="padding: 0 20px 20px; flex-grow:1; display:flex; flex-direction:column;">

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @author Arturo Merchan | Merchan.Dev | Espressivo Venezuela,C.A
  * 
  * ADVERTENCIA LEGAL:
@@ -57,37 +57,15 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Bloquear scroll de fondo si está abierto
             if (navMenu.classList.contains('toggled')) {
-                document.body.style.overflow = 'hidden';
                 menuToggle.innerHTML = '<span class="material-symbols-outlined" style="vertical-align: middle;">close</span>';
-                menuToggle.classList.add('is-fixed-close');
+                document.body.style.overflow = 'hidden';
             } else {
-                document.body.style.overflow = '';
                 menuToggle.innerHTML = '<span class="material-symbols-outlined" style="vertical-align: middle;">menu</span>';
-                menuToggle.classList.remove('is-fixed-close');
-                // Cerrar todos los submenús al cerrar el principal
-                document.querySelectorAll('.main-navigation .sub-menu').forEach(sub => sub.classList.remove('is-open'));
+                document.body.style.overflow = '';
             }
         });
 
-        // Lógica de Submenús (Botón volver eliminado)
-        const subMenus = navMenu.querySelectorAll('.sub-menu');
-
-
-        // Abrir submenú al tocar el elemento padre
-        const parentLinks = navMenu.querySelectorAll('.menu-item-has-children > a');
-        parentLinks.forEach(link => {
-            link.addEventListener('click', function(e) {
-                // Prevenir enlace padre en pantallas móviles o cuando menú hamburguesa activo
-                if (window.innerWidth <= 767 || navMenu.classList.contains('toggled')) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const subMenu = this.nextElementSibling;
-                    if (subMenu && subMenu.classList.contains('sub-menu')) {
-                        subMenu.classList.add('is-open');
-                    }
-                }
-            });
-        });
+        // Lógica de Submenús (Eliminada para que los enlaces padre funcionen y todo esté expandido permanentemente)
     }
 
     // 3. News Ticker Slider
@@ -184,7 +162,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const toast = document.createElement('div');
             toast.id = 'new-posts-toast';
             toast.className = 'new-posts-toast';
-            toast.innerHTML = '<span>Hay nuevas noticias. Haz clic para actualizar.</span>';
+            toast.title = 'Hay nuevas noticias. Haz clic para actualizar.';
+            toast.innerHTML = '';
             
             toast.addEventListener('click', function() {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -543,6 +522,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Función para aplicar transformaciones CSS de forma unificada
         const applyTransform = () => {
             modalImage.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoomScale})`;
+            zoomResetBtn.innerText = Math.round(zoomScale * 100) + '%';
         };
         
         // Función para abrir el Lightbox
@@ -572,6 +552,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     portadaModal.classList.add('active');
                     portadaModal.setAttribute('aria-hidden', 'false');
                     document.body.style.overflow = 'hidden'; // Previene scroll de fondo
+                    document.documentElement.style.overflow = 'hidden'; // Asegura que se oculte la barra principal
+                    
+                    // Forzar scroll al inicio de la imagen
+                    const viewport = document.getElementById('portada-viewport');
+                    if (viewport) viewport.scrollTop = 0;
                 }
             });
         });
@@ -581,6 +566,7 @@ document.addEventListener('DOMContentLoaded', function() {
             portadaModal.classList.remove('active');
             portadaModal.setAttribute('aria-hidden', 'true');
             document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
             
             setTimeout(() => {
                 modalImage.src = ''; // Limpiar src para liberar memoria
@@ -594,8 +580,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Si hacen clic sobre la imagen y tiene zoom superior a 1, no cerrar (permitir arrastrar y exploración táctil)
-            if (e.target.closest('#portada-lightbox-image') && zoomScale > 1) {
+            // No cerrar si hacen clic sobre la imagen (para permitir interacción, zoom y arrastre nativo)
+            if (e.target.closest('#portada-lightbox-image')) {
                 return;
             }
             
@@ -663,7 +649,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Evento mouse down
         modalImage.addEventListener('mousedown', (e) => {
-            if (zoomScale > 1) { // Solo permitir arrastre si hay zoom aplicado
+            if (zoomScale >= 1) { // Permitir arrastre siempre
                 isDragging = true;
                 modalImage.classList.add('panning');
                 
@@ -690,9 +676,9 @@ document.addEventListener('DOMContentLoaded', function() {
             modalImage.classList.remove('panning');
         });
         
-        // --- SOPORTE TÃCTIL (MÓVILES) ---
+        // --- SOPORTE TACTIL (MOVILES) ---
         modalImage.addEventListener('touchstart', (e) => {
-            if (zoomScale > 1 && e.touches.length === 1) {
+            if (zoomScale >= 1 && e.touches.length === 1) {
                 isDragging = true;
                 startX = e.touches[0].clientX - translateX;
                 startY = e.touches[0].clientY - translateY;
@@ -748,3 +734,159 @@ document.addEventListener('DOMContentLoaded', function() {
 
 });
 
+
+/* ==========================================================================
+   E-SERVER RADIO PLAYER LOGIC
+   ========================================================================== */
+document.addEventListener('DOMContentLoaded', function() {
+    const audio = document.getElementById('esRespAudio');
+    if (!audio) return; // Only run if player exists on the current page
+
+    const STREAM = 'https://radio.diarioeloriental.com/radio.aac';
+    let playing = false;
+
+    const btn    = document.getElementById('esRespPlay');
+    const icon   = document.getElementById('esRespIcon');
+    const status = document.getElementById('esRespStatus');
+    const fill   = document.getElementById('esRespFill');
+    const bar    = document.getElementById('esRespBar');
+    const vol    = document.getElementById('esRespVol');
+    const mIcon  = document.getElementById('esRespMuteIcon');
+
+    window.toggleRespRadio = function() {
+        playing ? stop() : start();
+    };
+
+    function start() {
+        audio.src = STREAM + '?t=' + Date.now();
+        status.innerText = 'CONECTANDO...';
+        audio.play().then(() => {
+            playing = true;
+            bar.classList.add('es-playing');
+            icon.innerText = 'pause';
+            status.innerText = 'REPRODUCIENDO';
+            animateFill();
+        }).catch(() => {
+            status.innerText = 'ERROR AL CONECTAR';
+        });
+    }
+
+    function stop() {
+        audio.pause(); audio.src = '';
+        playing = false;
+        bar.classList.remove('es-playing');
+        icon.innerText = 'play_arrow';
+        status.innerText = 'DETENIDO';
+        fill.style.width = '0%';
+    }
+
+    function animateFill() {
+        if (!playing) return;
+        let p = 0;
+        const interval = setInterval(() => {
+            if (!playing) { clearInterval(interval); return; }
+            p = (p + 0.1) % 100;
+            fill.style.width = p + '%';
+        }, 100);
+    }
+
+    window.updateRespVol = function() {
+        audio.volume = vol.value;
+        mIcon.innerText = vol.value == 0 ? 'volume_off' : 'volume_up';
+    };
+
+    window.toggleRespMute = function() {
+        if (audio.volume > 0) {
+            audio.v = audio.volume; audio.volume = 0; vol.value = 0;
+            mIcon.innerText = 'volume_off';
+        } else {
+            audio.volume = audio.v || 1; vol.value = audio.volume;
+            mIcon.innerText = 'volume_up';
+        }
+    };
+});
+
+/* ==========================================================================
+   GLOBAL SWUP & FLOATING RADIO LOGIC
+   ========================================================================== */
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Initialize Swup
+    if (typeof Swup !== 'undefined' && typeof SwupScriptsPlugin !== 'undefined') {
+        const swup = new Swup({
+            plugins: [new SwupScriptsPlugin({
+                head: true,
+                body: true
+            })]
+        });
+        
+        // Swup Page View Event - Re-trigger anything necessary
+        swup.hooks.on('page:view', () => {
+            // Document listeners survive, but if there's anything else needed, it runs here.
+            console.log('Swup navigated to new page');
+        });
+    }
+
+    // 2. Floating Radio Logic
+    const floatAudio = document.getElementById('esFloatAudio');
+    const floatBtn = document.getElementById('esFloatPlay');
+    const floatIcon = document.getElementById('esFloatIcon');
+    const floatStatus = document.getElementById('esFloatStatus');
+    const floatContainer = document.getElementById('esFloatingRadio');
+    
+    if (!floatAudio || !floatContainer) return;
+
+    const STREAM = 'https://radio.diarioeloriental.com/radio.aac';
+    let isFloatPlaying = false;
+
+    window.toggleFloatRadio = function() {
+        if (isFloatPlaying) {
+            floatAudio.pause();
+            floatAudio.src = '';
+            isFloatPlaying = false;
+            floatContainer.classList.remove('playing');
+            floatIcon.innerText = 'play_arrow';
+            floatStatus.innerText = 'DETENIDO';
+            
+            // Sync with dedicated page player if exists
+            const pageIcon = document.getElementById('esRespIcon');
+            if (pageIcon) {
+                document.getElementById('esRespBar').classList.remove('es-playing');
+                pageIcon.innerText = 'play_arrow';
+                document.getElementById('esRespStatus').innerText = 'DETENIDO';
+            }
+        } else {
+            floatAudio.src = STREAM + '?t=' + Date.now();
+            floatStatus.innerText = 'CONECTANDO...';
+            floatAudio.play().then(() => {
+                isFloatPlaying = true;
+                floatContainer.classList.add('playing');
+                floatIcon.innerText = 'pause';
+                floatStatus.innerText = 'EN VIVO';
+                
+                // Sync with dedicated page player if exists
+                const pageIcon = document.getElementById('esRespIcon');
+                if (pageIcon) {
+                    document.getElementById('esRespBar').classList.add('es-playing');
+                    pageIcon.innerText = 'pause';
+                    document.getElementById('esRespStatus').innerText = 'REPRODUCIENDO';
+                }
+            }).catch(() => {
+                floatStatus.innerText = 'ERROR';
+            });
+        }
+    };
+
+    window.closeFloatRadio = function() {
+        if (isFloatPlaying) {
+            window.toggleFloatRadio();
+        }
+        floatContainer.classList.add('hidden-by-user');
+    };
+
+    // Show floating player automatically after 3 seconds
+    setTimeout(() => {
+        if (!floatContainer.classList.contains('hidden-by-user')) {
+            floatContainer.classList.add('show');
+        }
+    }, 3000);
+});

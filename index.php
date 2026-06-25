@@ -27,9 +27,11 @@ get_header();
             the_post();
             ?>
             <article id="post-<?php the_ID(); ?>" <?php post_class('hero-post'); ?>>
-                <a href="<?php the_permalink(); ?>" class="post-thumbnail" aria-hidden="true" tabindex="-1">
-                    <?php the_post_thumbnail( 'hero-thumbnail', array( 'loading' => 'eager' ) ); // Eager load for LCP ?>
-                </a>
+                <?php if ( has_post_thumbnail() ) : ?>
+                    <a href="<?php the_permalink(); ?>" class="post-thumbnail" aria-hidden="true" tabindex="-1">
+                        <?php the_post_thumbnail( 'hero-thumbnail', array( 'loading' => 'eager' ) ); // Eager load for LCP ?>
+                    </a>
+                <?php endif; ?>
                 <div class="hero-content">
                         <?php pro_post_categories(); ?>
                     <h2 class="entry-title"><a href="<?php the_permalink(); ?>" rel="bookmark"><?php the_title(); ?></a></h2>
@@ -56,9 +58,11 @@ get_header();
                     the_post();
                     ?>
                     <article id="post-<?php the_ID(); ?>" <?php post_class('card-post'); ?>>
-                        <a href="<?php the_permalink(); ?>" class="post-thumbnail" aria-hidden="true" tabindex="-1">
-                            <?php the_post_thumbnail( 'card-thumbnail', array( 'loading' => 'lazy' ) ); ?>
-                        </a>
+                        <?php if ( has_post_thumbnail() ) : ?>
+                            <a href="<?php the_permalink(); ?>" class="post-thumbnail" aria-hidden="true" tabindex="-1">
+                                <?php the_post_thumbnail( 'card-thumbnail', array( 'loading' => 'lazy' ) ); ?>
+                            </a>
+                        <?php endif; ?>
                         <div class="card-content">
                             <div class="post-meta">
                                 <?php pro_post_categories(); ?>

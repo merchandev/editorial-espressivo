@@ -7,6 +7,8 @@
  * o cualquier otra accion que de una u otra forma violente la propiedad intelectual, 
  * material y digital de este proyecto. Esta infraccion esta prohibida y penada por la ley.
  */?>
+    </div><!-- /#swup -->
+
     <footer id="colophon" class="site-footer">
         <div class="footer-widgets container">
             <div class="footer-grid">
@@ -82,6 +84,10 @@
     <div class="portada-modal-bar">
         <h3 id="portada-modal-title">Visor de Portada</h3>
         <div class="portada-modal-actions">
+            <!-- Botón de Descarga -->
+            <a id="portada-download-btn" href="" download class="portada-modal-download" title="Descargar Portada" style="color: white; margin-right: 15px; text-decoration: none; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); border-radius: 50%; width: 40px; height: 40px; transition: background 0.3s;">
+                <span class="material-symbols-outlined">download</span>
+            </a>
             <!-- Botón de Cerrar -->
             <button class="portada-modal-close" aria-label="Cerrar visor" title="Cerrar">
                 <span class="material-symbols-outlined">close</span>
@@ -92,14 +98,8 @@
     <!-- Contenedor principal interactivo -->
     <div class="portada-modal-body">
         <div class="portada-viewport" id="portada-viewport">
-            <div class="portada-image-wrapper" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; max-height: 100%; max-width: 100%; position: relative;">
+            <div class="portada-image-wrapper" style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 20px; height: auto; max-width: 100%; position: relative;">
                 <img id="portada-lightbox-image" src="" alt="Portada" draggable="false">
-                
-                <!-- Botón de Descarga Directa Justo Debajo de la Imagen -->
-                <a id="portada-download-btn" href="" download class="portada-action-btn button-download-under" title="Descargar Portada">
-                    <span class="material-symbols-outlined">download</span>
-                    <span class="btn-text">Descargar Portada</span>
-                </a>
             </div>
         </div>
     </div>
@@ -118,6 +118,9 @@
     </div>
 </div>
 
+<!-- Swup JS -->
+<script src="https://unpkg.com/swup@4"></script>
+<script src="https://unpkg.com/@swup/scripts-plugin@2"></script>
 <?php wp_footer(); ?>
 <!-- Organization Schema -->
 <script type="application/ld+json">
@@ -129,5 +132,29 @@
   "logo": <?php echo wp_json_encode( has_custom_logo() ? wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ), 'full' ) : '' ); ?>
 }
 </script>
+<!-- Reproductor Flotante Global (Fuera de Swup para que no se corte) -->
+<div class="es-floating-radio" id="esFloatingRadio">
+    <div class="es-floating-inner">
+        <button class="es-float-btn" id="esFloatPlay" onclick="toggleFloatRadio()">
+            <span class="material-symbols-outlined" id="esFloatIcon">play_arrow</span>
+        </button>
+        <div class="es-float-info">
+            <span class="es-float-title">Vital 101.5 FM</span>
+            <span class="es-float-status" id="esFloatStatus">Haz clic para escuchar</span>
+        </div>
+        <div class="es-float-waves" id="esFloatWaves">
+            <div class="es-float-bar" style="--d: 0s"></div>
+            <div class="es-float-bar" style="--d: 0.2s"></div>
+            <div class="es-float-bar" style="--d: 0.4s"></div>
+            <div class="es-float-bar" style="--d: 0.1s"></div>
+            <div class="es-float-bar" style="--d: 0.3s"></div>
+        </div>
+        <button class="es-float-close" onclick="closeFloatRadio()" title="Cerrar reproductor">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+    </div>
+</div>
+<audio id="esFloatAudio" preload="none"></audio>
+
 </body>
 </html>

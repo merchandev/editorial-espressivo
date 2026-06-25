@@ -11,7 +11,14 @@ $local_cats = array('maturin' => 'Maturín', 'monagas' => 'Monagas');
 
 ob_start();
 foreach($local_cats as $slug => $name) :
-    $local_q = new WP_Query(array('category_name' => $slug, 'posts_per_page' => 1));
+    $local_q = new WP_Query(array(
+        'category_name'       => $slug,
+        'posts_per_page'      => 1,
+        'post_status'         => 'publish',
+        'orderby'             => 'date',
+        'order'               => 'DESC',
+        'ignore_sticky_posts' => 1,
+    ));
     if($local_q->have_posts()): while($local_q->have_posts()): $local_q->the_post(); ?>
         <div class="local-news-card">
             <div class="cat-label" style="background:var(--color-primary); color:#fff; display:inline-block; padding:2px 10px; border-radius:20px; font-size:0.8rem; margin-bottom:10px; font-weight:bold;"><?php echo esc_html($name); ?></div>

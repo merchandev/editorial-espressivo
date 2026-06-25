@@ -17,21 +17,39 @@
 
 get_header();
 
-// Obtenemos el nombre exacto de la página (ej: "Deportes", "Salud")
-$cat_name = get_the_title();
-$category = get_term_by( 'name', $cat_name, 'category' );
+// Obtenemos el slug de la página (ej: "deportes", "salud", "opinion")
+global $post;
+$cat_slug = $post->post_name;
+$cat_name = get_the_title(); // Solo para mostrar en el título visualmente
+
+$category = get_term_by( 'slug', $cat_slug, 'category' );
+
+if ( ! $category ) {
+    $category = get_term_by( 'name', $cat_name, 'category' );
+}
 
 $paged = ( get_query_var( 'paged' ) ) ? get_query_var( 'paged' ) : 1;
 $args = array(
-    'post_type' => 'post',
-    'paged'     => $paged,
+    'post_type'           => 'post',
+    'post_status'         => 'publish',
+    'posts_per_page'      => 12,
+    'orderby'             => 'date',
+    'order'               => 'DESC',
+    'ignore_sticky_posts' => 1,
+    'paged'               => $paged,
 );
 
 if ( $category ) {
-    $args['cat'] = $category->term_id;
+    if ( $category->slug === 'opinion' || $category->slug === 'bienestar' ) {
+        // Para opinión y bienestar, evitamos que se mezclen subcategorías
+        $args['category__in'] = array( $category->term_id );
+    } else {
+        // Para el resto (como Monagas), incluimos sus subcategorías (Ciudad, Sucesos Monagas, etc.)
+        $args['cat'] = $category->term_id;
+    }
 } else {
-    // Si por alguna razón no existe la categoría con ese nombre exacto, muestra vacío
-    $args['cat'] = -1; 
+    // Si no existe la categoría, forzamos a que no traiga resultados para que no mezcle (usando post__in => [0])
+    $args['post__in'] = array(0); 
 }
 
 $query = new WP_Query( $args );
@@ -52,7 +70,8 @@ $query = new WP_Query( $args );
     ?>
 
     <?php
-    // MOSTRAR SUBCATEGORÍAS DE LA CATEGORÍA ACTUAL
+    // MOSTRAR SUBCATEGORÍAS DE LA CATEGORÍA ACTUAL (Oculto a petición)
+    /*
     if ( $category && $category->taxonomy === 'category' ) {
         $parent_id = ($category->category_parent == 0) ? $category->term_id : $category->category_parent;
         
@@ -76,6 +95,7 @@ $query = new WP_Query( $args );
             echo '</ul></div>';
         }
     }
+    */
     ?>
 
     <?php if ( $query->have_posts() ) : ?>
@@ -93,7 +113,7 @@ $query = new WP_Query( $args );
                     </a>
                     <div class="hero-content">
                         <div class="post-meta">
-                            <?php pro_post_categories(); ?>
+                            <?php pro_post_categories( null, $cat_slug ); ?>
                             <time datetime="<?php echo get_the_date('c'); ?>"><?php echo get_the_date(); ?></time>
                         </div>
                         <h2 class="entry-title hero-title"><a href="<?php the_permalink(); ?>" rel="bookmark"><?php the_title(); ?></a></h2>
@@ -111,12 +131,14 @@ $query = new WP_Query( $args );
                     $query->the_post();
                     ?>
                     <article id="post-<?php the_ID(); ?>" <?php post_class('card-post'); ?>>
-                        <a href="<?php the_permalink(); ?>" class="post-thumbnail" aria-hidden="true" tabindex="-1">
-                            <?php the_post_thumbnail( 'card-thumbnail', array( 'loading' => 'lazy' ) ); ?>
-                        </a>
+                        <?php if ( has_post_thumbnail() ) : ?>
+                            <a href="<?php the_permalink(); ?>" class="post-thumbnail" aria-hidden="true" tabindex="-1">
+                                <?php the_post_thumbnail( 'card-thumbnail', array( 'loading' => 'lazy' ) ); ?>
+                            </a>
+                        <?php endif; ?>
                         <div class="card-content">
                             <div class="post-meta">
-                                <?php pro_post_categories(); ?>
+                                <?php pro_post_categories( null, $cat_slug ); ?>
                                 <time datetime="<?php echo get_the_date('c'); ?>"><?php echo get_the_date(); ?></time>
                             </div>
                             <h2 class="entry-title"><a href="<?php the_permalink(); ?>" rel="bookmark"><?php the_title(); ?></a></h2>

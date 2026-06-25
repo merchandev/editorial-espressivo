@@ -31,7 +31,7 @@ class Automations {
 
     private function extract_pure_text( $content, $max_length ) {
         if ( empty( $content ) ) return '';
-        $text = preg_replace( '//is', '', $content ); // Assuming empty regex was from user prompt, it should probably be /<[^>]*>?/gm or similar for tags but they used wp_strip_all_tags below
+        $text = preg_replace( '/<[^>]*>?/m', '', $content ); // Eliminar etiquetas HTML
         $text = strip_shortcodes( $text );
         $text = wp_strip_all_tags( $text );
         $text = preg_replace( '/\s+/', ' ', $text );

@@ -215,10 +215,10 @@ function pro_ad_meta_box_html( $post ) {
 function pro_ad_slides_meta_box_html( $post ) {
     ?>
     <p style="font-size:0.83rem; color:#6b7280; margin-top:-6px; margin-bottom:14px;">
-        La <strong>Imagen Destacada</strong> es tu Slide 1. Aquí puedes agregar hasta 4 slides más que rotarán automáticamente en el inicio.
+        La <strong>Imagen Destacada</strong> es tu Slide 1. Aquí puedes agregar hasta 9 slides más que rotarán automáticamente en el inicio.
     </p>
 
-    <?php for ( $i = 2; $i <= 5; $i++ ) :
+    <?php for ( $i = 2; $i <= 10; $i++ ) :
         $img_val = get_post_meta( $post->ID, '_pro_ad_image_' . $i, true );
         $url_val = get_post_meta( $post->ID, '_pro_ad_url_' . $i,   true );
     ?>
@@ -249,7 +249,7 @@ function pro_ad_slides_meta_box_html( $post ) {
 function pro_cat_meta_box_html( $post ) {
     wp_nonce_field( 'pro_save_cat_meta', 'pro_cat_meta_nonce' );
 
-    $url          = get_post_meta( $post->ID, '_pro_cat_url', true );
+    $url_page_id  = get_post_meta( $post->ID, '_pro_cat_url_page_id', true );
     $start        = get_post_meta( $post->ID, '_pro_cat_start', true );
     $end          = get_post_meta( $post->ID, '_pro_cat_end', true );
     $sponsor_name = get_post_meta( $post->ID, '_pro_cat_sponsor_name', true );
@@ -258,6 +258,9 @@ function pro_cat_meta_box_html( $post ) {
     $cat_scope    = get_post_meta( $post->ID, '_pro_cat_scope', true ) ?: 'all';
     $cat_ids      = get_post_meta( $post->ID, '_pro_cat_ids', true );
     if ( ! is_array( $cat_ids ) ) $cat_ids = array();
+    
+    $page_ids     = get_post_meta( $post->ID, '_pro_cat_page_ids', true );
+    if ( ! is_array( $page_ids ) ) $page_ids = array();
 
     $all_categories = get_terms( array(
         'taxonomy'   => 'category',
@@ -266,63 +269,77 @@ function pro_cat_meta_box_html( $post ) {
         'orderby'    => 'name',
         'order'      => 'ASC',
     ) );
+    
+    $all_pages = get_pages( array(
+        'sort_column'  => 'post_title',
+        'sort_order'   => 'ASC',
+        'post_status'  => 'publish'
+    ) );
     ?>
     
     <div class="pro-ad-meta-box">
-        <p class="title">URL del Banner</p>
+        <p class="title">Destino del Banner</p>
         <div class="pro-field">
-            <label for="pro_cat_url">URL de Destino:</label>
-            <input type="url" name="pro_cat_url" id="pro_cat_url" value="<?php echo esc_url( $url ); ?>">
+            <label for="pro_cat_url_page_id">Página de Destino:</label>
+            <?php
+            wp_dropdown_pages( array(
+                'name'              => 'pro_cat_url_page_id',
+                'id'                => 'pro_cat_url_page_id',
+                'show_option_none'  => '— Selecciona una página de destino —',
+                'option_none_value' => '',
+                'selected'          => $url_page_id,
+            ) );
+            ?>
+            <small>Al hacer clic en el banner, el usuario será redirigido a esta página interna.</small>
         </div>
     </div>
 
-    <div class="pro-ad-meta-box" style="background:#f0fdf4; border-color:#86efac;">
-        <p class="title" style="color:#15803d; border-color:#86efac;">🏷️ Datos del Patrocinador</p>
-        <div class="pro-field">
-            <label for="pro_cat_sponsor_name">Nombre del Patrocinador:</label>
-            <input type="text" name="pro_cat_sponsor_name" id="pro_cat_sponsor_name" value="<?php echo esc_attr( $sponsor_name ); ?>" placeholder="Ej: Empresa XYZ">
-            <small>Aparecerá como: "NACIONALES — Patrocinado por <em>Empresa XYZ</em>"</small>
-        </div>
-        <div class="pro-field">
-            <label for="pro_cat_sponsor_logo">Logo del Patrocinador (URL):</label>
-            <div class="pro-slide-row">
-                <input type="text" name="pro_cat_sponsor_logo" id="pro_cat_sponsor_logo" value="<?php echo esc_attr( $sponsor_logo ); ?>" placeholder="https://...">
-                <button type="button" class="button pro-upload-btn" data-target="#pro_cat_sponsor_logo">📁 Subir Logo</button>
+    <div class="pro-ad-meta-box" style="background:#fdfcf0; border-color:#fef08a;">
+        <p class="title" style="color:#a16207; border-color:#fef08a;">🖼️ Imágenes del Patrocinador (Hasta 10 Slides)</p>
+        <p style="font-size: 0.8rem; color: #666; margin-top: 0;">Sube las imágenes del banner. Si subes más de una, se mostrarán como un carrusel que rota automáticamente.</p>
+        <?php for ( $i = 1; $i <= 10; $i++ ) : 
+            $slide_img = get_post_meta( $post->ID, '_pro_cat_slide_' . $i, true );
+        ?>
+            <div class="pro-field" style="margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #e5e7eb;">
+                <label style="display:inline-block; width:60px; font-size:0.8rem;">Slide <?php echo $i; ?>:</label>
+                <div class="pro-slide-row" style="display:inline-flex; width: calc(100% - 65px); margin-top:0;">
+                    <input type="text" name="pro_cat_slide_<?php echo $i; ?>" id="pro_cat_slide_<?php echo $i; ?>" value="<?php echo esc_attr( $slide_img ); ?>" placeholder="https://...">
+                    <button type="button" class="button pro-upload-btn" data-target="#pro_cat_slide_<?php echo $i; ?>">📁 Imagen</button>
+                </div>
             </div>
-            <small>Opcional. Si se sube, se muestra el logo en vez del texto.</small>
-        </div>
+        <?php endfor; ?>
     </div>
+
+
 
     <div class="pro-ad-meta-box" style="background:#eef6ff; border-color:#bcd4f5;">
-        <p class="title" style="color:#1d4ed8; border-color:#bcd4f5;">🗂️ ¿En qué Categorías aparece este banner?</p>
+        <p class="title" style="color:#1d4ed8; border-color:#bcd4f5;">🗂️ ¿En qué Páginas aparece este banner?</p>
         <div class="pro-field" style="display: flex; gap: 20px; margin-bottom: 14px;">
             <label style="font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;">
                 <input type="radio" name="pro_cat_scope" value="all" <?php checked( $cat_scope, 'all' ); ?>>
-                🌐 Todas las categorías
+                🌐 Mostrar en Todas (Global)
             </label>
             <label style="font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;">
                 <input type="radio" name="pro_cat_scope" value="specific" <?php checked( $cat_scope, 'specific' ); ?>>
-                🎯 Categorías específicas
+                🎯 Elegir Específicas
             </label>
         </div>
+        
         <div id="pro-cat-specific-wrap" style="<?php echo ( $cat_scope === 'specific' ) ? '' : 'display:none;'; ?>">
-            <div class="pro-cat-select-btns">
-                <button type="button" class="button" id="pro-cat-select-all">Seleccionar todas</button>
-                <button type="button" class="button" id="pro-cat-deselect-all">Deseleccionar todas</button>
-            </div>
-            <div id="pro-cat-checklist">
-                <?php if ( ! empty( $all_categories ) && ! is_wp_error( $all_categories ) ) : ?>
-                    <?php foreach ( $all_categories as $cat ) : ?>
+            <p style="font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; color: #4b5563;">📄 Páginas</p>
+            <div id="pro-cat-checklist" style="border-color: #e5e7eb;">
+                <?php if ( ! empty( $all_pages ) ) : ?>
+                    <?php foreach ( $all_pages as $p ) : ?>
                         <label>
-                            <input type="checkbox" name="pro_cat_ids[]" value="<?php echo esc_attr( $cat->term_id ); ?>" <?php checked( in_array( (string) $cat->term_id, array_map( 'strval', $cat_ids ) ) ); ?>>
-                            <?php echo esc_html( $cat->name ); ?>
+                            <input type="checkbox" name="pro_cat_page_ids[]" value="<?php echo esc_attr( $p->ID ); ?>" <?php checked( in_array( (string) $p->ID, array_map( 'strval', $page_ids ) ) ); ?>>
+                            <?php echo esc_html( $p->post_title ); ?>
                         </label>
                     <?php endforeach; ?>
                 <?php else : ?>
-                    <p style="color:#6b7280; font-size:0.85rem;">No se encontraron categorías.</p>
+                    <p style="color:#6b7280; font-size:0.85rem;">No se encontraron páginas.</p>
                 <?php endif; ?>
             </div>
-            <small style="margin-top:6px; display:block;">ℹ️ Si una categoría no tiene un banner específico asignado, usará el banner marcado como "Todas".</small>
+            <small style="margin-top:6px; display:block;">ℹ️ Si una página no tiene un banner específico asignado, usará el banner marcado como "Global".</small>
         </div>
     </div>
     
@@ -356,7 +373,7 @@ function pro_save_ad_meta( $post_id ) {
     if ( isset( $_POST['pro_ad_start'] ) ) update_post_meta( $post_id, '_pro_ad_start', sanitize_text_field( $_POST['pro_ad_start'] ) );
     if ( isset( $_POST['pro_ad_end'] ) ) update_post_meta( $post_id, '_pro_ad_end', sanitize_text_field( $_POST['pro_ad_end'] ) );
 
-    for ( $i = 2; $i <= 5; $i++ ) {
+    for ( $i = 2; $i <= 10; $i++ ) {
         if ( isset( $_POST[ 'pro_ad_image_' . $i ] ) ) update_post_meta( $post_id, '_pro_ad_image_' . $i, esc_url_raw( $_POST[ 'pro_ad_image_' . $i ] ) );
         if ( isset( $_POST[ 'pro_ad_url_' . $i ] ) ) update_post_meta( $post_id, '_pro_ad_url_' . $i, esc_url_raw( $_POST[ 'pro_ad_url_' . $i ] ) );
     }
@@ -382,19 +399,33 @@ function pro_save_cat_meta( $post_id ) {
     if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
     if ( ! current_user_can( 'edit_post', $post_id ) ) return;
 
-    if ( isset( $_POST['pro_cat_url'] ) ) update_post_meta( $post_id, '_pro_cat_url', esc_url_raw( $_POST['pro_cat_url'] ) );
+    if ( isset( $_POST['pro_cat_url_page_id'] ) ) update_post_meta( $post_id, '_pro_cat_url_page_id', intval( $_POST['pro_cat_url_page_id'] ) );
     if ( isset( $_POST['pro_cat_start'] ) ) update_post_meta( $post_id, '_pro_cat_start', sanitize_text_field( $_POST['pro_cat_start'] ) );
     if ( isset( $_POST['pro_cat_end'] ) ) update_post_meta( $post_id, '_pro_cat_end', sanitize_text_field( $_POST['pro_cat_end'] ) );
-    if ( isset( $_POST['pro_cat_sponsor_name'] ) ) update_post_meta( $post_id, '_pro_cat_sponsor_name', sanitize_text_field( $_POST['pro_cat_sponsor_name'] ) );
-    if ( isset( $_POST['pro_cat_sponsor_logo'] ) ) update_post_meta( $post_id, '_pro_cat_sponsor_logo', esc_url_raw( $_POST['pro_cat_sponsor_logo'] ) );
+
+
+    for ( $i = 1; $i <= 10; $i++ ) {
+        if ( isset( $_POST[ 'pro_cat_slide_' . $i ] ) ) update_post_meta( $post_id, '_pro_cat_slide_' . $i, esc_url_raw( $_POST[ 'pro_cat_slide_' . $i ] ) );
+    }
 
     $cat_scope = isset( $_POST['pro_cat_scope'] ) ? sanitize_text_field( $_POST['pro_cat_scope'] ) : 'all';
     update_post_meta( $post_id, '_pro_cat_scope', $cat_scope );
 
-    if ( $cat_scope === 'specific' && isset( $_POST['pro_cat_ids'] ) && is_array( $_POST['pro_cat_ids'] ) ) {
-        update_post_meta( $post_id, '_pro_cat_ids', array_map( 'intval', $_POST['pro_cat_ids'] ) );
+    if ( $cat_scope === 'specific' ) {
+        if ( isset( $_POST['pro_cat_ids'] ) && is_array( $_POST['pro_cat_ids'] ) ) {
+            update_post_meta( $post_id, '_pro_cat_ids', array_map( 'intval', $_POST['pro_cat_ids'] ) );
+        } else {
+            update_post_meta( $post_id, '_pro_cat_ids', array() );
+        }
+        
+        if ( isset( $_POST['pro_cat_page_ids'] ) && is_array( $_POST['pro_cat_page_ids'] ) ) {
+            update_post_meta( $post_id, '_pro_cat_page_ids', array_map( 'intval', $_POST['pro_cat_page_ids'] ) );
+        } else {
+            update_post_meta( $post_id, '_pro_cat_page_ids', array() );
+        }
     } else {
         update_post_meta( $post_id, '_pro_cat_ids', array() );
+        update_post_meta( $post_id, '_pro_cat_page_ids', array() );
     }
 }
 add_action( 'save_post_pro_cat_banner', 'pro_save_cat_meta' );
@@ -444,7 +475,7 @@ function pro_get_active_ads( $location ) {
 // ============================================================================
 // 6. HELPER: Recuperar banner de categoría (Banners Categorías)
 // ============================================================================
-function pro_get_category_banner( $cat_id ) {
+function pro_get_category_banner( $obj_id, $obj_type = 'category' ) {
     $now = current_time( 'mysql' );
     $query = new WP_Query( array(
         'post_type' => 'pro_cat_banner', 'posts_per_page' => -1, 'post_status' => 'publish',
@@ -461,14 +492,29 @@ function pro_get_category_banner( $cat_id ) {
             $end   = get_post_meta( $pid, '_pro_cat_end', true );
 
             if ( (!empty($start) && str_replace('T', ' ', $start) > $now) || (!empty($end) && str_replace('T', ' ', $end) <= $now) ) continue;
-            if ( ! has_post_thumbnail() ) continue;
+            
+            // Check if it has at least one slide image or a thumbnail
+            $has_image = has_post_thumbnail();
+            for ( $i = 1; $i <= 10; $i++ ) {
+                if ( !empty(get_post_meta( $pid, '_pro_cat_slide_' . $i, true )) ) {
+                    $has_image = true;
+                    break;
+                }
+            }
+            if ( ! $has_image ) continue;
 
-            $scope   = get_post_meta( $pid, '_pro_cat_scope', true ) ?: 'all';
-            $cat_ids = get_post_meta( $pid, '_pro_cat_ids', true );
-            if ( ! is_array( $cat_ids ) ) $cat_ids = array();
-
+            $scope = get_post_meta( $pid, '_pro_cat_scope', true ) ?: 'all';
+            
             if ( $scope === 'specific' ) {
-                if ( in_array( (int) $cat_id, array_map( 'intval', $cat_ids ) ) && ! $specific_match ) $specific_match = $pid;
+                if ( $obj_type === 'category' ) {
+                    $cat_ids = get_post_meta( $pid, '_pro_cat_ids', true );
+                    if ( ! is_array( $cat_ids ) ) $cat_ids = array();
+                    if ( in_array( (int) $obj_id, array_map( 'intval', $cat_ids ) ) && ! $specific_match ) $specific_match = $pid;
+                } elseif ( $obj_type === 'page' ) {
+                    $page_ids = get_post_meta( $pid, '_pro_cat_page_ids', true );
+                    if ( ! is_array( $page_ids ) ) $page_ids = array();
+                    if ( in_array( (int) $obj_id, array_map( 'intval', $page_ids ) ) && ! $specific_match ) $specific_match = $pid;
+                }
             } else {
                 if ( ! $global_match ) $global_match = $pid;
             }
@@ -479,10 +525,25 @@ function pro_get_category_banner( $cat_id ) {
     $matched_id = $specific_match ? $specific_match : $global_match;
     if ( ! $matched_id ) return null;
 
+    $url_page_id = get_post_meta( $matched_id, '_pro_cat_url_page_id', true );
+    $url = !empty($url_page_id) ? get_permalink($url_page_id) : '#';
+
+    $slides = array();
+    for ( $i = 1; $i <= 10; $i++ ) {
+        $img = get_post_meta( $matched_id, '_pro_cat_slide_' . $i, true );
+        if ( !empty($img) ) {
+            $slides[] = $img;
+        }
+    }
+    // Fallback al thumbnail si no hay slides
+    if ( empty($slides) && has_post_thumbnail($matched_id) ) {
+        $slides[] = get_the_post_thumbnail_url( $matched_id, 'full' );
+    }
+
     return array(
         'title'        => get_the_title( $matched_id ),
-        'image'        => get_the_post_thumbnail_url( $matched_id, 'full' ),
-        'url'          => get_post_meta( $matched_id, '_pro_cat_url', true ),
+        'slides'       => $slides,
+        'url'          => $url,
         'sponsor_name' => get_post_meta( $matched_id, '_pro_cat_sponsor_name', true ),
         'sponsor_logo' => get_post_meta( $matched_id, '_pro_cat_sponsor_logo', true ),
     );
@@ -517,3 +578,65 @@ function pro_check_ad_location_ajax() {
     wp_send_json_success( array( 'conflict' => $has_conflict, 'title' => $conflict_title ) );
 }
 add_action( 'wp_ajax_pro_check_ad_location', 'pro_check_ad_location_ajax' );
+
+// ============================================================================
+// 8. COLUMNAS PERSONALIZADAS EN EL ADMIN
+// ============================================================================
+function pro_cat_banner_columns( $columns ) {
+    $columns['status_location'] = 'Estado y Ubicación';
+    return $columns;
+}
+add_filter( 'manage_pro_cat_banner_posts_columns', 'pro_cat_banner_columns' );
+
+function pro_cat_banner_custom_column( $column, $post_id ) {
+    if ( $column === 'status_location' ) {
+        $now = current_time( 'mysql' );
+        $start = get_post_meta( $post_id, '_pro_cat_start', true );
+        $end   = get_post_meta( $post_id, '_pro_cat_end', true );
+        
+        $is_active = true;
+        $status_text = '<span style="color: green; font-weight: bold;">Activo</span>';
+        if ( get_post_status( $post_id ) !== 'publish' ) {
+            $is_active = false;
+            $status_text = '<span style="color: gray;">Borrador</span>';
+        } elseif ( !empty($start) && str_replace('T', ' ', $start) > $now ) {
+            $is_active = false;
+            $status_text = '<span style="color: orange;">Programado</span>';
+        } elseif ( !empty($end) && str_replace('T', ' ', $end) <= $now ) {
+            $is_active = false;
+            $status_text = '<span style="color: red;">Caduco</span>';
+        }
+
+        $images_count = 0;
+        for ( $i = 1; $i <= 10; $i++ ) {
+            if ( !empty(get_post_meta( $post_id, '_pro_cat_slide_' . $i, true )) ) {
+                $images_count++;
+            }
+        }
+
+        $scope = get_post_meta( $post_id, '_pro_cat_scope', true ) ?: 'all';
+        $location_text = '<strong>Ubicación:</strong> Todas (Global)';
+        if ( $scope === 'specific' ) {
+            $cat_ids = get_post_meta( $post_id, '_pro_cat_ids', true );
+            $page_ids = get_post_meta( $post_id, '_pro_cat_page_ids', true );
+            $locs = array();
+            
+            if ( !empty($cat_ids) && is_array($cat_ids) ) {
+                $locs[] = count($cat_ids) . ' Categorías';
+            }
+            if ( !empty($page_ids) && is_array($page_ids) ) {
+                $locs[] = count($page_ids) . ' Páginas';
+            }
+            if ( empty($locs) ) {
+                $location_text = '<strong>Ubicación:</strong> Ninguna seleccionada';
+            } else {
+                $location_text = '<strong>Ubicación:</strong> Específicas (' . implode(', ', $locs) . ')';
+            }
+        }
+
+        echo '<div>' . $status_text . '</div>';
+        echo '<div style="margin-top: 4px; font-size: 0.85em; color: #555;">' . $images_count . ' Slide(s) cargado(s)</div>';
+        echo '<div style="margin-top: 4px; font-size: 0.85em; color: #555;">' . $location_text . '</div>';
+    }
+}
+add_action( 'manage_pro_cat_banner_posts_custom_column', 'pro_cat_banner_custom_column', 10, 2 );

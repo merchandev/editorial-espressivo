@@ -40,22 +40,22 @@ get_header();
     if ( $current_category && $current_category->taxonomy === 'category' ) {
         $parent_id = ($current_category->category_parent == 0) ? $current_category->term_id : $current_category->category_parent;
         
-        $subcategories = get_categories( array(
+        $subcats = get_categories( array(
             'child_of'   => $parent_id,
             'hide_empty' => false,
         ) );
 
-        if ( ! empty( $subcategories ) ) {
+        if ( ! empty( $subcats ) ) {
             echo '<div class="category-subnav"><ul class="subnav-list">';
-            if ($parent_id != $current_category->term_id) {
-                echo '<li><a href="' . esc_url( get_category_link( $parent_id ) ) . '">' . esc_html__( 'Todas', 'pro' ) . '</a></li>';
-            } else {
-                echo '<li class="current-cat"><a href="' . esc_url( get_category_link( $parent_id ) ) . '">' . esc_html__( 'Todas', 'pro' ) . '</a></li>';
-            }
-
-            foreach ( $subcategories as $subcat ) {
-                $current_class = ($subcat->term_id == $current_category->term_id) ? 'current-cat' : '';
-                echo '<li class="' . $current_class . '"><a href="' . esc_url( get_category_link( $subcat->term_id ) ) . '">' . esc_html( $subcat->name ) . '</a></li>';
+            
+            // Link to parent (Todas)
+            $parent_cat = get_category($parent_id);
+            $active_class = ($current_category->term_id == $parent_id) ? 'active' : '';
+            echo '<li><a href="' . esc_url( get_category_link( $parent_id ) ) . '" class="' . $active_class . '">' . esc_html__( 'Todas', 'pro' ) . '</a></li>';
+            
+            foreach ( $subcats as $sc ) {
+                $active = ($current_category->term_id == $sc->term_id) ? 'active' : '';
+                echo '<li><a href="' . esc_url( get_category_link( $sc->term_id ) ) . '" class="' . $active . '">' . esc_html( $sc->name ) . '</a></li>';
             }
             echo '</ul></div>';
         }
@@ -71,9 +71,11 @@ get_header();
                 the_post();
                 ?>
                 <article id="post-<?php the_ID(); ?>" <?php post_class('card-post'); ?>>
-                    <a href="<?php the_permalink(); ?>" class="post-thumbnail" aria-hidden="true" tabindex="-1">
-                        <?php the_post_thumbnail( 'card-thumbnail', array( 'loading' => 'lazy' ) ); ?>
-                    </a>
+                    <?php if ( has_post_thumbnail() ) : ?>
+                        <a href="<?php the_permalink(); ?>" class="post-thumbnail" aria-hidden="true" tabindex="-1">
+                            <?php the_post_thumbnail( 'card-thumbnail', array( 'loading' => 'lazy' ) ); ?>
+                        </a>
+                    <?php endif; ?>
                     <div class="card-content">
                         <div class="post-meta">
                             <?php pro_post_categories(); ?>

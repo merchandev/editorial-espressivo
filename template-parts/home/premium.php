@@ -7,9 +7,16 @@
  * o cualquier otra accion que de una u otra forma violente la propiedad intelectual, 
  * material y digital de este proyecto. Esta infraccion esta prohibida y penada por la ley.
  */
-$premium_cats = array('nacional' => 'Nacional', 'internacional' => 'Internacional', 'economia' => 'Economía', 'sucesos' => 'Sucesos');
+$premium_cats = array('nacional' => 'Nacional', 'internacional' => 'Mundo', 'economia' => 'Economía', 'sucesos' => 'Sucesos');
 foreach ( $premium_cats as $cat_slug => $cat_name ) :
-    $cat_args = array('category_name' => $cat_slug, 'posts_per_page' => 4, 'post_status' => 'publish');
+    $cat_args = array(
+        'category_name'       => $cat_slug,
+        'posts_per_page'      => 6,
+        'post_status'         => 'publish',
+        'orderby'             => 'date',
+        'order'               => 'DESC',
+        'ignore_sticky_posts' => 1,
+    );
     $cat_query = new WP_Query( $cat_args );
     if ( $cat_query->have_posts() ) :
     ?>

@@ -169,12 +169,14 @@
                 </div>
                 <nav id="topbar-navigation" class="topbar-navigation">
                     <?php 
-                    wp_nav_menu( array(
-                        'theme_location' => 'topbar',
-                        'menu_id'        => 'topbar-menu',
-                        'container'      => false,
-                        'fallback_cb'    => false,
-                    ) );
+                    if ( has_nav_menu( 'topbar' ) ) {
+                        wp_nav_menu( array(
+                            'theme_location' => 'topbar',
+                            'menu_id'        => 'topbar-menu',
+                            'container'      => false,
+                            'fallback_cb'    => '__return_false',
+                        ) );
+                    }
                     ?>
                     <button id="dark-mode-toggle" class="dark-mode-toggle" aria-label="Cambiar modo oscuro" title="Modo Oscuro">
                         <span class="material-symbols-outlined">dark_mode</span>
@@ -185,20 +187,10 @@
 
         <div class="header-main container">
             <div class="site-branding">
-                <?php
-                if ( has_custom_logo() ) {
-                    the_custom_logo();
-                } else {
-                    ?>
-                    <h1 class="site-title"><a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home"><?php bloginfo( 'name' ); ?></a></h1>
-                    <?php
-                    $pro_description = get_bloginfo( 'description', 'display' );
-                    if ( $pro_description || is_customize_preview() ) :
-                        ?>
-                        <p class="site-description"><?php echo esc_html( $pro_description ); ?></p>
-                    <?php endif;
-                }
-                ?>
+                <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="custom-logo-link" rel="home">
+                    <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/image/LOGO NEGRO.png' ); ?>" class="custom-logo logo-light" alt="<?php bloginfo( 'name' ); ?>">
+                    <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/image/LOGO BLANCO.png' ); ?>" class="custom-logo logo-dark" alt="<?php bloginfo( 'name' ); ?>">
+                </a>
             </div><!-- .site-branding -->
 
             <div class="header-ad">
@@ -237,12 +229,31 @@
                 <nav id="site-navigation" class="main-navigation">
                     <button class="menu-toggle" aria-controls="primary-menu" aria-expanded="false" aria-label="<?php esc_attr_e( 'Menú', 'pro' ); ?>"><span class="material-symbols-outlined" style="vertical-align: middle;">menu</span></button>
                     <?php
+                    // Menú Escritorio
                     wp_nav_menu( array(
-                        'menu'           => 'Menú Espressivo',
                         'theme_location' => 'primary',
-                        'menu_id'        => 'primary-menu',
+                        'menu_id'        => 'primary-menu-desktop',
+                        'container_class'=> 'desktop-menu-wrapper',
                         'fallback_cb'    => '__return_false',
                     ) );
+
+                    // Menú Móvil
+                    if ( has_nav_menu( 'mobile' ) ) {
+                        wp_nav_menu( array(
+                            'theme_location' => 'mobile',
+                            'menu_id'        => 'primary-menu-mobile',
+                            'container_class'=> 'mobile-menu-wrapper',
+                            'fallback_cb'    => '__return_false',
+                        ) );
+                    } else {
+                        // Si no hay menú móvil, usar el principal
+                        wp_nav_menu( array(
+                            'theme_location' => 'primary',
+                            'menu_id'        => 'primary-menu-mobile',
+                            'container_class'=> 'mobile-menu-wrapper',
+                            'fallback_cb'    => '__return_false',
+                        ) );
+                    }
                     ?>
                 </nav><!-- #site-navigation -->
 
@@ -310,3 +321,5 @@
             </div>
         <?php endif; ?>
     </header><!-- #masthead -->
+
+    <div id="swup" class="transition-fade">

@@ -21,8 +21,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 // Función auxiliar para comprobar si el usuario actual es de los roles especificados
 function pro_is_target_role() {
     $user = wp_get_current_user();
+    if ( ! $user || ! isset( $user->roles ) ) return false;
     $roles = (array) $user->roles;
-    return in_array( 'direccion', $roles ) || in_array( 'author', $roles );
+    return ! in_array( 'administrator', $roles ) && ! in_array( 'editor', $roles );
 }
 
 /**
@@ -38,8 +39,8 @@ function pro_replace_wp_logo_admin_bar( $wp_admin_bar ) {
         $args = array(
             'id'    => 'custom-brand-logo',
             'title' => '<span style="display: flex; align-items: center; height: 100%;"><img src="' . esc_url( $logo_url ) . '" style="height: 20px; object-fit: contain; margin-top: -2px;" alt="Panel de Control"></span>',
-            'href'  => admin_url(),
-            'meta'  => array( 'class' => 'custom-brand-node' )
+            'href'  => 'https://merchan.dev',
+            'meta'  => array( 'class' => 'custom-brand-node', 'target' => '_blank' )
         );
         $wp_admin_bar->add_node( $args );
     }
@@ -120,7 +121,8 @@ add_action( 'wp_head', 'pro_custom_admin_css' ); // También en el frontend por 
  * Solo los administradores pueden verlo y acceder.
  */
 function pro_restrict_clasificados_menu() {
-    if ( pro_is_target_role() ) {
+    $user = wp_get_current_user();
+    if ( ! in_array( 'administrator', (array) $user->roles ) ) {
         // Eliminar el menú principal de Clasificados
         remove_menu_page( 'edit.php?post_type=clasificado' );
         // Eliminar submenús de las taxonomías asociadas por si acaso
@@ -130,9 +132,10 @@ function pro_restrict_clasificados_menu() {
 }
 add_action( 'admin_menu', 'pro_restrict_clasificados_menu', 9999 );
 
-// Bloquear acceso directo por URL a Clasificados o taxonomías para Dirección y Autor
+// Bloquear acceso directo por URL a Clasificados o taxonomías para todos excepto Administrador
 function pro_block_clasificados_direct_access() {
-    if ( pro_is_target_role() ) {
+    $user = wp_get_current_user();
+    if ( ! in_array( 'administrator', (array) $user->roles ) ) {
         $screen = get_current_screen();
         if ( $screen && ( 'clasificado' === $screen->post_type || 'edit-municipio' === $screen->taxonomy || 'edit-tipo_clasificado' === $screen->taxonomy ) ) {
             wp_die( esc_html__( 'No tienes permisos suficientes para acceder a la sección de Clasificados.', 'pro' ) );
@@ -145,35 +148,71 @@ add_action( 'current_screen', 'pro_block_clasificados_direct_access' );
  * 7. Restringir a los usuarios del rol Dirección de ver, editar o borrar administradores.
  */
 
-// 7a. Excluir a los administradores de la lista de usuarios en wp-admin/users.php
+// 7a. Limitar la lista de usuarios en wp-admin/users.php solo a perfiles permitidos para Dirección
 function pro_exclude_admins_from_users_list( $args ) {
     $current_user = wp_get_current_user();
-    if ( in_array( 'direccion', (array) $current_user->roles ) ) {
+    if ( in_array( 'direccion', (array) $current_user->roles ) || in_array( 'publicista', (array) $current_user->roles ) ) {
+        // Forzar a mostrar SOLAMENTE direccion, autor y author
+        $args['role__in'] = array( 'direccion', 'autor', 'author' );
+    } elseif ( in_array( 'gerencia', (array) $current_user->roles ) ) {
         if ( ! isset( $args['role__not_in'] ) ) {
             $args['role__not_in'] = array();
         }
-        // Excluir rol de administrador
         $args['role__not_in'] = array_merge( (array) $args['role__not_in'], array( 'administrator' ) );
     }
     return $args;
 }
 add_filter( 'users_list_table_query_args', 'pro_exclude_admins_from_users_list' );
 
-// 7b. Ocultar la pestaña/filtro "Administrador" de las vistas superiores en la lista de usuarios
+// 7b. Ocultar pestañas de otros roles y ajustar contador de "Todos" en la lista de usuarios
 function pro_hide_admin_view_tab( $views ) {
     $current_user = wp_get_current_user();
-    if ( in_array( 'direccion', (array) $current_user->roles ) ) {
+    if ( in_array( 'direccion', (array) $current_user->roles ) || in_array( 'publicista', (array) $current_user->roles ) ) {
+        // Remover otras pestañas que no sean all, direccion, autor o author
+        $allowed_views = array( 'all', 'direccion', 'autor', 'author' );
+        foreach ( $views as $key => $view ) {
+            if ( ! in_array( $key, $allowed_views ) ) {
+                unset( $views[$key] );
+            }
+        }
+        
+        // Arreglar el contador de "Todos" sumando los usuarios permitidos
+        if ( isset( $views['all'] ) ) {
+            $users_count = count_users();
+            $visible_users = 0;
+            $allowed_roles = array( 'direccion', 'autor', 'author' );
+            foreach ( $allowed_roles as $role ) {
+                if ( isset( $users_count['avail_roles'][$role] ) ) {
+                    $visible_users += $users_count['avail_roles'][$role];
+                }
+            }
+            
+            // Reemplazar el número en el texto de la vista "Todos"
+            $views['all'] = preg_replace( '/<span class="count">\([^)]+\)<\/span>/', '<span class="count">(' . number_format_i18n( $visible_users ) . ')</span>', $views['all'] );
+        }
+    } elseif ( in_array( 'gerencia', (array) $current_user->roles ) ) {
         unset( $views['administrator'] );
+        
+        if ( isset( $views['all'] ) ) {
+            $users_count = count_users();
+            $admin_count = isset( $users_count['avail_roles']['administrator'] ) ? $users_count['avail_roles']['administrator'] : 0;
+            $visible_users = $users_count['total_users'] - $admin_count;
+            
+            $views['all'] = preg_replace( '/<span class="count">\([^)]+\)<\/span>/', '<span class="count">(' . number_format_i18n( $visible_users ) . ')</span>', $views['all'] );
+        }
     }
     return $views;
 }
 add_filter( 'views_users', 'pro_hide_admin_view_tab' );
 
-// 7c. Eliminar el rol de Administrador de los roles editables/asignables
+// 7c. Eliminar roles no deseados de los roles editables/asignables
 function pro_exclude_admin_from_editable_roles( $roles ) {
     $current_user = wp_get_current_user();
-    if ( in_array( 'direccion', (array) $current_user->roles ) ) {
+    if ( in_array( 'direccion', (array) $current_user->roles ) || in_array( 'gerencia', (array) $current_user->roles ) ) {
         unset( $roles['administrator'] );
+        unset( $roles['subscriber'] );
+        unset( $roles['contributor'] );
+        unset( $roles['editor'] );
     }
     return $roles;
 }
@@ -182,7 +221,7 @@ add_filter( 'editable_roles', 'pro_exclude_admin_from_editable_roles' );
 // 7d. Bloquear de forma absoluta cualquier acción (edición, borrado, etc.) sobre administradores por parte de Dirección
 function pro_prevent_actions_on_admins() {
     $current_user = wp_get_current_user();
-    if ( in_array( 'direccion', (array) $current_user->roles ) ) {
+    if ( in_array( 'direccion', (array) $current_user->roles ) || in_array( 'gerencia', (array) $current_user->roles ) ) {
         $user_ids = array();
         
         // Obtener IDs de usuarios implicados en la petición (GET o POST)
@@ -207,5 +246,69 @@ function pro_prevent_actions_on_admins() {
     }
 }
 add_action( 'admin_init', 'pro_prevent_actions_on_admins' );
+
+// 7e. Ocultar menú Site Kit para todos los roles excepto Administrador y Editor
+function pro_hide_site_kit_menus() {
+    $current_user = wp_get_current_user();
+    if ( ! in_array( 'administrator', (array) $current_user->roles ) && ! in_array( 'editor', (array) $current_user->roles ) ) {
+        remove_menu_page( 'googlesitekit-dashboard' );
+        remove_menu_page( 'googlesitekit-splash' );
+    }
+}
+add_action( 'admin_menu', 'pro_hide_site_kit_menus', 999 );
+
+// 7f. Ocultar el menú de administración si se solicita a través de hide_wp_menu (para iframes)
+function pro_hide_admin_menu_for_iframe() {
+    if ( isset( $_GET['hide_wp_menu'] ) && $_GET['hide_wp_menu'] == '1' ) {
+        echo '<style>
+            #adminmenumain, #wpadminbar { display: none !important; }
+            #wpcontent, #wpfooter { margin-left: 0 !important; }
+            html.wp-toolbar { padding-top: 0 !important; }
+        </style>';
+    }
+}
+add_action( 'admin_head', 'pro_hide_admin_menu_for_iframe' );
+
+// 7g. Restringir actualizaciones y comentarios a solo Administrador y Editor
+function pro_restrict_updates_and_comments_menu() {
+    $current_user = wp_get_current_user();
+    if ( ! in_array( 'administrator', (array) $current_user->roles ) && ! in_array( 'editor', (array) $current_user->roles ) ) {
+        // Ocultar actualizaciones del menú principal
+        remove_submenu_page( 'index.php', 'update-core.php' );
+        // Ocultar comentarios del menú
+        remove_menu_page( 'edit-comments.php' );
+    }
+}
+add_action( 'admin_menu', 'pro_restrict_updates_and_comments_menu', 999 );
+
+function pro_restrict_updates_notifications() {
+    $current_user = wp_get_current_user();
+    if ( ! in_array( 'administrator', (array) $current_user->roles ) && ! in_array( 'editor', (array) $current_user->roles ) ) {
+        // Ocultar notificaciones de actualizaciones (plugins, temas, core)
+        add_filter( 'pre_site_transient_update_core', '__return_null' );
+        add_filter( 'pre_site_transient_update_plugins', '__return_null' );
+        add_filter( 'pre_site_transient_update_themes', '__return_null' );
+    }
+}
+add_action( 'admin_init', 'pro_restrict_updates_notifications', 1 );
+
+function pro_remove_comments_admin_bar( $wp_admin_bar ) {
+    $current_user = wp_get_current_user();
+    if ( ! in_array( 'administrator', (array) $current_user->roles ) && ! in_array( 'editor', (array) $current_user->roles ) ) {
+        $wp_admin_bar->remove_node( 'comments' );
+        $wp_admin_bar->remove_node( 'updates' ); // Eliminar icono de actualizaciones de la barra superior
+    }
+}
+add_action( 'admin_bar_menu', 'pro_remove_comments_admin_bar', 999 );
+
+// 7h. Ocultar Apariencia y Plugins para el perfil de Gerencia
+function pro_hide_menus_for_gerencia() {
+    $current_user = wp_get_current_user();
+    if ( in_array( 'gerencia', (array) $current_user->roles ) ) {
+        remove_menu_page( 'themes.php' ); // Apariencia
+        remove_menu_page( 'plugins.php' ); // Plugins
+    }
+}
+add_action( 'admin_menu', 'pro_hide_menus_for_gerencia', 999 );
 
 ?>

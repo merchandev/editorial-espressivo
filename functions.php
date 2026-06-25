@@ -53,7 +53,8 @@ function pro_setup() {
     
     // Registrar menús de navegación
     register_nav_menus( array(
-        'primary' => esc_html__( 'Menú Principal', 'pro' ),
+        'primary' => esc_html__( 'Menú Principal (PC)', 'pro' ),
+        'mobile'  => esc_html__( 'Menú Móvil (Teléfonos)', 'pro' ),
         'footer'  => esc_html__( 'Menú del Pie de Página', 'pro' ),
         'topbar'  => esc_html__( 'Menú Superior', 'pro' ),
     ) );
@@ -71,8 +72,8 @@ function pro_setup() {
 
     // Logo personalizado
     add_theme_support( 'custom-logo', array(
-        'height'      => 80,
-        'width'       => 250,
+        'height'      => 300,
+        'width'       => 1000,
         'flex-width'  => true,
         'flex-height' => true,
     ) );
@@ -93,8 +94,8 @@ function pro_scripts() {
     // Fuentes de Google (Playfair Display, Source Serif 4, Inter)
     wp_enqueue_style( 'pro-fonts', 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap', array(), null );
 
-    // Iconos de Google (Material Symbols Outlined)
-    wp_enqueue_style( 'pro-icons', 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap', array(), null );
+    // Iconos de Google (Material Symbols)
+    wp_enqueue_style( 'pro-icons', 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200', array(), null );
 
     // Normalize.css para consistencia entre navegadores
     wp_enqueue_style( 'pro-normalize', 'https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css', array(), '8.0.1' );
@@ -147,9 +148,16 @@ function pro_scripts() {
     if ( is_category() ) {
         $cat_id = get_queried_object_id();
     } elseif ( is_page_template( 'page-categoria.php' ) ) {
-        $category = get_term_by( 'name', get_the_title(), 'category' );
-        if ( $category ) {
-            $cat_id = $category->term_id;
+        // Usar slug de la página para detectar la categoría (más fiable que el título)
+        $queried_page = get_queried_object();
+        if ( $queried_page ) {
+            $category = get_term_by( 'slug', $queried_page->post_name, 'category' );
+            if ( ! $category ) {
+                $category = get_term_by( 'name', $queried_page->post_title, 'category' );
+            }
+            if ( $category ) {
+                $cat_id = $category->term_id;
+            }
         }
     }
 
@@ -307,9 +315,37 @@ function pro_add_direccion_role() {
 }
 add_action( 'init', 'pro_add_direccion_role' );
 
+function pro_add_gerencia_role() {
+    if ( ! get_role( 'gerencia' ) ) {
+        $admin_role = get_role( 'administrator' );
+        if ( $admin_role ) {
+            add_role( 'gerencia', 'Gerencia', $admin_role->capabilities );
+        }
+    }
+}
+add_action( 'init', 'pro_add_gerencia_role' );
+
+function pro_add_publicista_role() {
+    if ( ! get_role( 'publicista' ) ) {
+        $admin_role = get_role( 'administrator' );
+        if ( $admin_role ) {
+            $caps = $admin_role->capabilities;
+            unset( $caps['list_users'] );
+            unset( $caps['edit_users'] );
+            unset( $caps['create_users'] );
+            unset( $caps['delete_users'] );
+            unset( $caps['promote_users'] );
+            unset( $caps['remove_users'] );
+            unset( $caps['edit_users'] );
+            add_role( 'publicista', 'Publicista', $caps );
+        }
+    }
+}
+add_action( 'init', 'pro_add_publicista_role' );
+
 function pro_restrict_direccion_menus() {
     $current_user = wp_get_current_user();
-    if ( in_array( 'direccion', (array) $current_user->roles ) ) {
+    if ( in_array( 'direccion', (array) $current_user->roles ) || in_array( 'publicista', (array) $current_user->roles ) ) {
         // Quitar Hostinger y Hostinger Reach (slugs comunes)
         remove_menu_page( 'hostinger' );
         remove_menu_page( 'hostinger-reach' );
@@ -352,9 +388,11 @@ function pro_load_more_posts() {
         while( $query->have_posts() ): $query->the_post();
             ?>
             <article id="post-<?php the_ID(); ?>" <?php post_class('card-post'); ?>>
-                <a href="<?php the_permalink(); ?>" class="post-thumbnail" aria-hidden="true" tabindex="-1">
-                    <?php the_post_thumbnail( 'card-thumbnail', array( 'loading' => 'lazy' ) ); ?>
-                </a>
+                <?php if ( has_post_thumbnail() ) : ?>
+                    <a href="<?php the_permalink(); ?>" class="post-thumbnail" aria-hidden="true" tabindex="-1">
+                        <?php the_post_thumbnail( 'card-thumbnail', array( 'loading' => 'lazy' ) ); ?>
+                    </a>
+                <?php endif; ?>
                 <div class="card-content">
                     <div class="post-meta">
                         <?php pro_post_categories(); ?>
@@ -423,19 +461,43 @@ function pro_post_categories( $post_id = null, $force_category_slug = null ) {
         } elseif ( is_category() ) {
             $current_cat_id = get_queried_object_id();
         } elseif ( is_page_template( 'page-categoria.php' ) ) {
-            $page_title = get_the_title( get_queried_object_id() );
-            $category_obj = get_term_by( 'name', $page_title, 'category' );
-            if ( $category_obj ) {
-                $current_cat_id = $category_obj->term_id;
+            // Usar el slug de la página (más fiable que el título)
+            $queried_page = get_post( get_queried_object_id() );
+            if ( $queried_page ) {
+                $page_slug     = $queried_page->post_name;
+                $category_obj  = get_term_by( 'slug', $page_slug, 'category' );
+                if ( ! $category_obj ) {
+                    $category_obj = get_term_by( 'name', get_the_title( $queried_page->ID ), 'category' );
+                }
+                if ( $category_obj ) {
+                    $current_cat_id = $category_obj->term_id;
+                }
             }
         }
 
-        // 0. Si se pide forzar una etiqueta mediante código (ej. Hero de Inicio)
+        // 0. Si se pide forzar una etiqueta mediante código (ej. Hero de Inicio o page-categoria)
         if ( $force_category_slug ) {
-            foreach ( $categories as $category ) {
-                if ( $category->slug === $force_category_slug ) {
-                    $primary_category = $category;
+            // 0a. Buscar match exacto por slug entre las categorías del post
+            foreach ( $categories as $cat ) {
+                if ( $cat->slug === $force_category_slug ) {
+                    $primary_category = $cat;
                     break;
+                }
+            }
+
+            // 0b. Si el post está en una SUBcategoría de la categoría forzada,
+            //     mostramos la categoría forzada (la de la página) para no confundir al lector.
+            if ( ! $primary_category ) {
+                $forced_term = get_term_by( 'slug', $force_category_slug, 'category' );
+                if ( $forced_term ) {
+                    foreach ( $categories as $cat ) {
+                        $ancestors = get_ancestors( $cat->term_id, 'category' );
+                        if ( in_array( $forced_term->term_id, $ancestors, true ) ) {
+                            // El post está en una subcategoría — mostrar la categoría padre (de la página)
+                            $primary_category = $forced_term;
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -448,22 +510,54 @@ function pro_post_categories( $post_id = null, $force_category_slug = null ) {
                     break;
                 }
             }
-        }
-
-        // 2. Fallback: evitar 'relevantes' y tomar la principal
-        if ( ! $primary_category ) {
-            $primary_category = $categories[0];
-            foreach ( $categories as $category ) {
-                if ( $category->slug !== 'relevantes' ) {
-                    $primary_category = $category;
-                    break;
+            // 1b. El post puede estar en una subcategoría de la categoría actual
+            if ( ! $primary_category ) {
+                $parent_term = get_term( $current_cat_id, 'category' );
+                foreach ( $categories as $cat ) {
+                    $ancestors = get_ancestors( $cat->term_id, 'category' );
+                    if ( in_array( $current_cat_id, $ancestors, true ) ) {
+                        $primary_category = $parent_term ? $parent_term : $cat;
+                        break;
+                    }
                 }
             }
         }
 
-        echo '<span class="cat-label cat-' . esc_attr( $primary_category->slug ) . '">';
-        echo '<a href="' . esc_url( get_category_link( $primary_category->term_id ) ) . '">';
-        echo esc_html( $primary_category->name );
+        // 2. Fallback: evitar 'relevantes' y dar prioridad a subcategorías sobre 'sucesos'
+        if ( ! $primary_category ) {
+            // Intentar buscar una categoría que sea más específica (que no sea ni relevantes ni la general sucesos)
+            foreach ( $categories as $category ) {
+                if ( $category->slug !== 'relevantes' && $category->slug !== 'sucesos' ) {
+                    $primary_category = $category;
+                    break;
+                }
+            }
+            // Si la única que tiene es sucesos o relevantes, usar la básica
+            if ( ! $primary_category ) {
+                $primary_category = $categories[0];
+                foreach ( $categories as $category ) {
+                    if ( $category->slug !== 'relevantes' ) {
+                        $primary_category = $category;
+                        break;
+                    }
+                }
+            }
+        }
+
+        $cat_slug = $primary_category->slug;
+        $cat_name = $primary_category->name;
+        $cat_link = get_category_link( $primary_category->term_id );
+
+        // Regla especial para Sucesos Monagas
+        if ( $cat_slug === 'sucesos-monagas' ) {
+            $cat_slug = 'sucesos';
+            $cat_name = 'Monagas';
+            $cat_link = home_url( '/category/sucesos/' );
+        }
+
+        echo '<span class="cat-label cat-' . esc_attr( $cat_slug ) . '">';
+        echo '<a href="' . esc_url( $cat_link ) . '">';
+        echo esc_html( $cat_name );
         echo '</a></span> ';
     }
 }
@@ -953,6 +1047,14 @@ function pro_add_cartel_pdf_metabox() {
 }
 add_action( 'add_meta_boxes', 'pro_add_cartel_pdf_metabox' );
 
+function pro_enqueue_media_for_cartel() {
+    global $typenow;
+    if ( $typenow == 'cartel' ) {
+        wp_enqueue_media();
+    }
+}
+add_action( 'admin_enqueue_scripts', 'pro_enqueue_media_for_cartel' );
+
 function pro_render_cartel_pdf_metabox( $post ) {
     // Añadir wp_nonce para seguridad
     wp_nonce_field( 'pro_save_cartel_pdf_data', 'pro_cartel_pdf_meta_box_nonce' );
@@ -960,9 +1062,51 @@ function pro_render_cartel_pdf_metabox( $post ) {
     // Obtener valor actual
     $value = get_post_meta( $post->ID, '_cartel_pdf_url', true );
 
-    echo '<label for="pro_cartel_pdf_url">URL del archivo PDF: </label>';
-    echo '<input type="url" id="pro_cartel_pdf_url" name="pro_cartel_pdf_url" value="' . esc_attr( $value ) . '" style="width:100%; margin-top:5px;" placeholder="https://..." />';
-    echo '<p class="description">Pega aquí el enlace directo al archivo PDF. (Puedes subir el PDF a "Medios" y copiar su enlace aquí).</p>';
+    echo '<label for="pro_cartel_pdf_url" style="display:block; margin-bottom:5px;">URL del archivo PDF: </label>';
+    echo '<div style="display: flex; gap: 10px;">';
+    echo '<input type="url" id="pro_cartel_pdf_url" name="pro_cartel_pdf_url" value="' . esc_attr( $value ) . '" style="flex-grow: 1;" placeholder="https://..." />';
+    echo '<button type="button" class="button button-secondary" id="pro_upload_pdf_button">Seleccionar PDF en Medios</button>';
+    echo '</div>';
+    echo '<p class="description">Puedes pegar el enlace directo, o usar el botón para elegir/subir un PDF desde la biblioteca.</p>';
+    
+    // Script JS para manejar el botón
+    ?>
+    <script>
+    jQuery(document).ready(function($){
+        var mediaUploader;
+        $('#pro_upload_pdf_button').click(function(e) {
+            e.preventDefault();
+            
+            // Si el frame ya existe, ábrelo
+            if (mediaUploader) {
+                mediaUploader.open();
+                return;
+            }
+            
+            // Extiende el frame de medios
+            mediaUploader = wp.media({
+                title: 'Seleccionar Archivo PDF',
+                button: {
+                    text: 'Usar este archivo'
+                },
+                library: {
+                    type: 'application/pdf'
+                },
+                multiple: false
+            });
+            
+            // Cuando se selecciona un archivo
+            mediaUploader.on('select', function() {
+                var attachment = mediaUploader.state().get('selection').first().toJSON();
+                $('#pro_cartel_pdf_url').val(attachment.url);
+            });
+            
+            // Abre el frame
+            mediaUploader.open();
+        });
+    });
+    </script>
+    <?php
 }
 
 // 3. Guardar el valor del Meta Box
@@ -1219,7 +1363,7 @@ add_action( 'admin_init', 'pro_register_and_force_admin_colors' );
  */
 function pro_force_admin_color_by_role( $result, $option, $user ) {
     if ( 'admin_color' === $option && is_a( $user, 'WP_User' ) ) {
-        if ( in_array( 'direccion', $user->roles ) ) {
+        if ( in_array( 'direccion', $user->roles ) || in_array( 'publicista', $user->roles ) ) {
             return 'pro_direccion_scheme';
         } elseif ( in_array( 'autor', $user->roles ) || in_array( 'author', $user->roles ) ) {
             return 'pro_autor_scheme';
@@ -1283,7 +1427,7 @@ function pro_user_suspension_row_actions( $actions, $user_object ) {
     
     // Si el usuario actual no es admin ni direccion, no mostrar nada.
     $is_admin = in_array( 'administrator', $current_user->roles );
-    $is_director = in_array( 'direccion', $current_user->roles );
+    $is_director = in_array( 'direccion', $current_user->roles ) || in_array( 'gerencia', $current_user->roles );
     if ( ! $is_admin && ! $is_director ) {
         return $actions;
     }
@@ -1299,9 +1443,9 @@ function pro_user_suspension_row_actions( $actions, $user_object ) {
         return $actions;
     }
 
-    // Si el usuario es director, solo puede suspender/reactivar a perfiles 'direccion' y 'autor' (o 'author').
+    // Si el usuario es director o gerencia, solo puede suspender/reactivar a perfiles inferiores
     if ( $is_director ) {
-        $allowed_roles = array( 'direccion', 'autor', 'author' );
+        $allowed_roles = array( 'gerencia', 'direccion', 'autor', 'author' );
         $has_allowed_role = false;
         foreach ( $user_object->roles as $role ) {
             if ( in_array( $role, $allowed_roles ) ) {
@@ -1376,7 +1520,7 @@ function pro_handle_user_status_actions() {
 
     $current_user = wp_get_current_user();
     $is_admin = in_array( 'administrator', $current_user->roles );
-    $is_director = in_array( 'direccion', $current_user->roles );
+    $is_director = in_array( 'direccion', $current_user->roles ) || in_array( 'gerencia', $current_user->roles );
 
     // Validar permisos del ejecutor
     if ( ! $is_admin && ! $is_director ) {
@@ -1602,7 +1746,7 @@ function pro_get_human_time_diff( $mysql_date_string ) {
 function pro_register_dashboard_widgets() {
     $current_user = wp_get_current_user();
     $is_admin = in_array( 'administrator', $current_user->roles );
-    $is_director = in_array( 'direccion', $current_user->roles );
+    $is_director = in_array( 'direccion', $current_user->roles ) || in_array( 'gerencia', $current_user->roles ) || in_array( 'publicista', $current_user->roles );
     
     // 1. Portada del Día - Todos los roles lo ven
     wp_add_dashboard_widget( 
@@ -1677,7 +1821,7 @@ function pro_render_dashboard_portada_widget() {
     }
     
     $current_user = wp_get_current_user();
-    if ( in_array( 'administrator', $current_user->roles ) || in_array( 'direccion', $current_user->roles ) ) {
+    if ( in_array( 'administrator', $current_user->roles ) || in_array( 'direccion', $current_user->roles ) || in_array( 'gerencia', $current_user->roles ) || in_array( 'publicista', $current_user->roles ) ) {
         echo '<div class="pro-widget-actions">';
         echo '<a href="' . esc_url( admin_url( 'admin.php?page=portada-dia' ) ) . '" class="button button-primary"><span class="dashicons dashicons-edit"></span> Gestionar Portadas</a>';
         echo '</div>';
@@ -1825,7 +1969,7 @@ function pro_render_dashboard_leads_widget() {
 function pro_render_dashboard_publicaciones_widget() {
     $current_user = wp_get_current_user();
     $is_admin = in_array( 'administrator', $current_user->roles );
-    $is_director = in_array( 'direccion', $current_user->roles );
+    $is_director = in_array( 'direccion', $current_user->roles ) || in_array( 'gerencia', $current_user->roles ) || in_array( 'publicista', $current_user->roles );
     
     $args = array(
         'post_type'      => 'post',
@@ -1889,7 +2033,7 @@ function pro_render_dashboard_publicaciones_widget() {
 function pro_render_dashboard_actividad_autores_widget() {
     $current_user = wp_get_current_user();
     $is_admin = in_array( 'administrator', $current_user->roles );
-    $is_director = in_array( 'direccion', $current_user->roles );
+    $is_director = in_array( 'direccion', $current_user->roles ) || in_array( 'gerencia', $current_user->roles ) || in_array( 'publicista', $current_user->roles );
     
     echo '<div class="pro-widget-container activity">';
     
@@ -1951,7 +2095,7 @@ function pro_render_dashboard_actividad_autores_widget() {
                 
                 // Pill de Rol
                 $role_badge = '';
-                if ( in_array( 'direccion', $author->roles ) ) {
+                if ( in_array( 'direccion', $author->roles ) || in_array( 'publicista', $author->roles ) ) {
                     $role_badge = '<span class="pro-role-pill director">Dirección</span>';
                 } else {
                     $role_badge = '<span class="pro-role-pill autor">Autor</span>';
@@ -2909,30 +3053,33 @@ add_action( 'init', 'pro_fix_corrupted_terms' );
 
 
 function pro_setup_espressivo_categories_and_menu() {
-    if ( get_option( 'pro_espressivo_structure_installed_v9' ) ) {
+    if ( get_option( 'pro_espressivo_structure_installed_v19' ) ) {
         return;
     }
+    update_option( 'pro_espressivo_structure_installed_v19', true ); // Lock early to prevent concurrent executions
+
 
     $estructura = array(
-        'Monagas' => array('description' => '', 'children' => array('Locales', 'Política', 'Educación', 'Salud', 'Ciudad', 'Comunidad', 'Municipios')),
-        'Sucesos' => array('description' => '', 'children' => array('Sucesos', 'Seguridad', 'Crónica Policial')),
-        'Nacional' => array('description' => '', 'children' => array('Nacional', 'Política', 'Asamblea Nacional', 'Economía', 'Portafolio de Negocios')),
-        'Mundo' => array('description' => '', 'children' => array('Internacional', 'Análisis Internacional')),
-        'Deportes' => array('description' => '', 'children' => array('Fútbol', 'Béisbol', 'Básquet', 'Polideportivo', 'Zona deportiva', 'Pádel')),
+        'Monagas' => array('description' => '', 'children' => array('Ciudad', 'Comunidad', 'Política Monagas', 'Sucesos Monagas', 'Educación', 'Salud', 'Municipios')),
+        'Sucesos' => array('description' => '', 'children' => array('Seguridad', 'Crónica Policial')),
+        'Nacional' => array('description' => '', 'children' => array('Regiones', 'Política Nacional', 'Asamblea Nacional', 'Economía')),
+        'Mundo' => array('description' => '', 'children' => array('Análisis Internacional', 'Bitácora Mundial')),
+        'Deportes' => array('description' => '', 'children' => array()),
         'Artes y Espectáculos' => array('description' => '', 'children' => array('Farándula', 'Cine', 'Streaming', 'Cultura', 'Literatura')),
-        'Bienestar' => array('description' => '', 'children' => array('NuevaSalud', 'Psicología para todos', 'Gastronomía', 'Belleza', 'Viajes', 'Estilo de vida', 'Mascotas')),
-        'Tendencias' => array('description' => '', 'children' => array('Ciencia y Tecnología', 'Inteligencia Artificial')),
-        'Opinión' => array('description' => '', 'children' => array('Opinión', 'Buen Ciudadano')),
-        'Edictos y Carteles' => array('description' => '', 'children' => array())
+        'Bienestar' => array('description' => '', 'children' => array('Nueva Salud', 'Gastronomía', 'Belleza', 'Viajes', 'Estilo de vida', 'Mascotas')),
+        'Ciencia y Tecnología' => array('description' => '', 'children' => array('Inteligencia Artificial', 'Robótica')),
+        'Opinión' => array('description' => '', 'children' => array()),
+        'Buen Ciudadano' => array('description' => '', 'children' => array()),
+        'Edictos y Carteles' => array('description' => '', 'children' => array()),
+        'Portafolio' => array('description' => '', 'children' => array())
     );
 
     $cat_ids = array();
     foreach ( $estructura as $parent => $data ) {
-        if ( $parent === 'Edictos y Carteles' ) continue;
-        $term = term_exists( $parent, 'category' );
-        if ( ! $term ) { $term = wp_insert_term( $parent, 'category', array('description' => $data['description']) ); }
-        if ( ! is_wp_error( $term ) ) {
-            $parent_id = is_array( $term ) ? $term['term_id'] : $term;
+        $parent_term = term_exists( $parent, 'category' );
+        if ( ! $parent_term ) { $parent_term = wp_insert_term( $parent, 'category', array('description' => $data['description']) ); }
+        if ( ! is_wp_error( $parent_term ) ) {
+            $parent_id = is_array( $parent_term ) ? $parent_term['term_id'] : $parent_term;
             $cat_ids[$parent] = array( 'id' => $parent_id, 'children' => array() );
             foreach ( $data['children'] as $child ) {
                 $child_term = term_exists( $child, 'category' );
@@ -2943,7 +3090,6 @@ function pro_setup_espressivo_categories_and_menu() {
         }
     }
 
-    // Asegurarse de que exista una Página física para cada categoría y subcategoría
     foreach ( $estructura as $parent => $data ) {
         if ( $parent === 'Edictos y Carteles' ) continue;
         
@@ -2968,81 +3114,61 @@ function pro_setup_espressivo_categories_and_menu() {
         if ( $page_id && ! is_wp_error( $page_id ) ) { update_post_meta( $page_id, '_wp_page_template', 'page-carteles.php' ); }
     }
 
+    // MENU REFACTOR: Split Desktop and Mobile into separate menus
     $menu_name = 'Menú Espressivo';
     $menu_exists = wp_get_nav_menu_object( $menu_name );
-    if ( ! $menu_exists ) { $menu_id = wp_create_nav_menu( $menu_name ); } 
-    else {
-        $menu_id = $menu_exists->term_id;
-        $menu_items = wp_get_nav_menu_items( $menu_id );
-        if($menu_items) { foreach($menu_items as $item) { wp_delete_post($item->ID, true); } }
-    }
+    if ( $menu_exists ) { wp_delete_nav_menu( $menu_name ); }
+    $menu_id = wp_create_nav_menu( $menu_name );
 
-    if ( $menu_id ) {
+    $mobile_menu_name = 'Menu e-movil';
+    $mobile_menu_exists = wp_get_nav_menu_object( $mobile_menu_name );
+    if ( $mobile_menu_exists ) { wp_delete_nav_menu( $mobile_menu_name ); }
+    $mobile_menu_id = wp_create_nav_menu( $mobile_menu_name );
+
+    if ( $menu_id && $mobile_menu_id ) {
         wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>'Inicio','menu-item-url'=>home_url( '/' ),'menu-item-status'=>'publish','menu-item-type'=>'custom') );
+        wp_update_nav_menu_item( $mobile_menu_id, 0, array('menu-item-title'=>'Inicio','menu-item-url'=>home_url( '/' ),'menu-item-status'=>'publish','menu-item-type'=>'custom') );
 
-        $principales = array('Monagas', 'Sucesos', 'Nacional', 'Mundo', 'Deportes', 'Tendencias');
-        $secundarias = array('Edictos y Carteles', 'Artes y Espectáculos', 'Bienestar', 'Opinión');
+        $principales = array('Monagas', 'Sucesos', 'Nacional', 'Mundo', 'Deportes', 'Buen Ciudadano');
+        $secundarias = array('Edictos y Carteles', 'Portafolio', 'Artes y Espectáculos', 'Ciencia y Tecnología', 'Opinión', 'Bienestar');
         
-        // 1. Agregar principales primero
         foreach ( $principales as $parent ) {
-            if ( isset( $cat_ids[$parent] ) ) {
-                $page = get_page_by_title($parent) ?: get_page_by_path(sanitize_title($parent));
-                $obj_id = $page ? $page->ID : $cat_ids[$parent]['id'];
-                $obj = $page ? 'page' : 'category';
-                $type = $page ? 'post_type' : 'taxonomy';
-
-                $parent_item_id = wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$parent,'menu-item-object-id'=>$obj_id,'menu-item-object'=>$obj,'menu-item-type'=>$type,'menu-item-status'=>'publish') );
+            $page = get_page_by_title($parent) ?: get_page_by_path(sanitize_title($parent));
+            if ( $page ) {
+                $parent_item_id_desktop = wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$parent,'menu-item-object-id'=>$page->ID,'menu-item-object'=>'page','menu-item-type'=>'post_type','menu-item-status'=>'publish') );
+                $parent_item_id_mobile = wp_update_nav_menu_item( $mobile_menu_id, 0, array('menu-item-title'=>$parent,'menu-item-object-id'=>$page->ID,'menu-item-object'=>'page','menu-item-type'=>'post_type','menu-item-status'=>'publish') );
+                
                 foreach ( $estructura[$parent]['children'] as $child ) {
-                    if ( isset( $cat_ids[$parent]['children'][$child] ) ) {
-                        $child_page = get_page_by_title($child) ?: get_page_by_path(sanitize_title($child));
-                        $c_obj_id = $child_page ? $child_page->ID : $cat_ids[$parent]['children'][$child];
-                        $c_obj = $child_page ? 'page' : 'category';
-                        $c_type = $child_page ? 'post_type' : 'taxonomy';
-
-                        wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$child,'menu-item-object-id'=>$c_obj_id,'menu-item-object'=>$c_obj,'menu-item-type'=>$c_type,'menu-item-status'=>'publish','menu-item-parent-id'=>$parent_item_id) );
+                    $child_page = get_page_by_title($child) ?: get_page_by_path(sanitize_title($child));
+                    if ( $child_page ) {
+                        wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$child,'menu-item-object-id'=>$child_page->ID,'menu-item-object'=>'page','menu-item-type'=>'post_type','menu-item-status'=>'publish','menu-item-parent-id'=>$parent_item_id_desktop) );
+                        wp_update_nav_menu_item( $mobile_menu_id, 0, array('menu-item-title'=>$child,'menu-item-object-id'=>$child_page->ID,'menu-item-object'=>'page','menu-item-type'=>'post_type','menu-item-status'=>'publish','menu-item-parent-id'=>$parent_item_id_mobile) );
                     }
                 }
             }
         }
 
-        // 2. Agregar "Más" al final
-        $mas_item_id = wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>'Más','menu-item-url'=>'#','menu-item-status'=>'publish','menu-item-type'=>'custom','menu-item-classes'=>'desktop-only-menu-item') );
+        $mas_item_id = wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>'Más','menu-item-url'=>'#','menu-item-status'=>'publish','menu-item-type'=>'custom') );
 
-        // 3. Agregar secundarias dentro de "Más" y como raíz móvil
         foreach ( $secundarias as $parent ) {
             if ( $parent === 'Edictos y Carteles' ) {
                 $carteles_page = get_page_by_path('edictos-y-carteles') ?: get_page_by_title('Carteles y Edictos');
                 if ( $carteles_page ) {
                     wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>'Edictos y Carteles','menu-item-object-id'=>$carteles_page->ID,'menu-item-object'=>'page','menu-item-type'=>'post_type','menu-item-status'=>'publish','menu-item-parent-id'=>$mas_item_id) );
-                    wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>'Edictos y Carteles','menu-item-object-id'=>$carteles_page->ID,'menu-item-object'=>'page','menu-item-type'=>'post_type','menu-item-status'=>'publish','menu-item-classes'=>'mobile-only-menu-item') );
+                    wp_update_nav_menu_item( $mobile_menu_id, 0, array('menu-item-title'=>'Edictos y Carteles','menu-item-object-id'=>$carteles_page->ID,'menu-item-object'=>'page','menu-item-type'=>'post_type','menu-item-status'=>'publish') );
                 }
-            } elseif ( isset( $cat_ids[$parent] ) ) {
+            } else {
                 $page = get_page_by_title($parent) ?: get_page_by_path(sanitize_title($parent));
-                $obj_id = $page ? $page->ID : $cat_ids[$parent]['id'];
-                $obj = $page ? 'page' : 'category';
-                $type = $page ? 'post_type' : 'taxonomy';
-
-                $parent_item_id_mas = wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$parent,'menu-item-object-id'=>$obj_id,'menu-item-object'=>$obj,'menu-item-type'=>$type,'menu-item-status'=>'publish','menu-item-parent-id'=>$mas_item_id) );
-                foreach ( $estructura[$parent]['children'] as $child ) {
-                    if ( isset( $cat_ids[$parent]['children'][$child] ) ) {
+                if ( $page ) {
+                    $parent_item_id_mas = wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$parent,'menu-item-object-id'=>$page->ID,'menu-item-object'=>'page','menu-item-type'=>'post_type','menu-item-status'=>'publish','menu-item-parent-id'=>$mas_item_id) );
+                    $parent_item_id_mob = wp_update_nav_menu_item( $mobile_menu_id, 0, array('menu-item-title'=>$parent,'menu-item-object-id'=>$page->ID,'menu-item-object'=>'page','menu-item-type'=>'post_type','menu-item-status'=>'publish') );
+                    
+                    foreach ( $estructura[$parent]['children'] as $child ) {
                         $child_page = get_page_by_title($child) ?: get_page_by_path(sanitize_title($child));
-                        $c_obj_id = $child_page ? $child_page->ID : $cat_ids[$parent]['children'][$child];
-                        $c_obj = $child_page ? 'page' : 'category';
-                        $c_type = $child_page ? 'post_type' : 'taxonomy';
-
-                        wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$child,'menu-item-object-id'=>$c_obj_id,'menu-item-object'=>$c_obj,'menu-item-type'=>$c_type,'menu-item-status'=>'publish','menu-item-parent-id'=>$parent_item_id_mas) );
-                    }
-                }
-
-                $parent_item_id_mob = wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$parent,'menu-item-object-id'=>$obj_id,'menu-item-object'=>$obj,'menu-item-type'=>$type,'menu-item-status'=>'publish','menu-item-classes'=>'mobile-only-menu-item') );
-                foreach ( $estructura[$parent]['children'] as $child ) {
-                    if ( isset( $cat_ids[$parent]['children'][$child] ) ) {
-                        $child_page = get_page_by_title($child) ?: get_page_by_path(sanitize_title($child));
-                        $c_obj_id = $child_page ? $child_page->ID : $cat_ids[$parent]['children'][$child];
-                        $c_obj = $child_page ? 'page' : 'category';
-                        $c_type = $child_page ? 'post_type' : 'taxonomy';
-
-                        wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$child,'menu-item-object-id'=>$c_obj_id,'menu-item-object'=>$c_obj,'menu-item-type'=>$c_type,'menu-item-status'=>'publish','menu-item-parent-id'=>$parent_item_id_mob) );
+                        if ( $child_page ) {
+                            wp_update_nav_menu_item( $menu_id, 0, array('menu-item-title'=>$child,'menu-item-object-id'=>$child_page->ID,'menu-item-object'=>'page','menu-item-type'=>'post_type','menu-item-status'=>'publish','menu-item-parent-id'=>$parent_item_id_mas) );
+                            wp_update_nav_menu_item( $mobile_menu_id, 0, array('menu-item-title'=>$child,'menu-item-object-id'=>$child_page->ID,'menu-item-object'=>'page','menu-item-type'=>'post_type','menu-item-status'=>'publish','menu-item-parent-id'=>$parent_item_id_mob) );
+                        }
                     }
                 }
             }
@@ -3051,12 +3177,24 @@ function pro_setup_espressivo_categories_and_menu() {
         $locations = get_theme_mod( 'nav_menu_locations' );
         if ( ! is_array( $locations ) ) { $locations = array(); }
         $locations['primary'] = $menu_id;
+        $locations['mobile'] = $mobile_menu_id;
         set_theme_mod( 'nav_menu_locations', $locations );
     }
-
-    update_option( 'pro_espressivo_structure_installed_v9', true );
 }
 add_action( 'init', 'pro_setup_espressivo_categories_and_menu' );
 
 // Incluir módulo SSIVO-SEO
 require_once get_template_directory() . '/inc/seo/init.php';
+
+// Deshabilitar sitemap de usuarios por seguridad
+add_filter(
+    'wp_sitemaps_add_provider',
+    function( $provider, $name ) {
+        if ( 'users' === $name ) {
+            return false;
+        }
+        return $provider;
+    },
+    10,
+    2
+);
