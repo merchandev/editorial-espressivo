@@ -14,7 +14,7 @@ $sec_cats = array(
     'servicios-publicos' => 'Servicios', 'comunidad' => 'Comunidad',
     'sucesos' => 'Sucesos', 'nacional' => 'Nacional', 
     'mundo' => 'Mundo', 'economia' => 'Economía', 
-    'politica' => 'Política'
+    'politica-nacional,politica-monagas' => 'Política'
 );
 
 ob_start();
